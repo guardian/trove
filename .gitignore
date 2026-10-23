@@ -8,3 +8,4 @@ node_modules/
 .vscode/*
 # We do commit settings.json.default, which contains recommmended settings.
 !.vscode/settings.json.default
+!.vscode/extensions.json
