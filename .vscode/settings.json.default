@@ -1,0 +1,15 @@
+{
+    "editor.bracketPairColorization.enabled": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+    },
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "search.exclude": {
+        "**/frontend/static/hash": true,
+        "**/frontend/static/target": true,
+        "**/frontend/static/transpiled": true,
+        "**/node_modules": true,
+        // etc
+    }
+}
