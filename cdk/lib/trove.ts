@@ -1,9 +1,9 @@
-import type { GuStackProps } from "@guardian/cdk/lib/constructs/core";
-import { GuStack } from "@guardian/cdk/lib/constructs/core";
-import type { App } from "aws-cdk-lib";
+import type { GuStackProps } from '@guardian/cdk/lib/constructs/core/index.js';
+import { GuStack } from '@guardian/cdk/lib/constructs/core/index.js';
+import type { App } from 'aws-cdk-lib';
 
 export class Trove extends GuStack {
-  constructor(scope: App, id: string, props: GuStackProps) {
-    super(scope, id, props);
-  }
+	constructor(scope: App, id: string, props: GuStackProps) {
+		super(scope, id, props);
+	}
 }

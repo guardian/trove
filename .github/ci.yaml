@@ -1,0 +1,35 @@
+name: Trove CI (build and upload)
+
+on:
+  # By default, a workflow only runs when a pull_request event's
+  # activity type is opened, synchronize, or reopened.
+  # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull_request
+  # So this trigger runs builds on open PRs that have not yet been merged.
+  pull_request:
+  # This is the trigger that deploys to PROD, when a merged PR creates a commit on main.
+  push:
+    branches:
+      - main
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .tool-versions
+          cache: 'npm'
+      - run: npm ci
+        name: 'install dependencies'
+      - run: npm run format:check
+        name: 'format check'
+      - run: npm run lint:check
+        name: 'lint check'
+      - run: npm test
+        name: 'run tests'
+      - run: npm run typecheck
+        name: 'typecheck'
+      - run: npm run synth --workspace=cdk
+        name: '[CDK] synth'
