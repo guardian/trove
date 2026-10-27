@@ -1,12 +1,8 @@
 name: Trove CI (build and upload)
 
 on:
-  # By default, a workflow only runs when a pull_request event's
-  # activity type is opened, synchronize, or reopened.
-  # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull_request
-  # So this trigger runs builds on open PRs that have not yet been merged.
   pull_request:
-  # This is the trigger that deploys to PROD, when a merged PR creates a commit on main.
+  workflow_dispatch:
   push:
     branches:
       - main
