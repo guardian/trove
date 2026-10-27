@@ -1,0 +1,23 @@
+name: "trove"
+
+modules:
+  - mise
+  - node
+  - github-copilot
+
+# We'll set these once we have some application code in place
+# forwardPorts:
+#   - 8080  # same port on host and container
+#   - "8000:9000"  # hostPort:containerPort
+
+# Optional: Mount directories from host to container
+# mounts:
+#   - "source=${localEnv:HOME}/.gu/example,target=/home/vscode/.gu/example,readonly,type=bind,consistency=cached"
+
+# Optional: IDE plugins - shared project plugins like language support
+plugins:
+  vscode:
+    - esbenp.prettier-vscode
+    - dbaeumer.vscode-eslint
+  intellij:
+    - intellij.prettierJS
