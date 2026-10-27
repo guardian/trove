@@ -11,3 +11,99 @@ exports[`The Trove stack > matches the snapshot 1`] = `
   }
 }
 `;
+
+exports[`The TroveOpenSearch stack > matches the snapshot 1`] = `
+{
+  "Metadata": {
+    "gu:cdk:constructs": [],
+    "gu:cdk:version": "TEST"
+  },
+  "Resources": {
+    "EncryptionPolicy": {
+      "Type": "AWS::OpenSearchServerless::SecurityPolicy",
+      "Properties": {
+        "Name": "trove-code-encryption",
+        "Policy": "{\\"Rules\\":[{\\"ResourceType\\":\\"collection\\",\\"Resource\\":[\\"collection/trove-code\\"]}],\\"AWSOwnedKey\\":true}",
+        "Type": "encryption"
+      }
+    },
+    "NetworkPolicy": {
+      "Type": "AWS::OpenSearchServerless::SecurityPolicy",
+      "Properties": {
+        "Name": "trove-code-network",
+        "Policy": "[{\\"Rules\\":[{\\"ResourceType\\":\\"collection\\",\\"Resource\\":[\\"collection/trove-code\\"]},{\\"ResourceType\\":\\"dashboard\\",\\"Resource\\":[\\"collection/trove-code\\"]}],\\"AllowFromPublic\\":true}]",
+        "Type": "network"
+      }
+    },
+    "CollectionGroup": {
+      "Type": "AWS::OpenSearchServerless::CollectionGroup",
+      "Properties": {
+        "CapacityLimits": {
+          "MaxIndexingCapacityInOcu": 4,
+          "MaxSearchCapacityInOcu": 4,
+          "MinIndexingCapacityInOcu": 0,
+          "MinSearchCapacityInOcu": 0
+        },
+        "Generation": "NEXTGEN",
+        "Name": "trove-code",
+        "StandbyReplicas": "ENABLED",
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "66.0.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE"
+          }
+        ]
+      },
+      "UpdateReplacePolicy": "Retain",
+      "DeletionPolicy": "Retain"
+    },
+    "Collection": {
+      "Type": "AWS::OpenSearchServerless::Collection",
+      "Properties": {
+        "CollectionGroupName": "trove-code",
+        "DeletionProtection": "ENABLED",
+        "Name": "trove-code",
+        "StandbyReplicas": "ENABLED",
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "66.0.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE"
+          }
+        ],
+        "Type": "VECTORSEARCH"
+      },
+      "DependsOn": [
+        "CollectionGroup",
+        "EncryptionPolicy",
+        "NetworkPolicy"
+      ],
+      "UpdateReplacePolicy": "Retain",
+      "DeletionPolicy": "Retain"
+    }
+  }
+}
+`;
