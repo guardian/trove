@@ -7,3 +7,8 @@ new Trove(app, 'Trove-euwest-1-CODE', {
 	stage: 'CODE',
 	env: { region: 'eu-west-1' },
 });
+new Trove(app, 'Trove-euwest-1-PROD', {
+	stack: 'capi',
+	stage: 'PROD',
+	env: { region: 'eu-west-1' },
+});
