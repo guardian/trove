@@ -7,9 +7,11 @@ Vector search for Guardian articles
 We use npm workspaces to manage multiple packages within the repo, and we share Guardian standard tsconfig, eslint and prettier configs across all packages.
 
 You can run commands across all packages from the project root, e.g.:
+
 ```sh
 npm run format:fix
 ```
+
 will re-format code across all packages to match Guardian prettier style.
 
 ### How to add a new package
