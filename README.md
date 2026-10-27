@@ -2,23 +2,17 @@
 
 Vector search for Guardian articles
 
-## Node packages
+## Monorepo structure
 
-Use Node.js 26, as selected by `.tool-versions` and required by the root
-`package.json`. Run `npm ci` from the repository root to install all workspaces.
+We use npm workspaces to manage multiple packages within the repo, and we share Guardian standard tsconfig, eslint and prettier configs across all packages.
 
-Run shared checks from the repository root:
-
+You can run commands across all packages from the project root, e.g.:
 ```sh
-npm run typecheck
-npm run lint:check
-npm run lint:fix
-npm test
-npm run format:check
 npm run format:fix
 ```
+will re-format code across all packages to match Guardian prettier style.
 
-### Adding a Node package
+### How to add a new package
 
 - Add its directory to the root `package.json` workspaces list.
 - Give it a `package.json` with `"private": true` (unless it will be published),
@@ -27,7 +21,7 @@ npm run format:fix
   (see the example below).
 - Add `"typecheck": "tsc --noEmit"` and a package-appropriate native Node test
   script. Optional local lint/format scripts can invoke the shared tools.
-- Do not duplicate ESLint/Prettier configuration or shared tooling dependencies.
+- **Do not duplicate ESLint/Prettier configuration or shared tooling dependencies.**
   Packages that require a different runtime or a bundler should override the
   relevant settings explicitly.
 
@@ -40,7 +34,7 @@ Example package `tsconfig.json`:
 }
 ```
 
-### VSCode setup: autolint & autoformat on save
+## VSCode setup: autolint & autoformat on save
 
 `.vscode/extensions.json` should tell VSCode to prompt you to install our recommended extensions for linting & formatting.
 
