@@ -1,0 +1,37 @@
+{
+	"name": "trove",
+	"description": "Vector search for Guardian articles",
+	"homepage": "https://github.com/guardian/trove#readme",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/guardian/trove.git"
+	},
+	"author": "Newsroom AI",
+	"private": true,
+	"type": "module",
+	"engines": {
+		"node": "^26.0.0"
+	},
+	"workspaces": [
+		"cdk"
+	],
+	"scripts": {
+		"test": "npm test --workspaces",
+		"typecheck": "npm run typecheck --workspaces",
+		"lint:fix": "node ./scripts/check-packages-are-of-type-module.mjs && eslint . --fix",
+		"lint:check": "node ./scripts/check-packages-are-of-type-module.mjs && eslint .",
+		"format:fix": "prettier --write .",
+		"format:check": "prettier --check ."
+	},
+	"devDependencies": {
+		"@guardian/eslint-config": "14.0.1",
+		"@guardian/prettier": "5.0.0",
+		"@guardian/tsconfig": "2.0.0",
+		"@types/node": "26.6.4",
+		"eslint": "9.39.2",
+		"globals": "17.4.0",
+		"prettier": "3.8.3",
+		"typescript": "5.9.3"
+	},
+	"prettier": "@guardian/prettier"
+}

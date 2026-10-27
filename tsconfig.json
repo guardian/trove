@@ -1,0 +1,14 @@
+{
+	"extends": "@guardian/tsconfig/tsconfig.json",
+	"compilerOptions": {
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"lib": ["ESNext"],
+		"noEmit": true,
+		"types": ["node"],
+		"allowImportingTsExtensions": true,
+		"erasableSyntaxOnly": true
+	},
+	"files": [],
+	"exclude": ["**/node_modules", "**/cdk.out", "**/.cdk.staging"]
+}

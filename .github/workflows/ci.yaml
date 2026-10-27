@@ -1,0 +1,31 @@
+name: Trove CI (build and upload)
+
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .tool-versions
+          cache: 'npm'
+      - run: npm ci
+        name: 'install dependencies'
+      - run: npm run format:check
+        name: 'format check'
+      - run: npm run lint:check
+        name: 'lint check'
+      - run: npm test
+        name: 'run tests'
+      - run: npm run typecheck
+        name: 'typecheck'
+      - run: npm run synth --workspace=cdk
+        name: '[CDK] synth'
