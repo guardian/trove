@@ -18,8 +18,8 @@
 	"scripts": {
 		"test": "npm test --workspaces",
 		"typecheck": "npm run typecheck --workspaces",
-		"lint:fix": "node check-package-types.mjs && eslint . --fix",
-		"lint:check": "node check-package-types.mjs && eslint .",
+		"lint:fix": "node ./scripts/check-packages-are-of-type-module.mjs && eslint . --fix",
+		"lint:check": "node ./scripts/check-packages-are-of-type-module.mjs && eslint .",
 		"format:fix": "prettier --write .",
 		"format:check": "prettier --check ."
 	},

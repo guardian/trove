@@ -16,6 +16,11 @@ const types = JSON.parse(
 	),
 );
 
+/**
+ * We want to make sure that all packages in the workspace declare "type": "module" in their package.json files
+ * in order to get consistent handling by eslint. This script is run alongside linting to enforce this requirement.
+ * If there's ever a compelling reason to not use "type": "module", we can change or drop this script.
+ */
 for (const [name, type] of Object.entries(types)) {
 	if (type !== 'module') {
 		console.error(`${name}: package.json must declare "type": "module".`);
