@@ -2,6 +2,20 @@
 
 Vector search for Guardian articles
 
+## Setup
+
+### Outside devcontainer
+
+1. Install `mise` if you don't have it
+2. Run `mise install` to install toolchain from `.tool-versions`
+3. Run `npm install` to install node dependencies
+
+### Inside devcontainer
+
+`mise` and the `.tool-versions` toolchain will be installed automatically when the container is created.
+
+You just need to `npm install` the application dependencies.
+
 ## Monorepo structure
 
 We use npm workspaces to manage multiple packages within the repo, and we share Guardian standard tsconfig, eslint and prettier configs across all packages.

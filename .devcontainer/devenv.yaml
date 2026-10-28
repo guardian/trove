@@ -1,0 +1,18 @@
+name: 'trove'
+
+modules:
+  - mise
+  - node
+  - github-copilot
+
+# We'll set these once we have some application code in place
+# forwardPorts:
+#   - 8080  # same port on host and container
+#   - "8000:9000"  # hostPort:containerPort
+
+plugins:
+  vscode:
+    - esbenp.prettier-vscode
+    - dbaeumer.vscode-eslint
+  intellij:
+    - intellij.prettierJS
