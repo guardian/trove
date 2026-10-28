@@ -14,12 +14,12 @@ new Trove(app, 'Trove-euwest-1-PROD', {
 	env: { region: 'eu-west-1' },
 });
 new TroveOpenSearch(app, 'TroveOpenSearch-euwest-1-CODE', {
-	stack: 'capi',
+	stack: 'content-api',
 	stage: 'CODE',
 	env: { region: 'eu-west-1' },
 });
 new TroveOpenSearch(app, 'TroveOpenSearch-euwest-1-PROD', {
-	stack: 'capi',
+	stack: 'content-api',
 	stage: 'PROD',
 	env: { region: 'eu-west-1' },
 });
