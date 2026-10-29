@@ -27,20 +27,21 @@ const capacityLimitsByStage: Record<'CODE' | 'PROD', CapacityLimits> = {
 	},
 };
 
+type TroveOpenSearchProps = GuStackProps & {
+	stage: 'CODE' | 'PROD';
+};
+
 export class TroveOpenSearch extends GuStack {
-	constructor(scope: App, id: string, props: GuStackProps) {
+	constructor(scope: App, id: string, props: TroveOpenSearchProps) {
 		super(scope, id, props);
 
-		const { stage } = this;
-		if (stage !== 'CODE' && stage !== 'PROD') {
-			throw new Error(`Unsupported stage: ${stage}`);
-		}
+		const stage = props.stage;
 
 		const name = `trove-${stage.toLowerCase()}`;
 		const collectionResource = `collection/${name}`;
 
 		const encryptionPolicy = new CfnSecurityPolicy(this, 'EncryptionPolicy', {
-			name: `${name}-encryption`,
+			name: `trove-encryption-${stage.toLowerCase()}`,
 			type: 'encryption',
 			policy: JSON.stringify({
 				Rules: [{ ResourceType: 'collection', Resource: [collectionResource] }],
@@ -50,7 +51,7 @@ export class TroveOpenSearch extends GuStack {
 
 		// Public endpoint: access is still gated by IAM and data access policies
 		const networkPolicy = new CfnSecurityPolicy(this, 'NetworkPolicy', {
-			name: `${name}-network`,
+			name: `trove-network-${stage.toLowerCase()}`,
 			type: 'network',
 			policy: JSON.stringify([
 				{

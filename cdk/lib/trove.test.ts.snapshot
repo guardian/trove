@@ -22,7 +22,7 @@ exports[`The TroveOpenSearch stack > matches the snapshot 1`] = `
     "EncryptionPolicy": {
       "Type": "AWS::OpenSearchServerless::SecurityPolicy",
       "Properties": {
-        "Name": "trove-code-encryption",
+        "Name": "trove-encryption-code",
         "Policy": "{\\"Rules\\":[{\\"ResourceType\\":\\"collection\\",\\"Resource\\":[\\"collection/trove-code\\"]}],\\"AWSOwnedKey\\":true}",
         "Type": "encryption"
       }
@@ -30,7 +30,7 @@ exports[`The TroveOpenSearch stack > matches the snapshot 1`] = `
     "NetworkPolicy": {
       "Type": "AWS::OpenSearchServerless::SecurityPolicy",
       "Properties": {
-        "Name": "trove-code-network",
+        "Name": "trove-network-code",
         "Policy": "[{\\"Rules\\":[{\\"ResourceType\\":\\"collection\\",\\"Resource\\":[\\"collection/trove-code\\"]},{\\"ResourceType\\":\\"dashboard\\",\\"Resource\\":[\\"collection/trove-code\\"]}],\\"AllowFromPublic\\":true}]",
         "Type": "network"
       }
