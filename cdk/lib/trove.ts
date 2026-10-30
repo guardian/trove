@@ -1,13 +1,37 @@
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core/index.js';
 import { GuStack } from '@guardian/cdk/lib/constructs/core/index.js';
+import { GuKinesisLambdaExperimental } from '@guardian/cdk/lib/experimental/patterns/kinesis-lambda.js';
+import { StreamRetry } from '@guardian/cdk/lib/utils/lambda/event-source.js';
 import type { App } from 'aws-cdk-lib';
-import { CfnWaitConditionHandle } from 'aws-cdk-lib/aws-cloudformation';
+import { Duration } from 'aws-cdk-lib';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { StartingPosition } from 'aws-cdk-lib/aws-lambda';
 
 export class Trove extends GuStack {
 	constructor(scope: App, id: string, props: GuStackProps) {
 		super(scope, id, props);
 
-		// Placeholder: CloudFormation requires at least one resource, so this can be deleted once the stack has real resources
-		new CfnWaitConditionHandle(this, 'Placeholder');
+		new GuKinesisLambdaExperimental(this, 'TroveListener', {
+			app: 'trove-listener',
+			fileName: 'trove-listener.zip',
+			functionName: `trove-listener-${this.stage}`,
+			runtime: Runtime.NODEJS_24_X,
+			handler: 'index.handler',
+			monitoringConfiguration: {
+				noMonitoring: true,
+			},
+			errorHandlingConfiguration: {
+				retryBehaviour: StreamRetry.maxAttempts(3),
+				bisectBatchOnError: true,
+			},
+			existingKinesisStream: {
+				externalKinesisStreamName: `content-api-firehose-v2-${this.stage}`,
+			},
+			processingProps: {
+				startingPosition: StartingPosition.LATEST,
+				batchSize: 1,
+				maxBatchingWindow: Duration.seconds(10),
+			},
+		});
 	}
 }
