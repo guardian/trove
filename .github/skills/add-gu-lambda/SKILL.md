@@ -31,7 +31,7 @@ Riff-Raff finds the deployed function by its `App`, `Stack` and `Stage` tags, so
    	app: 'my-project-article-worker',
    	fileName: 'article-worker.zip',
    	functionName: `my-project-${this.stage}-article-worker`,
-   	runtime: Runtime.NODEJS_22_X,
+   	runtime: Runtime.NODEJS_24_X, // or whichever Node.js runtime you are using
    	handler: 'index.handler',
    });
    ```
