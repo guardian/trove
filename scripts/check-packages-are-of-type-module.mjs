@@ -1,18 +1,18 @@
-import { execFileSync } from 'node:child_process';
+import { globSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const types = JSON.parse(
-	execFileSync(
-		'npm',
-		[
-			'pkg',
-			'get',
-			'type',
-			'--workspaces',
-			'--include-workspace-root',
-			'--json',
-		],
-		{ cwd: fileURLToPath(new URL('.', import.meta.url)), encoding: 'utf8' },
+const root = fileURLToPath(new URL('..', import.meta.url));
+
+const readPackageJson = (dir) =>
+	JSON.parse(readFileSync(join(root, dir, 'package.json'), 'utf8'));
+
+const rootPackageJson = readPackageJson('.');
+
+// Workspace entries may be globs (e.g. "lambdas/*"), so expand them to package directories
+const workspaceDirs = (rootPackageJson.workspaces ?? []).flatMap((pattern) =>
+	globSync(join(pattern, 'package.json'), { cwd: root }).map((file) =>
+		join(file, '..'),
 	),
 );
 
@@ -21,9 +21,12 @@ const types = JSON.parse(
  * in order to get consistent handling by eslint. This script is run alongside linting to enforce this requirement.
  * If there's ever a compelling reason to not use "type": "module", we can change or drop this script.
  */
-for (const [name, type] of Object.entries(types)) {
+for (const dir of ['.', ...workspaceDirs]) {
+	const { name, type } = readPackageJson(dir);
 	if (type !== 'module') {
-		console.error(`${name}: package.json must declare "type": "module".`);
+		console.error(
+			`${name ?? dir}: package.json must declare "type": "module".`,
+		);
 		console.error(
 			`(This is something we're trying to enforce for Trove, but if there's a good reason then we can drop the requirement.)`,
 		);
