@@ -3,7 +3,8 @@ exports[`The Trove stack > matches the snapshot 1`] = `
   "Metadata": {
     "gu:cdk:constructs": [
       "GuDistributionBucketParameter",
-      "GuLambdaFunction"
+      "GuKinesisLambdaExperimental",
+      "GuKinesisStream"
     ],
     "gu:cdk:version": "TEST"
   },
@@ -156,6 +157,25 @@ exports[`The Trove stack > matches the snapshot 1`] = `
                   ]
                 ]
               }
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStreamSummary",
+                "kinesis:GetRecords",
+                "kinesis:GetShardIterator",
+                "kinesis:ListShards",
+                "kinesis:SubscribeToShard",
+                "kinesis:DescribeStream",
+                "kinesis:ListStreams",
+                "kinesis:DescribeStreamConsumer"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "KinesisStream46752A3E",
+                  "Arn"
+                ]
+              }
             }
           ],
           "Version": "2012-10-17"
@@ -225,6 +245,81 @@ exports[`The Trove stack > matches the snapshot 1`] = `
         "TroveListenerServiceRoleDefaultPolicy3675DD4D",
         "TroveListenerServiceRole1108726D"
       ]
+    },
+    "TroveListenerKinesisEventSourceTroveKinesisStreamCEE1209B66485ED5": {
+      "Type": "AWS::Lambda::EventSourceMapping",
+      "Properties": {
+        "BatchSize": 100,
+        "BisectBatchOnFunctionError": true,
+        "EventSourceArn": {
+          "Fn::GetAtt": [
+            "KinesisStream46752A3E",
+            "Arn"
+          ]
+        },
+        "FunctionName": {
+          "Ref": "TroveListenerE1C10E26"
+        },
+        "MaximumRetryAttempts": 3,
+        "StartingPosition": "LATEST",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "trove-listener"
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "66.0.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST"
+          }
+        ]
+      }
+    },
+    "KinesisStream46752A3E": {
+      "Type": "AWS::Kinesis::Stream",
+      "Properties": {
+        "RetentionPeriodHours": 24,
+        "ShardCount": 1,
+        "StreamEncryption": {
+          "EncryptionType": "KMS",
+          "KeyId": "alias/aws/kinesis"
+        },
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "trove-listener"
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "66.0.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST"
+          }
+        ]
+      },
+      "UpdateReplacePolicy": "Retain",
+      "DeletionPolicy": "Retain"
     }
   }
 }
