@@ -3,8 +3,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
   "Metadata": {
     "gu:cdk:constructs": [
       "GuDistributionBucketParameter",
-      "GuKinesisLambdaExperimental",
-      "GuKinesisStream"
+      "GuKinesisLambdaExperimental"
     ],
     "gu:cdk:version": "TEST"
   },
@@ -171,9 +170,19 @@ exports[`The Trove stack > matches the snapshot 1`] = `
               ],
               "Effect": "Allow",
               "Resource": {
-                "Fn::GetAtt": [
-                  "KinesisStream46752A3E",
-                  "Arn"
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:kinesis:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":stream/content-api-firehose-v2-TEST"
+                  ]
                 ]
               }
             }
@@ -246,20 +255,31 @@ exports[`The Trove stack > matches the snapshot 1`] = `
         "TroveListenerServiceRole1108726D"
       ]
     },
-    "TroveListenerKinesisEventSourceTroveKinesisStreamCEE1209B66485ED5": {
+    "TroveListenerKinesisEventSourceTrovecontentapifirehosev2TESTD86CD8EC365A4604": {
       "Type": "AWS::Lambda::EventSourceMapping",
       "Properties": {
-        "BatchSize": 100,
+        "BatchSize": 1,
         "BisectBatchOnFunctionError": true,
         "EventSourceArn": {
-          "Fn::GetAtt": [
-            "KinesisStream46752A3E",
-            "Arn"
+          "Fn::Join": [
+            "",
+            [
+              "arn:aws:kinesis:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":stream/content-api-firehose-v2-TEST"
+            ]
           ]
         },
         "FunctionName": {
           "Ref": "TroveListenerE1C10E26"
         },
+        "MaximumBatchingWindowInSeconds": 10,
         "MaximumRetryAttempts": 3,
         "StartingPosition": "LATEST",
         "Tags": [
@@ -285,41 +305,6 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           }
         ]
       }
-    },
-    "KinesisStream46752A3E": {
-      "Type": "AWS::Kinesis::Stream",
-      "Properties": {
-        "RetentionPeriodHours": 24,
-        "ShardCount": 1,
-        "StreamEncryption": {
-          "EncryptionType": "KMS",
-          "KeyId": "alias/aws/kinesis"
-        },
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "trove-listener"
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "66.0.0"
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/trove"
-          },
-          {
-            "Key": "Stack",
-            "Value": "capi"
-          },
-          {
-            "Key": "Stage",
-            "Value": "TEST"
-          }
-        ]
-      },
-      "UpdateReplacePolicy": "Retain",
-      "DeletionPolicy": "Retain"
     }
   }
 }
