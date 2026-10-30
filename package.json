@@ -13,7 +13,9 @@
 		"node": "^26.0.0"
 	},
 	"workspaces": [
-		"cdk"
+		"cdk",
+		"crier-test",
+		"lambdas/trove-listener"
 	],
 	"scripts": {
 		"test": "npm test --workspaces",
