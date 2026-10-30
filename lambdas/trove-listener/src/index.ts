@@ -8,7 +8,12 @@ export const handler: KinesisStreamHandler = async (event) => {
 		return decodeCrierEvent(buffer);
 	});
 	crierEvents.forEach((event) => {
-		console.log(event.payloadId, event.eventType, event.itemType);
+		console.log(
+			event.payloadId,
+			event.eventType,
+			event.itemType,
+			event.payload,
+		);
 	});
 	await Promise.resolve();
 };
