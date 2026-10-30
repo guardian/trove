@@ -3,7 +3,9 @@ import { GuStack } from '@guardian/cdk/lib/constructs/core/index.js';
 import { GuKinesisLambdaExperimental } from '@guardian/cdk/lib/experimental/patterns/kinesis-lambda.js';
 import { StreamRetry } from '@guardian/cdk/lib/utils/lambda/event-source.js';
 import type { App } from 'aws-cdk-lib';
+import { Duration } from 'aws-cdk-lib';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { StartingPosition } from 'aws-cdk-lib/aws-lambda';
 
 export class Trove extends GuStack {
 	constructor(scope: App, id: string, props: GuStackProps) {
@@ -21,6 +23,14 @@ export class Trove extends GuStack {
 			errorHandlingConfiguration: {
 				retryBehaviour: StreamRetry.maxAttempts(3),
 				bisectBatchOnError: true,
+			},
+			existingKinesisStream: {
+				externalKinesisStreamName: `content-api-firehose-v2-${this.stage}`,
+			},
+			processingProps: {
+				startingPosition: StartingPosition.LATEST,
+				batchSize: 1,
+				maxBatchingWindow: Duration.seconds(10),
 			},
 		});
 	}
