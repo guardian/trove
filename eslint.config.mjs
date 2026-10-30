@@ -2,6 +2,7 @@ import guardian from '@guardian/eslint-config';
 import globals from 'globals';
 
 export default [
+	{ ignores: ['lambdas/*/dist/'] },
 	...guardian.configs.recommended,
 	{
 		files: ['**/*.{js,mjs,jsx,ts,mts,tsx}'],
