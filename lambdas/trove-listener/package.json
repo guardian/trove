@@ -4,7 +4,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"build": "esbuild src/index.ts --bundle --platform=node --target=node24 --format=cjs --external:@aws-sdk/* --outfile=dist/index.js",
+		"build": "esbuild src/index.ts --bundle --platform=node --external:@aws-sdk/* --outfile=dist/index.js",
 		"package": "npm run build && cd dist && rm -f trove-listener.zip && zip trove-listener.zip index.js",
 		"test": "node --test 'src/**/*.test.ts'",
 		"typecheck": "tsc --noEmit",
