@@ -1,4 +1,5 @@
 package-lock.json
 **/cdk.out/
+.devcontainer/
 
 lambdas/*/dist/
