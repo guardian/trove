@@ -1,0 +1,79 @@
+exports[`articleMapping > matches the snapshot 1`] = `
+{
+  "dynamic": "strict",
+  "properties": {
+    "headline": {
+      "properties": {
+        "value": {
+          "type": "text",
+          "analyzer": "english"
+        },
+        "embeddings": {
+          "properties": {
+            "marengo_3_0": {
+              "type": "knn_vector",
+              "dimension": 512,
+              "method": {
+                "name": "hnsw",
+                "engine": "faiss",
+                "space_type": "cosinesimil"
+              }
+            }
+          }
+        }
+      }
+    },
+    "standfirst": {
+      "properties": {
+        "value": {
+          "type": "text",
+          "analyzer": "english"
+        },
+        "embeddings": {
+          "properties": {
+            "marengo_3_0": {
+              "type": "knn_vector",
+              "dimension": 512,
+              "method": {
+                "name": "hnsw",
+                "engine": "faiss",
+                "space_type": "cosinesimil"
+              }
+            }
+          }
+        }
+      }
+    },
+    "headlineAndStandfirst": {
+      "properties": {
+        "value": {
+          "type": "text",
+          "analyzer": "english"
+        },
+        "embeddings": {
+          "properties": {
+            "marengo_3_0": {
+              "type": "knn_vector",
+              "dimension": 512,
+              "method": {
+                "name": "hnsw",
+                "engine": "faiss",
+                "space_type": "cosinesimil"
+              }
+            }
+          }
+        }
+      }
+    },
+    "keywordTagIds": {
+      "type": "keyword"
+    },
+    "internalRevision": {
+      "type": "long"
+    },
+    "storedAt": {
+      "type": "date"
+    }
+  }
+}
+`;
