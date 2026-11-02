@@ -1,5 +1,5 @@
 import type { KinesisStreamHandler } from 'aws-lambda';
-import { decodeCrierEvent } from './decodeCrierEvent.ts';
+import { decodeCrierEvent, eventJsonReplacer } from './decodeCrierEvent.ts';
 
 export const handler: KinesisStreamHandler = async (event) => {
 	const crierEvents = event.Records.map((r) => {
@@ -8,12 +8,7 @@ export const handler: KinesisStreamHandler = async (event) => {
 		return decodeCrierEvent(buffer);
 	});
 	crierEvents.forEach((event) => {
-		console.log(
-			event.payloadId,
-			event.eventType,
-			event.itemType,
-			event.payload,
-		);
+		console.log(JSON.stringify(event, eventJsonReplacer, 2));
 	});
 	await Promise.resolve();
 };
