@@ -1,14 +1,18 @@
 import type { KinesisStreamHandler } from 'aws-lambda';
-import { decodeCrierEvent, eventJsonReplacer } from './decodeCrierEvent.ts';
+import { decodeAndParseCrierEvent } from './decodeAndParseCrierEvent.ts';
+import { readableCrierEvent } from './readableCrierEvent.ts';
 
 export const handler: KinesisStreamHandler = async (event) => {
 	const crierEvents = event.Records.map((r) => {
-		const base64Data = r.kinesis.data;
-		const buffer = Buffer.from(base64Data, 'base64');
-		return decodeCrierEvent(buffer);
+		return decodeAndParseCrierEvent(r.kinesis.data);
 	});
 	crierEvents.forEach((event) => {
-		console.log(JSON.stringify(event, eventJsonReplacer, 2));
+		const readableEvent = readableCrierEvent(event);
+		console.log(
+			readableEvent.payloadId,
+			readableEvent.eventType,
+			readableEvent.itemType,
+		);
 	});
 	await Promise.resolve();
 };
