@@ -4,11 +4,11 @@ modules:
   - mise
   - node
   - github-copilot
+  - docker-in-docker
 
-# We'll set these once we have some application code in place
-# forwardPorts:
-#   - 8080  # same port on host and container
-#   - "8000:9000"  # hostPort:containerPort
+forwardPorts:
+  - 9200
+  - 5601
 
 plugins:
   vscode:
