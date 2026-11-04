@@ -3,18 +3,45 @@ exports[`The Trove stack > matches the snapshot 1`] = `
   "Metadata": {
     "gu:cdk:constructs": [
       "GuDistributionBucketParameter",
-      "GuKinesisLambdaExperimental"
+      "GuKinesisLambdaExperimental",
+      "GuLambdaErrorPercentageAlarm"
     ],
     "gu:cdk:version": "TEST"
   },
-  "Parameters": {
-    "DistributionBucketName": {
-      "Type": "AWS::SSM::Parameter::Value<String>",
-      "Default": "/account/services/artifact.bucket",
-      "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts"
-    }
-  },
   "Resources": {
+    "troveemailalarmtopic69531040": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "66.0.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST"
+          }
+        ]
+      }
+    },
+    "troveemailalarmtopicaidevalertsguardiancoukBD3B0DD8": {
+      "Type": "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": "ai.dev+alerts@guardian.co.uk",
+        "Protocol": "email",
+        "TopicArn": {
+          "Ref": "troveemailalarmtopic69531040"
+        }
+      }
+    },
     "TroveListenerServiceRole1108726D": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -305,6 +332,146 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           }
         ]
       }
+    },
+    "TroveListenerErrorPercentageAlarmForLambda70D7E129": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "ActionsEnabled": true,
+        "AlarmActions": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:aws:sns:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId"
+                },
+                ":",
+                {
+                  "Fn::GetAtt": [
+                    "troveemailalarmtopic69531040",
+                    "TopicName"
+                  ]
+                }
+              ]
+            ]
+          }
+        ],
+        "AlarmDescription": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "TroveListenerE1C10E26"
+              },
+              " exceeded 0% error rate"
+            ]
+          ]
+        },
+        "AlarmName": {
+          "Fn::Join": [
+            "",
+            [
+              "High error percentage from ",
+              {
+                "Ref": "TroveListenerE1C10E26"
+              },
+              " lambda in TEST"
+            ]
+          ]
+        },
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": [
+          {
+            "Expression": "100*m1/m2",
+            "Id": "expr_1",
+            "Label": {
+              "Fn::Join": [
+                "",
+                [
+                  "Error % of ",
+                  {
+                    "Ref": "TroveListenerE1C10E26"
+                  }
+                ]
+              ]
+            },
+            "ReturnData": true
+          },
+          {
+            "Id": "m1",
+            "MetricStat": {
+              "Metric": {
+                "Dimensions": [
+                  {
+                    "Name": "FunctionName",
+                    "Value": {
+                      "Ref": "TroveListenerE1C10E26"
+                    }
+                  }
+                ],
+                "MetricName": "Errors",
+                "Namespace": "AWS/Lambda"
+              },
+              "Period": 60,
+              "Stat": "Sum"
+            },
+            "ReturnData": false
+          },
+          {
+            "Id": "m2",
+            "MetricStat": {
+              "Metric": {
+                "Dimensions": [
+                  {
+                    "Name": "FunctionName",
+                    "Value": {
+                      "Ref": "TroveListenerE1C10E26"
+                    }
+                  }
+                ],
+                "MetricName": "Invocations",
+                "Namespace": "AWS/Lambda"
+              },
+              "Period": 60,
+              "Stat": "Sum"
+            },
+            "ReturnData": false
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "66.0.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST"
+          }
+        ],
+        "Threshold": 0,
+        "TreatMissingData": "notBreaching"
+      }
+    }
+  },
+  "Parameters": {
+    "DistributionBucketName": {
+      "Type": "AWS::SSM::Parameter::Value<String>",
+      "Default": "/account/services/artifact.bucket",
+      "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts"
     }
   }
 }
