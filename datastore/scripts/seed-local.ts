@@ -1,16 +1,22 @@
 /**
- * Throw-away script: recreates the articles index on the local docker-compose
- * OpenSearch and seeds it with a few documents using random embeddings.
+ * Local only: resets the article indices on docker-compose OpenSearch, then
+ * seeds a few documents with random embeddings and runs a sample kNN search.
  *
- *   npm run seed -w datastore
+ *   npm run seed -w datastore   (or ./scripts/setup.sh from the repo root)
  */
-import {
-	Article,
-	articleMapping,
-	ARTICLES_INDEX,
-	embeddingModels,
-} from '../src/article.ts';
+import { ArticleV1 } from '../src/article.ts';
 import { createClient } from '../src/client.ts';
+import {
+	articleAliases,
+	articleIndices,
+	resolveWriteIndices,
+} from '../src/indices.ts';
+import { initSchema } from '../src/init.ts';
+import { embeddingModels } from '../src/os-embeddings.ts';
+
+if (process.env.OPENSEARCH_ENDPOINT) {
+	throw new Error('seed-local deletes indices, so refuses to run against AWS');
+}
 
 const client = createClient();
 
@@ -30,7 +36,7 @@ const article = (
 	standfirst: string,
 	keywordTagIds: string[],
 ) =>
-	Article.parse({
+	ArticleV1.parse({
 		headline: embedded(headline),
 		standfirst: embedded(standfirst),
 		headlineAndStandfirst: embedded(`${headline}\n${standfirst}`),
@@ -39,7 +45,7 @@ const article = (
 		storedAt: new Date().toISOString(),
 	});
 
-const samples: Record<string, Article> = {
+const samples: Record<string, ArticleV1> = {
 	'world/2026/oct/26/lula-wins-brazil-election': article(
 		'Lula wins Brazil election',
 		'Incumbent secures another term after a tight run-off',
@@ -57,37 +63,39 @@ const samples: Record<string, Article> = {
 	),
 };
 
-if ((await client.indices.exists({ index: ARTICLES_INDEX })).body) {
-	await client.indices.delete({ index: ARTICLES_INDEX });
-}
-await client.indices.create({
-	index: ARTICLES_INDEX,
-	body: { settings: { index: { knn: true } }, mappings: articleMapping },
+await client.indices.delete({
+	index: Object.values(articleIndices).map(({ name }) => name),
+	ignore_unavailable: true,
 });
-console.log(`Created index "${ARTICLES_INDEX}"`);
+await initSchema(client);
 
+const writeIndices = await resolveWriteIndices(client);
 const { body: bulk } = await client.bulk({
 	refresh: true,
-	body: Object.entries(samples).flatMap(([id, doc]) => [
-		{ index: { _index: ARTICLES_INDEX, _id: id } },
-		doc,
-	]),
+	body: writeIndices.flatMap((index) =>
+		Object.entries(samples).flatMap(([id, doc]) => [
+			{ index: { _index: index, _id: id } },
+			doc,
+		]),
+	),
 });
 if (bulk.errors) {
 	throw new Error(JSON.stringify(bulk.items, null, 2));
 }
-console.log(`Indexed ${bulk.items.length} documents`);
+console.log(
+	`Indexed ${bulk.items.length} documents into ${writeIndices.join(', ')}`,
+);
 
 // Embeddings are excluded from search results, so parse with a schema that omits them
-const textOnly = Article.shape.headline.omit({ embeddings: true });
-const SearchHit = Article.extend({
+const textOnly = ArticleV1.shape.headline.omit({ embeddings: true });
+const SearchHit = ArticleV1.extend({
 	headline: textOnly,
 	standfirst: textOnly,
 	headlineAndStandfirst: textOnly,
 });
 
 const { body: search } = await client.search({
-	index: ARTICLES_INDEX,
+	index: articleAliases.current,
 	body: {
 		size: 3,
 		_source: { excludes: ['*.embeddings'] },

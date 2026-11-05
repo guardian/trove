@@ -1,4 +1,4 @@
-exports[`articleMapping > matches the snapshot 1`] = `
+exports[`articleV1Mapping > matches the snapshot 1`] = `
 {
   "dynamic": "strict",
   "properties": {

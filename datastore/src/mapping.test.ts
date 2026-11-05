@@ -1,9 +1,9 @@
 import { describe, it } from 'node:test';
-import { articleMapping } from './article.ts';
+import { articleV1Mapping } from './article.ts';
 
-void describe('articleMapping', () => {
+void describe('articleV1Mapping', () => {
 	// A change here usually needs a reindex, so update the snapshot deliberately
 	void it('matches the snapshot', (context) => {
-		context.assert.snapshot(articleMapping);
+		context.assert.snapshot(articleV1Mapping);
 	});
 });

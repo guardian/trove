@@ -8,6 +8,7 @@
 		"test-update": "node --test --test-update-snapshots 'src/**/*.test.ts'",
 		"typecheck": "tsc --noEmit",
 		"lint": "eslint .",
+		"init-schema": "node scripts/init-schema.ts",
 		"seed": "node scripts/seed-local.ts"
 	},
 	"dependencies": {
