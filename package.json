@@ -14,6 +14,7 @@
 	},
 	"workspaces": [
 		"cdk",
+		"datastore",
 		"lambdas/trove-listener"
 	],
 	"scripts": {

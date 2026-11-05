@@ -1,0 +1,16 @@
+{
+	"name": "datastore",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"test": "node --test 'src/**/*.test.ts'",
+		"test-update": "node --test --test-update-snapshots 'src/**/*.test.ts'",
+		"typecheck": "tsc --noEmit",
+		"lint": "eslint ."
+	},
+	"dependencies": {
+		"@opensearch-project/opensearch": "3.9.0",
+		"zod": "4.6.7"
+	}
+}
