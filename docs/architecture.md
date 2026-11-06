@@ -17,7 +17,7 @@ flowchart TD
         CrierStream[[Kinesis stream]]
     end
 
-    subgraph Trove["Trove Option A"]
+    subgraph Trove["Trove"]
         Backfill
         BackfillQueue[[Backfill Queue]]
         Consumer[consumer]
