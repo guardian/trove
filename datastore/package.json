@@ -7,9 +7,12 @@
 		"test": "node --test 'src/**/*.test.ts'",
 		"test-update": "node --test --test-update-snapshots 'src/**/*.test.ts'",
 		"typecheck": "tsc --noEmit",
-		"lint": "eslint ."
+		"lint": "eslint .",
+		"init-schema": "node scripts/init-schema.ts",
+		"seed": "node scripts/seed-local.ts"
 	},
 	"dependencies": {
+		"@aws-sdk/credential-provider-node": "3.972.92",
 		"@opensearch-project/opensearch": "3.9.0",
 		"zod": "4.6.7"
 	}
