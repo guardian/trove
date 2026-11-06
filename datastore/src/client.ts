@@ -13,7 +13,10 @@ export const createClient = (): Client => {
 		...AwsSigv4Signer({
 			region: process.env.AWS_REGION ?? 'eu-west-1',
 			service: 'aoss',
-			getCredentials: defaultProvider(),
+			// GuCDK sets STAGE on CODE/PROD; locally we use the capi profile from Janus
+			getCredentials: process.env.STAGE
+				? defaultProvider()
+				: defaultProvider({ profile: 'capi' }),
 		}),
 		node: endpoint,
 	});
