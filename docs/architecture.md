@@ -1,4 +1,4 @@
-# Trove architecture (Option A)
+# Trove architecture
 
 Generated from `Untitled-2026-10-29-1103.excalidraw`.
 
