@@ -13,11 +13,7 @@ exports[`articleV1Mapping > matches the snapshot 1`] = `
             "marengo_3_0": {
               "type": "knn_vector",
               "dimension": 512,
-              "method": {
-                "name": "hnsw",
-                "engine": "faiss",
-                "space_type": "cosinesimil"
-              }
+              "space_type": "cosinesimil"
             }
           }
         }
@@ -34,11 +30,7 @@ exports[`articleV1Mapping > matches the snapshot 1`] = `
             "marengo_3_0": {
               "type": "knn_vector",
               "dimension": 512,
-              "method": {
-                "name": "hnsw",
-                "engine": "faiss",
-                "space_type": "cosinesimil"
-              }
+              "space_type": "cosinesimil"
             }
           }
         }
@@ -55,11 +47,7 @@ exports[`articleV1Mapping > matches the snapshot 1`] = `
             "marengo_3_0": {
               "type": "knn_vector",
               "dimension": 512,
-              "method": {
-                "name": "hnsw",
-                "engine": "faiss",
-                "space_type": "cosinesimil"
-              }
+              "space_type": "cosinesimil"
             }
           }
         }
