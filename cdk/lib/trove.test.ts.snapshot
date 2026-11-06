@@ -480,7 +480,9 @@ exports[`The Trove stack > matches the snapshot 1`] = `
 exports[`The TroveOpenSearch stack > matches the snapshot 1`] = `
 {
   "Metadata": {
-    "gu:cdk:constructs": [],
+    "gu:cdk:constructs": [
+      "GuDeveloperPolicy"
+    ],
     "gu:cdk:version": "TEST"
   },
   "Resources": {
@@ -568,6 +570,53 @@ exports[`The TroveOpenSearch stack > matches the snapshot 1`] = `
       ],
       "UpdateReplacePolicy": "Retain",
       "DeletionPolicy": "Retain"
+    },
+    "OpenSearchAdminPolicy4DEEAE73": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "Description": "Manage Trove OpenSearch indices",
+        "Path": "/developer-policy/guardian/trove/capi/CODE/trove-opensearch-admin/",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "aoss:APIAccessAll",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "Collection",
+                  "Arn"
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "DataAccessPolicy": {
+      "Type": "AWS::OpenSearchServerless::AccessPolicy",
+      "Properties": {
+        "Name": "trove-data-code",
+        "Policy": {
+          "Fn::Join": [
+            "",
+            [
+              "[{\\"Rules\\":[{\\"ResourceType\\":\\"collection\\",\\"Resource\\":[\\"collection/trove-code\\"],\\"Permission\\":[\\"aoss:CreateCollectionItems\\",\\"aoss:DescribeCollectionItems\\",\\"aoss:UpdateCollectionItems\\"]},{\\"ResourceType\\":\\"index\\",\\"Resource\\":[\\"index/trove-code/articles-*\\"],\\"Permission\\":[\\"aoss:CreateIndex\\",\\"aoss:DescribeIndex\\",\\"aoss:UpdateIndex\\",\\"aoss:ReadDocument\\",\\"aoss:WriteDocument\\"]}],\\"Principal\\":[\\"",
+              {
+                "Ref": "SsmParameterValueaccountservicesjanusfederationrolearnC96584B6F00A464EAD1953AFF4B05118Parameter"
+              },
+              "\\"]}]"
+            ]
+          ]
+        },
+        "Type": "data"
+      }
+    }
+  },
+  "Parameters": {
+    "SsmParameterValueaccountservicesjanusfederationrolearnC96584B6F00A464EAD1953AFF4B05118Parameter": {
+      "Type": "AWS::SSM::Parameter::Value<String>",
+      "Default": "/account/services/janus/federation-role-arn"
     }
   }
 }

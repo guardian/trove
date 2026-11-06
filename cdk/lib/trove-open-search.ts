@@ -1,13 +1,17 @@
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core/index.js';
 import { GuStack } from '@guardian/cdk/lib/constructs/core/index.js';
+import { GuDeveloperPolicy } from '@guardian/cdk/lib/constructs/iam/index.js';
 import type { App } from 'aws-cdk-lib';
 import { RemovalPolicy } from 'aws-cdk-lib';
+import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import type { CfnCollectionGroupProps } from 'aws-cdk-lib/aws-opensearchserverless';
 import {
+	CfnAccessPolicy,
 	CfnCollection,
 	CfnCollectionGroup,
 	CfnSecurityPolicy,
 } from 'aws-cdk-lib/aws-opensearchserverless';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 
 type CapacityLimits = NonNullable<CfnCollectionGroupProps['capacityLimits']>;
 
@@ -85,5 +89,56 @@ export class TroveOpenSearch extends GuStack {
 		collection.addResourceDependency(networkPolicy);
 		collection.addResourceDependency(group);
 		collection.applyRemovalPolicy(RemovalPolicy.RETAIN);
+
+		// Granted through Janus, to run `npm run init-schema -w datastore` locally
+		new GuDeveloperPolicy(this, 'OpenSearchAdminPolicy', {
+			grantId: 'trove-opensearch-admin',
+			friendlyName: 'Manage Trove OpenSearch indices',
+			statements: [
+				new PolicyStatement({
+					effect: Effect.ALLOW,
+					actions: ['aoss:APIAccessAll'],
+					resources: [collection.attrArn],
+				}),
+			],
+		});
+
+		// Janus sessions run as the account's federation role, narrowed down by the developer policy above
+		const janusFederationRoleArn = StringParameter.valueForStringParameter(
+			this,
+			'/account/services/janus/federation-role-arn',
+		);
+
+		new CfnAccessPolicy(this, 'DataAccessPolicy', {
+			name: `trove-data-${stage.toLowerCase()}`,
+			type: 'data',
+			policy: this.toJsonString([
+				{
+					Rules: [
+						{
+							ResourceType: 'collection',
+							Resource: [collectionResource],
+							Permission: [
+								'aoss:CreateCollectionItems',
+								'aoss:DescribeCollectionItems',
+								'aoss:UpdateCollectionItems',
+							],
+						},
+						{
+							ResourceType: 'index',
+							Resource: [`index/${name}/articles-*`],
+							Permission: [
+								'aoss:CreateIndex',
+								'aoss:DescribeIndex',
+								'aoss:UpdateIndex',
+								'aoss:ReadDocument',
+								'aoss:WriteDocument',
+							],
+						},
+					],
+					Principal: [janusFederationRoleArn],
+				},
+			]),
+		});
 	}
 }

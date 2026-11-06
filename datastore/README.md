@@ -29,4 +29,4 @@ npm run init-schema -w datastore      # create missing indices and move aliases;
 npm run seed -w datastore             # local only: reset the indices and seed sample articles
 ```
 
-`init-schema` targets local docker-compose by default. To target OpenSearch Serverless, set `OPENSEARCH_ENDPOINT` to the collection endpoint and get Janus credentials for the `capi` profile.
+`init-schema` targets local docker-compose by default. To target OpenSearch Serverless, set `OPENSEARCH_ENDPOINT` to the collection endpoint and get Janus credentials for the `capi` profile using the `trove-opensearch-admin` developer policy.
