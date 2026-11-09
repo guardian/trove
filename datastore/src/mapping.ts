@@ -22,6 +22,9 @@ const properties = (obj: z.ZodObject): Record<string, Property> =>
 		]),
 	);
 
+// This function provide sensible default for any structural type (object, array, option, ...)
+// And for unambiguous types such as date and boolean.
+// However, any other type will need to be explicitly registered to avoid any ambiguity. (string = text or keyword?)
 function field(schema: z.ZodType): Property {
 	// Checked first so registered arrays (e.g. knn_vector) aren't mapped as their element type
 	const meta = openSearchProperty.get(schema);
@@ -38,8 +41,8 @@ function field(schema: z.ZodType): Property {
 	if (schema instanceof z.ZodObject) {
 		return { properties: properties(schema) };
 	}
-	if (schema instanceof z.ZodString) {
-		return { type: 'keyword' };
+	if (schema instanceof z.ZodISODateTime) {
+		return { type: 'date' };
 	}
 	if (schema instanceof z.ZodBoolean) {
 		return { type: 'boolean' };

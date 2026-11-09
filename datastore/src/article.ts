@@ -16,12 +16,14 @@ export const ArticleV1 = z.object({
 	headline: embeddedText,
 	standfirst: embeddedText,
 	headlineAndStandfirst: embeddedText,
-	keywordTagIds: z.array(z.string()),
+	keywordTagIds: z.array(
+		z.string().register(openSearchProperty, { type: 'keyword' }),
+	),
 	internalRevision: z
 		.number()
 		.int()
 		.register(openSearchProperty, { type: 'long' }),
-	storedAt: z.iso.datetime().register(openSearchProperty, { type: 'date' }),
+	storedAt: z.iso.datetime(),
 });
 export type ArticleV1 = z.infer<typeof ArticleV1>;
 
