@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { opensSearchProperty } from './mapping.ts';
+import { openSearchProperty } from './mapping.ts';
 
 type EmbeddingModel = {
 	/** Bedrock model ID */
@@ -22,7 +22,7 @@ export const embeddingModels = {
  * No `method`: Serverless NextGen picks the engine itself and rejects one being set.
  */
 export const knnVector = ({ dimension, spaceType }: EmbeddingModel) =>
-	z.array(z.number()).length(dimension).register(opensSearchProperty, {
+	z.array(z.number()).length(dimension).register(openSearchProperty, {
 		type: 'knn_vector',
 		dimension,
 		space_type: spaceType,

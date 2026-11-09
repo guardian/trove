@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { opensSearchProperty, toMapping } from './mapping.ts';
+import { openSearchProperty, toMapping } from './mapping.ts';
 import { embeddingModels, knnVector } from './os-embeddings.ts';
 
 const embeddedText = z.object({
 	value: z
 		.string()
-		.register(opensSearchProperty, { type: 'text', analyzer: 'english' }),
+		.register(openSearchProperty, { type: 'text', analyzer: 'english' }),
 	embeddings: z.object({
 		marengo_3_0: knnVector(embeddingModels.marengo_3_0),
 	}),
@@ -20,8 +20,8 @@ export const ArticleV1 = z.object({
 	internalRevision: z
 		.number()
 		.int()
-		.register(opensSearchProperty, { type: 'long' }),
-	storedAt: z.iso.datetime().register(opensSearchProperty, { type: 'date' }),
+		.register(openSearchProperty, { type: 'long' }),
+	storedAt: z.iso.datetime().register(openSearchProperty, { type: 'date' }),
 });
 export type ArticleV1 = z.infer<typeof ArticleV1>;
 
