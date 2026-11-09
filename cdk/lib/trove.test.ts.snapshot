@@ -253,7 +253,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
             "STACK": "capi",
             "STAGE": "TEST",
             "APP": "trove-listener",
-            "QUEUE_URL": {
+            "LIVE_EMBEDDER_QUEUE_URL": {
               "Ref": "EmbedderLiveQueueB402F2F7"
             }
           }
