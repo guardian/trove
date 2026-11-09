@@ -5,10 +5,13 @@ This document outlines the proposed architecture for the Trove MVP. The aim is t
 This ADR is based on a whiteboarding session we did on 29/10/20206.
 
 # Context
+
 For the MVP we need to embed content, store the embeddings in a vector store, and expose an internal query and retrieval API. We also need to create a backfill pipeline.
 
 ## Design
+
 ### Live events
+
 Consume content events from the existing CAPI Kinesis stream (firehose), queue them, and generate embeddings in a Lambda that writes to OpenSearch.
 
 The actual flow would be as follows:
@@ -19,6 +22,7 @@ The actual flow would be as follows:
 4. EmbedderLambda takes messages from the queue, calls the embedding provider, and writes the resulting vectors to OpenSearch.
 
 ### Historical events
+
 Paginate through historical content, queue items, generate embeddings and write to OpenSearch.
 
 The actual flow would be as follows:
