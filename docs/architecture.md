@@ -14,8 +14,8 @@ Consume content events from the existing CAPI Kinesis stream (firehose), queue t
 The actual flow would be as follows:
 
 1. CAPI publishes content events through Crier to a Kinesis stream.
-2. A consumer lambda reads from the stream, if required (retrievable update) fetches any extra data from CAPI, and outputs data in the correct schema.
-3. The consumer places work on a queue.
+2. A listener lambda reads from the stream, if required (retrievable update) fetches any extra data from CAPI, and outputs data in the correct schema.
+3. The listener places work on a queue.
 4. EmbedderLambda takes messages from the queue, calls the embedding provider, and writes the resulting vectors to OpenSearch.
 
 ### Historical events
@@ -24,7 +24,7 @@ Paginate through historical content, queue items, generate embeddings and write 
 The actual flow would be as follows:
 
 1. Fetch historical content via CAPI's Concierge API by paginating through the content and requesting the next date range.
-2. Place it on a dedicated backfill queue to be embedded one by one. These queue items will have the same schema as the consumers’ queue.
+2. Place it on a dedicated backfill queue to be embedded one by one. These queue items will have the same schema as the listeners’ queue.
 3. Another copy of the EmbedderLambda takes messages from the queue, calls the embedding provider, and writes the resulting vectors to OpenSearch.
 
 # Architecture diagram
@@ -49,7 +49,7 @@ flowchart TD
     subgraph Trove["Trove"]
         Backfill
         BackfillQueue[[Backfill Queue]]
-        Consumer[consumer]
+        Listener[listener]
         Queue[[Queue]]
         Embedder["EmbedderLambda x2"]
         OpenSearch[(Open-search)]
@@ -63,8 +63,8 @@ flowchart TD
     Porter --> ES
 
     Crier --> CrierStream
-    CrierStream --> Consumer
-    Consumer --> Queue
+    CrierStream --> Listener
+    Listener --> Queue
     Queue --> Embedder
 
     Backfill --> Concierge
