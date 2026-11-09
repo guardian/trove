@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { openSearchProperty, toMapping } from './mapping.ts';
-import { embeddingModels, knnVector } from './os-embeddings.ts';
+import { embeddingModels, knnVector } from './open-search-embeddings.ts';
 
 const embeddedText = z.object({
 	value: z
