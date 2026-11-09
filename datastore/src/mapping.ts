@@ -4,7 +4,7 @@ import { z } from 'zod';
 type Property = Types.Common_Mapping.Property;
 
 /** Attach OpenSearch field mappings to zod schemas, overriding the defaults below. */
-export const os = z.registry<Property>();
+export const opensSearchProperty = z.registry<Property>();
 
 export const toMapping = (
 	schema: z.ZodObject,
@@ -24,7 +24,7 @@ const properties = (obj: z.ZodObject): Record<string, Property> =>
 
 function field(schema: z.ZodType): Property {
 	// Checked first so registered arrays (e.g. knn_vector) aren't mapped as their element type
-	const meta = os.get(schema);
+	const meta = opensSearchProperty.get(schema);
 	if (meta) {
 		return meta;
 	}
