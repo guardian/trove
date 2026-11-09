@@ -12,7 +12,7 @@ import {
 	resolveWriteIndices,
 } from '../src/indices.ts';
 import { initSchema } from '../src/init.ts';
-import { embeddingModels } from '../src/os-embeddings.ts';
+import { embeddingModels } from '../src/open-search-embeddings.ts';
 
 if (process.env.OPENSEARCH_ENDPOINT) {
 	throw new Error('seed-local deletes indices, so refuses to run against AWS');
