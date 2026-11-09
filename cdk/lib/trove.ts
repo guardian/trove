@@ -54,6 +54,20 @@ export class Trove extends GuStack {
 		});
 		embedder.addEventSource(new SqsEventSource(liveQueue));
 		embedder.addEventSource(new SqsEventSource(backfillQueue));
+
+		// No trigger yet: invoked manually until we decide how backfill runs are driven
+		const backfill = new GuLambdaFunction(this, 'TroveBackfill', {
+			app: 'trove-backfill',
+			fileName: 'trove-backfill.zip',
+			functionName: `trove-backfill-${this.stage}`,
+			runtime: Runtime.NODEJS_24_X,
+			handler: 'index.handler',
+		});
+		backfillQueue.grantSendMessages(backfill);
+		backfill.addEnvironment(
+			'BACKFILL_EMBEDDER_QUEUE_URL',
+			backfillQueue.queueUrl,
+		);
 	}
 }
 
