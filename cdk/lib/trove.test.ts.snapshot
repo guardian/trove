@@ -14,7 +14,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
       "Type": "AWS::IAM::ManagedPolicy",
       "Properties": {
         "Description": "Run Trove locally",
-        "Path": "/developer-policy/guardian/trove/capi/TEST/trove-local-run/",
+        "Path": "/developer-policy/guardian/trove/capi/TEST/newsroom-ai-trove-local-run/",
         "PolicyDocument": {
           "Statement": [
             {

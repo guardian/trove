@@ -18,7 +18,7 @@ export class Trove extends GuStack {
 
 		if (['CODE', 'TEST'].includes(this.stage)) {
 			new GuDeveloperPolicy(this, 'TroveLocalRunPolicy', {
-				grantId: 'trove-local-run',
+				grantId: 'newsroom-ai-trove-local-run',
 				friendlyName: 'Run Trove locally',
 				withoutPolicyChecks: true,
 				statements: [
