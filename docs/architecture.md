@@ -1,6 +1,35 @@
-# Trove architecture
+# Trove Architecture ADR
 
-Generated from `Untitled-2026-10-29-1103.excalidraw`.
+This document outlines the proposed architecture for the Trove MVP. The aim is to have embedded headline, standfirst and the concatenation of headline and standfirst by Christmas. Our initial use case is ‘Articles Like This’, though there’s a variety of wide-ranging applications to content embeddings.
+
+This ADR is based on a whiteboarding session we did on 29/10/20206.
+
+# Context
+For the MVP we need to embed content, store the embeddings in a vector store, and expose an internal query and retrieval API. We also need to create a backfill pipeline.
+
+## Design
+### Live events
+Consume content events from the existing CAPI Kinesis stream (firehose), queue them, and generate embeddings in a Lambda that writes to OpenSearch.
+
+The actual flow would be as follows:
+
+1. CAPI publishes content events through Crier to a Kinesis stream.
+2. A consumer lambda reads from the stream, if required (retrievable update) fetches any extra data from CAPI, and outputs data in the correct schema.
+3. The consumer places work on a queue.
+4. EmbedderLambda takes messages from the queue, calls the embedding provider, and writes the resulting vectors to OpenSearch.
+
+### Historical events
+Paginate through historical content, queue items, generate embeddings and write to OpenSearch.
+
+The actual flow would be as follows:
+
+1. Fetch historical content via CAPI's Concierge API by paginating through the content and requesting the next date range.
+2. Place it on a dedicated backfill queue to be embedded one by one. These queue items will have the same schema as the consumers’ queue.
+3. Another copy of the EmbedderLambda takes messages from the queue, calls the embedding provider, and writes the resulting vectors to OpenSearch.
+
+# Architecture diagram
+
+Generated from the excalidraw we made in the architecture session.
 
 ```mermaid
 flowchart TD
@@ -46,6 +75,8 @@ flowchart TD
     Embedder --> OpenSearch
     API --> OpenSearch
 ```
+
+# Decisions
 
 ## Decision: Decouple embedding re-index from CAPI re-index
 
