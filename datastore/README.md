@@ -3,7 +3,7 @@
 The article schema, its OpenSearch mapping, and the scripts that set up the indices.
 
 - `src/article.ts`: the article schema in zod. The OpenSearch mapping is derived from it (`src/mapping.ts`).
-- `src/os-embeddings.ts`: the embedding models and their `knn_vector` settings.
+- `src/open-search-embeddings.ts`: the embedding models and their `knn_vector` settings.
 - `src/indices.ts`: the versioned indices, the aliases, and which version each alias points to.
 
 ## Versions and aliases
