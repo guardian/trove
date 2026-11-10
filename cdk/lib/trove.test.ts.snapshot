@@ -1254,3 +1254,474 @@ exports[`The TroveOpenSearch stack > matches the snapshot 1`] = `
   }
 }
 `;
+
+exports[`The TroveWeb stack > matches the snapshot 1`] = `
+{
+  "Metadata": {
+    "gu:cdk:constructs": [],
+    "gu:cdk:version": "TEST"
+  },
+  "Resources": {
+    "ExecutionRole605A040B": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+              ]
+            ]
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "66.0.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "content-api"
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE"
+          }
+        ]
+      }
+    },
+    "WebFunction": {
+      "Type": "AWS::Lambda::WebFunction",
+      "Properties": {
+        "FunctionName": "trove-web-CODE",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "trove-web"
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "66.0.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "content-api"
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE"
+          }
+        ]
+      }
+    },
+    "Revision": {
+      "Type": "AWS::Lambda::WebFunctionRevision",
+      "Properties": {
+        "BuildConfig": {
+          "CodeConfig": {
+            "S3Object": {
+              "Bucket": {
+                "Ref": "SsmParameterValueCODEcontentapitrovewebartifactbucketC96584B6F00A464EAD1953AFF4B05118Parameter"
+              },
+              "Key": "content-api/CODE/trove-web/trove-web.zip"
+            }
+          },
+          "RuntimeConfig": {
+            "Runtime": "nodejs24.x"
+          }
+        },
+        "Description": "Build TEST",
+        "FunctionName": {
+          "Ref": "WebFunction"
+        },
+        "ServiceConfig": {
+          "EnvironmentVariables": {
+            "BUILD_ID": "TEST"
+          },
+          "ExecutionRoleArn": {
+            "Fn::GetAtt": [
+              "ExecutionRole605A040B",
+              "Arn"
+            ]
+          },
+          "TimeoutSeconds": 30
+        }
+      }
+    },
+    "CandidateEndpoint": {
+      "Type": "AWS::Lambda::WebFunctionEndpoint",
+      "Properties": {
+        "AuthType": "ApplicationManaged",
+        "EndpointName": "trove-web-candidate",
+        "EndpointType": "HomeRegion",
+        "FunctionName": {
+          "Ref": "WebFunction"
+        },
+        "RevisionWeights": [
+          {
+            "RevisionId": {
+              "Fn::GetAtt": [
+                "Revision",
+                "RevisionId"
+              ]
+            },
+            "Weight": 100
+          }
+        ]
+      }
+    },
+    "HealthcheckHandlerServiceRoleE8134168": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+              ]
+            ]
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "66.0.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "content-api"
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE"
+          }
+        ]
+      }
+    },
+    "HealthcheckHandlerB7D0A3BB": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "ZipFile": "exports.handler = (event) => (async function healthcheckHandler(\\n\\tevent                  ,\\n\\tpollIntervalMs = 5000,\\n)                {\\n\\tconst respond = async (status                      , reason        ) => {\\n\\t\\tconst response = await fetch(event.ResponseURL, {\\n\\t\\t\\tmethod: 'PUT',\\n\\t\\t\\theaders: { 'content-type': '' },\\n\\t\\t\\tbody: JSON.stringify({\\n\\t\\t\\t\\tStatus: status,\\n\\t\\t\\t\\tReason: reason.slice(0, 1000),\\n\\t\\t\\t\\tPhysicalResourceId:\\n\\t\\t\\t\\t\\tevent.PhysicalResourceId ?? \`\${event.LogicalResourceId}-healthcheck\`,\\n\\t\\t\\t\\tStackId: event.StackId,\\n\\t\\t\\t\\tRequestId: event.RequestId,\\n\\t\\t\\t\\tLogicalResourceId: event.LogicalResourceId,\\n\\t\\t\\t}),\\n\\t\\t});\\n\\t\\tif (!response.ok) {\\n\\t\\t\\tthrow new Error(\\n\\t\\t\\t\\t\`Failed to respond to CloudFormation: \${response.status}\`,\\n\\t\\t\\t);\\n\\t\\t}\\n\\t};\\n\\n\\tif (event.RequestType === 'Delete') {\\n\\t\\treturn respond('SUCCESS', 'Nothing to delete');\\n\\t}\\n\\n\\tconst { Url, ExpectedBuildId, TimeoutSeconds } = event.ResourceProperties;\\n\\tconst deadline = Date.now() + Number(TimeoutSeconds) * 1000;\\n\\tlet lastResult = 'no attempts made';\\n\\n\\twhile (Date.now() < deadline) {\\n\\t\\ttry {\\n\\t\\t\\tconst response = await fetch(Url, {\\n\\t\\t\\t\\tsignal: AbortSignal.timeout(10_000),\\n\\t\\t\\t});\\n\\t\\t\\tconst body = await response.text();\\n\\t\\t\\tlastResult = \`HTTP \${response.status}: \${body.slice(0, 200)}\`;\\n\\t\\t\\tconst { buildId } = response.ok\\n\\t\\t\\t\\t? (JSON.parse(body)                        )\\n\\t\\t\\t\\t: {};\\n\\t\\t\\tif (buildId === ExpectedBuildId) {\\n\\t\\t\\t\\tconsole.log(\`Healthy: \${lastResult}\`);\\n\\t\\t\\t\\treturn respond('SUCCESS', \`Build \${ExpectedBuildId} is healthy\`);\\n\\t\\t\\t}\\n\\t\\t} catch (error) {\\n\\t\\t\\tlastResult = String(error);\\n\\t\\t}\\n\\t\\tconsole.log(\`Not yet healthy: \${lastResult}\`);\\n\\t\\tawait new Promise((resolve) => setTimeout(resolve, pollIntervalMs));\\n\\t}\\n\\n\\treturn respond(\\n\\t\\t'FAILED',\\n\\t\\t\`\${Url} did not report healthy build \${ExpectedBuildId} within \${TimeoutSeconds}s. Last result: \${lastResult}\`,\\n\\t);\\n})(event);"
+        },
+        "Handler": "index.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "HealthcheckHandlerServiceRoleE8134168",
+            "Arn"
+          ]
+        },
+        "Runtime": "nodejs24.x",
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "66.0.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "content-api"
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE"
+          }
+        ],
+        "Timeout": 360
+      },
+      "DependsOn": [
+        "HealthcheckHandlerServiceRoleE8134168"
+      ]
+    },
+    "HealthcheckCheck94ee05937D8894C2": {
+      "Type": "Custom::WebFunctionHealthcheck",
+      "Properties": {
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "HealthcheckHandlerB7D0A3BB",
+            "Arn"
+          ]
+        },
+        "Url": {
+          "Fn::Join": [
+            "",
+            [
+              "https://",
+              {
+                "Fn::GetAtt": [
+                  "CandidateEndpoint",
+                  "DomainName"
+                ]
+              },
+              "/healthcheck"
+            ]
+          ]
+        },
+        "ExpectedBuildId": "TEST",
+        "TimeoutSeconds": "300"
+      },
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete"
+    },
+    "Endpoint": {
+      "Type": "AWS::Lambda::WebFunctionEndpoint",
+      "Properties": {
+        "AuthType": "ApplicationManaged",
+        "EndpointName": "trove-web",
+        "EndpointType": "HomeRegion",
+        "FunctionName": {
+          "Ref": "WebFunction"
+        },
+        "RevisionWeights": [
+          {
+            "RevisionId": {
+              "Fn::GetAtt": [
+                "Revision",
+                "RevisionId"
+              ]
+            },
+            "Weight": 100
+          }
+        ]
+      },
+      "DependsOn": [
+        "HealthcheckCheck94ee05937D8894C2"
+      ]
+    }
+  },
+  "Parameters": {
+    "SsmParameterValueCODEcontentapitrovewebartifactbucketC96584B6F00A464EAD1953AFF4B05118Parameter": {
+      "Type": "AWS::SSM::Parameter::Value<String>",
+      "Default": "/CODE/content-api/trove-web/artifact-bucket"
+    }
+  },
+  "Outputs": {
+    "EndpointDomainName": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Endpoint",
+          "DomainName"
+        ]
+      }
+    }
+  }
+}
+`;
+
+exports[`The TroveWebArtifacts stack > matches the snapshot 1`] = `
+{
+  "Metadata": {
+    "gu:cdk:constructs": [
+      "GuS3Bucket"
+    ],
+    "gu:cdk:version": "TEST"
+  },
+  "Resources": {
+    "ArtifactBucketTroveweb3F2C29BF": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "NoncurrentVersionExpiration": {
+                "NewerNoncurrentVersions": 10,
+                "NoncurrentDays": 30
+              },
+              "Status": "Enabled"
+            }
+          ]
+        },
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true
+        },
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "trove-web"
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "66.0.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "content-api"
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE"
+          }
+        ],
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        }
+      },
+      "UpdateReplacePolicy": "Retain",
+      "DeletionPolicy": "Retain"
+    },
+    "ArtifactBucketTrovewebPolicyD79096B0": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "ArtifactBucketTroveweb3F2C29BF"
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:*",
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false"
+                }
+              },
+              "Effect": "Deny",
+              "Principal": {
+                "AWS": "*"
+              },
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ArtifactBucketTroveweb3F2C29BF",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "ArtifactBucketTroveweb3F2C29BF",
+                          "Arn"
+                        ]
+                      },
+                      "/*"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Action": [
+                "s3:GetObject",
+                "s3:GetObjectVersion"
+              ],
+              "Condition": {
+                "ArnLike": {
+                  "aws:SourceArn": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:aws:lambda:",
+                        {
+                          "Ref": "AWS::Region"
+                        },
+                        ":",
+                        {
+                          "Ref": "AWS::AccountId"
+                        },
+                        ":web-function/trove-web-CODE/revision/*"
+                      ]
+                    ]
+                  }
+                }
+              },
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    {
+                      "Fn::GetAtt": [
+                        "ArtifactBucketTroveweb3F2C29BF",
+                        "Arn"
+                      ]
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "ArtifactBucketName61A8B0EE": {
+      "Type": "AWS::SSM::Parameter",
+      "Properties": {
+        "Name": "/CODE/content-api/trove-web/artifact-bucket",
+        "Tags": {
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/trove",
+          "Stack": "content-api",
+          "Stage": "CODE"
+        },
+        "Type": "String",
+        "Value": {
+          "Ref": "ArtifactBucketTroveweb3F2C29BF"
+        }
+      }
+    }
+  }
+}
+`;

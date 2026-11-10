@@ -1,0 +1,17 @@
+{
+	"name": "trove-web",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "esbuild src/index.ts --bundle --platform=node --external:@aws-sdk/* --outfile=dist/index.js",
+		"package": "npm run build && cd dist && rm -f trove-web.zip && zip trove-web.zip index.js",
+		"start": "node src/index.ts",
+		"test": "node --test 'src/**/*.test.ts'",
+		"typecheck": "tsc --noEmit",
+		"lint": "eslint ."
+	},
+	"devDependencies": {
+		"esbuild": "0.28.2"
+	}
+}
