@@ -1,7 +1,6 @@
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core/index.js';
 import { GuStack } from '@guardian/cdk/lib/constructs/core/index.js';
 import { GuLambdaFunction } from '@guardian/cdk/lib/constructs/lambda/index.js';
-import type { GuKinesisLambdaProps } from '@guardian/cdk/lib/experimental/patterns/kinesis-lambda.js';
 import { GuKinesisLambdaExperimental } from '@guardian/cdk/lib/experimental/patterns/kinesis-lambda.js';
 import { StreamRetry } from '@guardian/cdk/lib/utils/lambda/event-source.js';
 import type { App } from 'aws-cdk-lib';
@@ -12,10 +11,15 @@ import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { Topic } from 'aws-cdk-lib/aws-sns';
 import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
+import { addBackfillTask } from './backfill-task.ts';
 
 export class Trove extends GuStack {
 	constructor(scope: App, id: string, props: GuStackProps) {
 		super(scope, id, props);
+
+		const alarmTopic = ['PROD', 'TEST'].includes(this.stage)
+			? createAlarmTopic(this)
+			: undefined;
 
 		const listener = new GuKinesisLambdaExperimental(this, 'TroveListener', {
 			app: 'trove-listener',
@@ -23,7 +27,9 @@ export class Trove extends GuStack {
 			functionName: `trove-listener-${this.stage}`,
 			runtime: Runtime.NODEJS_24_X,
 			handler: 'index.handler',
-			monitoringConfiguration: getMonitoringConfiguration(this, this.stage),
+			monitoringConfiguration: alarmTopic
+				? { snsTopicName: alarmTopic.topicName, toleratedErrorPercentage: 0 }
+				: { noMonitoring: true },
 			errorHandlingConfiguration: {
 				retryBehaviour: StreamRetry.maxAttempts(3),
 				bisectBatchOnError: true,
@@ -56,6 +62,7 @@ export class Trove extends GuStack {
 		embedder.addEventSource(new SqsEventSource(backfillQueue));
 
 		// No trigger yet: invoked manually until we decide how backfill runs are driven
+		// (Lambda + Step Function vs the ECS task PoC below)
 		const backfill = new GuLambdaFunction(this, 'TroveBackfill', {
 			app: 'trove-backfill',
 			fileName: 'trove-backfill.zip',
@@ -68,6 +75,9 @@ export class Trove extends GuStack {
 			'BACKFILL_EMBEDDER_QUEUE_URL',
 			backfillQueue.queueUrl,
 		);
+
+		// PoC: writes to stdout rather than the backfill queue for now
+		addBackfillTask(this, alarmTopic);
 	}
 }
 
@@ -80,19 +90,10 @@ function createQueueWithDLQ(scope: GuStack, id: string): Queue {
 	});
 }
 
-function getMonitoringConfiguration(
-	scope: GuStack,
-	stage: string,
-): GuKinesisLambdaProps['monitoringConfiguration'] {
-	if (!['PROD', 'TEST'].includes(stage)) {
-		return { noMonitoring: true };
-	}
+function createAlarmTopic(scope: GuStack): Topic {
 	const alarmSnsTopic = new Topic(scope, `trove-email-alarm-topic`);
 	alarmSnsTopic.addSubscription(
 		new EmailSubscription('ai.dev+alerts@guardian.co.uk'),
 	);
-	return {
-		snsTopicName: alarmSnsTopic.topicName,
-		toleratedErrorPercentage: 0,
-	};
+	return alarmSnsTopic;
 }

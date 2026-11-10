@@ -1,0 +1,20 @@
+{
+	"name": "trove-backfill-task",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"start": "node src/main.ts",
+		"build": "esbuild src/main.ts --bundle --platform=node --target=node24 --outfile=dist/index.js",
+		"package": "npm run build && cd dist && rm -f trove-backfill-task.zip && zip trove-backfill-task.zip index.js",
+		"test": "node --test 'src/**/*.test.ts'",
+		"typecheck": "tsc --noEmit",
+		"lint": "eslint ."
+	},
+	"devDependencies": {
+		"esbuild": "0.28.2"
+	},
+	"dependencies": {
+		"zod": "4.6.7"
+	}
+}

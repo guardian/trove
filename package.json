@@ -17,7 +17,8 @@
 		"datastore",
 		"lambdas/trove-backfill",
 		"lambdas/trove-embedder",
-		"lambdas/trove-listener"
+		"lambdas/trove-listener",
+		"tasks/trove-backfill-task"
 	],
 	"scripts": {
 		"test": "npm test --workspaces",

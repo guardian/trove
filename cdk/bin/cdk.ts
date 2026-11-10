@@ -1,8 +1,8 @@
-import { GuRoot } from '@guardian/cdk/lib/constructs/root.js';
 import { TroveOpenSearch } from '../lib/trove-open-search.ts';
+import { TroveRoot } from '../lib/trove-root.ts';
 import { Trove } from '../lib/trove.ts';
 
-const app = new GuRoot();
+const app = new TroveRoot();
 new Trove(app, 'Trove-euwest-1-CODE', {
 	stack: 'content-api',
 	stage: 'CODE',

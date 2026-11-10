@@ -6,7 +6,11 @@ exports[`The Trove stack > matches the snapshot 1`] = `
       "GuKinesisLambdaExperimental",
       "GuLambdaErrorPercentageAlarm",
       "GuLambdaFunction",
-      "GuLambdaFunction"
+      "GuLambdaFunction",
+      "GuVpcParameter",
+      "GuSubnetListParameter",
+      "GuHttpsEgressSecurityGroup",
+      "GuEcsTask"
     ],
     "gu:cdk:version": "TEST"
   },
@@ -1147,6 +1151,824 @@ exports[`The Trove stack > matches the snapshot 1`] = `
         "TroveBackfillServiceRoleDefaultPolicy349CB304",
         "TroveBackfillServiceRoleF3620C62"
       ]
+    },
+    "GuHttpsEgressSecurityGroupTrovebackfilltaskEF6F9F37": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Allow all outbound HTTPS traffic",
+        "SecurityGroupEgress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow all outbound HTTPS traffic",
+            "FromPort": 443,
+            "IpProtocol": "tcp",
+            "ToPort": 443
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "trove-backfill-task"
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "66.0.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST"
+          }
+        ],
+        "VpcId": {
+          "Ref": "VpcId"
+        }
+      }
+    },
+    "TroveBackfillTaskCluster561D4FF5": {
+      "Type": "AWS::ECS::Cluster",
+      "Properties": {
+        "ClusterName": "trove-backfill-task-cluster-TEST",
+        "ClusterSettings": [
+          {
+            "Name": "containerInsights",
+            "Value": "disabled"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "trove-backfill-task"
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "66.0.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST"
+          }
+        ]
+      }
+    },
+    "TroveBackfillTaskCluster36F101AF": {
+      "Type": "AWS::ECS::ClusterCapacityProviderAssociations",
+      "Properties": {
+        "CapacityProviders": [
+          "FARGATE",
+          "FARGATE_SPOT"
+        ],
+        "Cluster": {
+          "Ref": "TroveBackfillTaskCluster561D4FF5"
+        },
+        "DefaultCapacityProviderStrategy": []
+      }
+    },
+    "TroveBackfillTaskTaskDefinitionTaskRole1481E123": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "trove-backfill-task"
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "66.0.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST"
+          }
+        ]
+      }
+    },
+    "TroveBackfillTaskTaskDefinitionTaskRoleDefaultPolicy05FA53E2": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:GetObject",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:s3:::",
+                    {
+                      "Ref": "DistributionBucketName"
+                    },
+                    "/capi/TEST/trove-backfill-task/*"
+                  ]
+                ]
+              }
+            },
+            {
+              "Action": "ssm:GetParameter",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:ssm:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":parameter/TEST/capi/trove-backfill-task/capiApiKey"
+                  ]
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "PolicyName": "TroveBackfillTaskTaskDefinitionTaskRoleDefaultPolicy05FA53E2",
+        "Roles": [
+          {
+            "Ref": "TroveBackfillTaskTaskDefinitionTaskRole1481E123"
+          }
+        ]
+      }
+    },
+    "TroveBackfillTaskTaskDefinition71072334": {
+      "Type": "AWS::ECS::TaskDefinition",
+      "Properties": {
+        "ContainerDefinitions": [
+          {
+            "Command": [
+              "-c",
+              {
+                "Fn::Join": [
+                  "",
+                  [
+                    "cd /usr/src/trove && aws s3 cp s3://",
+                    {
+                      "Ref": "DistributionBucketName"
+                    },
+                    "/capi/TEST/trove-backfill-task/trove-backfill-task.zip . && unzip -o trove-backfill-task.zip && CAPI_API_KEY=$(aws ssm get-parameter --with-decryption --name /TEST/capi/trove-backfill-task/capiApiKey --query Parameter.Value --output text) && export CAPI_API_KEY && node index.js"
+                  ]
+                ]
+              }
+            ],
+            "Cpu": 256,
+            "EntryPoint": [
+              "/bin/sh"
+            ],
+            "Environment": [
+              {
+                "Name": "AWS_REGION",
+                "Value": {
+                  "Ref": "AWS::Region"
+                }
+              }
+            ],
+            "Essential": true,
+            "Image": "public.ecr.aws/sam/build-nodejs24.x:1.171.0",
+            "LogConfiguration": {
+              "LogDriver": "awslogs",
+              "Options": {
+                "awslogs-group": {
+                  "Ref": "TroveBackfillTaskTaskDefinitionTroveBackfillTaskTaskContainerLogGroup02FB6F59"
+                },
+                "awslogs-stream-prefix": "trove-backfill-task",
+                "awslogs-region": {
+                  "Ref": "AWS::Region"
+                }
+              }
+            },
+            "Memory": 512,
+            "MountPoints": [
+              {
+                "ContainerPath": "/usr/src/trove",
+                "ReadOnly": false,
+                "SourceVolume": "trove-backfill-task-volume"
+              }
+            ],
+            "Name": "TroveBackfillTask-TaskContainer",
+            "ReadonlyRootFilesystem": true
+          }
+        ],
+        "Cpu": "256",
+        "ExecutionRoleArn": {
+          "Fn::GetAtt": [
+            "TroveBackfillTaskTaskDefinitionExecutionRoleC648B292",
+            "Arn"
+          ]
+        },
+        "Family": "capi-TEST-trove-backfill-task",
+        "Memory": "512",
+        "NetworkMode": "awsvpc",
+        "RequiresCompatibilities": [
+          "FARGATE"
+        ],
+        "RuntimePlatform": {
+          "CpuArchitecture": "ARM64",
+          "OperatingSystemFamily": "LINUX"
+        },
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "trove-backfill-task"
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "66.0.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST"
+          }
+        ],
+        "TaskRoleArn": {
+          "Fn::GetAtt": [
+            "TroveBackfillTaskTaskDefinitionTaskRole1481E123",
+            "Arn"
+          ]
+        },
+        "Volumes": [
+          {
+            "Name": "trove-backfill-task-volume"
+          }
+        ]
+      }
+    },
+    "TroveBackfillTaskTaskDefinitionTroveBackfillTaskTaskContainerLogGroup02FB6F59": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "RetentionInDays": 14,
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "trove-backfill-task"
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "66.0.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST"
+          }
+        ]
+      },
+      "UpdateReplacePolicy": "Retain",
+      "DeletionPolicy": "Retain"
+    },
+    "TroveBackfillTaskTaskDefinitionExecutionRoleC648B292": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "trove-backfill-task"
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "66.0.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST"
+          }
+        ]
+      }
+    },
+    "TroveBackfillTaskTaskDefinitionExecutionRoleDefaultPolicy012A8528": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "TroveBackfillTaskTaskDefinitionTroveBackfillTaskTaskContainerLogGroup02FB6F59",
+                  "Arn"
+                ]
+              }
+            },
+            {
+              "Action": "ecr:GetAuthorizationToken",
+              "Effect": "Allow",
+              "Resource": "*"
+            },
+            {
+              "Action": [
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:BatchGetImage"
+              ],
+              "Effect": "Allow",
+              "Resource": "arn:aws:ecr:eu-west-1:694911143906:repository/aws-guardduty-agent-fargate"
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "PolicyName": "TroveBackfillTaskTaskDefinitionExecutionRoleDefaultPolicy012A8528",
+        "Roles": [
+          {
+            "Ref": "TroveBackfillTaskTaskDefinitionExecutionRoleC648B292"
+          }
+        ]
+      }
+    },
+    "TroveBackfillTaskStateMachineRole51ED3379": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "states.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "trove-backfill-task"
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "66.0.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST"
+          }
+        ]
+      }
+    },
+    "TroveBackfillTaskStateMachineRoleDefaultPolicyDA85BCC4": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "ecs:RunTask",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Fn::Select": [
+                        1,
+                        {
+                          "Fn::Split": [
+                            ":",
+                            {
+                              "Ref": "TroveBackfillTaskTaskDefinition71072334"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    ":",
+                    {
+                      "Fn::Select": [
+                        2,
+                        {
+                          "Fn::Split": [
+                            ":",
+                            {
+                              "Ref": "TroveBackfillTaskTaskDefinition71072334"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    ":",
+                    {
+                      "Fn::Select": [
+                        3,
+                        {
+                          "Fn::Split": [
+                            ":",
+                            {
+                              "Ref": "TroveBackfillTaskTaskDefinition71072334"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    ":",
+                    {
+                      "Fn::Select": [
+                        4,
+                        {
+                          "Fn::Split": [
+                            ":",
+                            {
+                              "Ref": "TroveBackfillTaskTaskDefinition71072334"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    ":",
+                    {
+                      "Fn::Select": [
+                        0,
+                        {
+                          "Fn::Split": [
+                            "/",
+                            {
+                              "Fn::Select": [
+                                5,
+                                {
+                                  "Fn::Split": [
+                                    ":",
+                                    {
+                                      "Ref": "TroveBackfillTaskTaskDefinition71072334"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "/",
+                    {
+                      "Fn::Select": [
+                        1,
+                        {
+                          "Fn::Split": [
+                            "/",
+                            {
+                              "Fn::Select": [
+                                5,
+                                {
+                                  "Fn::Split": [
+                                    ":",
+                                    {
+                                      "Ref": "TroveBackfillTaskTaskDefinition71072334"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    ":*"
+                  ]
+                ]
+              }
+            },
+            {
+              "Action": [
+                "ecs:StopTask",
+                "ecs:DescribeTasks"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            },
+            {
+              "Action": "iam:PassRole",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "TroveBackfillTaskTaskDefinitionTaskRole1481E123",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::GetAtt": [
+                    "TroveBackfillTaskTaskDefinitionExecutionRoleC648B292",
+                    "Arn"
+                  ]
+                }
+              ]
+            },
+            {
+              "Action": [
+                "events:PutTargets",
+                "events:PutRule",
+                "events:DescribeRule"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":events:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":rule/StepFunctionsGetEventsForECSTaskRule"
+                  ]
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "PolicyName": "TroveBackfillTaskStateMachineRoleDefaultPolicyDA85BCC4",
+        "Roles": [
+          {
+            "Ref": "TroveBackfillTaskStateMachineRole51ED3379"
+          }
+        ]
+      }
+    },
+    "TroveBackfillTaskStateMachine44643EF9": {
+      "Type": "AWS::StepFunctions::StateMachine",
+      "Properties": {
+        "DefinitionString": {
+          "Fn::Join": [
+            "",
+            [
+              "{\\"StartAt\\":\\"TroveBackfillTask-task\\",\\"States\\":{\\"TroveBackfillTask-task\\":{\\"End\\":true,\\"Type\\":\\"Task\\",\\"TimeoutSeconds\\":86400,\\"ResultPath\\":null,\\"Resource\\":\\"arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":states:::ecs:runTask.sync\\",\\"Parameters\\":{\\"Cluster\\":\\"",
+              {
+                "Fn::GetAtt": [
+                  "TroveBackfillTaskCluster561D4FF5",
+                  "Arn"
+                ]
+              },
+              "\\",\\"TaskDefinition\\":\\"capi-TEST-trove-backfill-task\\",\\"NetworkConfiguration\\":{\\"AwsvpcConfiguration\\":{\\"Subnets\\":[\\"",
+              {
+                "Fn::Select": [
+                  0,
+                  {
+                    "Ref": "trovebackfilltaskPrivateSubnets"
+                  }
+                ]
+              },
+              "\\",\\"",
+              {
+                "Fn::Select": [
+                  1,
+                  {
+                    "Ref": "trovebackfilltaskPrivateSubnets"
+                  }
+                ]
+              },
+              "\\",\\"",
+              {
+                "Fn::Select": [
+                  2,
+                  {
+                    "Ref": "trovebackfilltaskPrivateSubnets"
+                  }
+                ]
+              },
+              "\\"],\\"SecurityGroups\\":[\\"",
+              {
+                "Fn::GetAtt": [
+                  "GuHttpsEgressSecurityGroupTrovebackfilltaskEF6F9F37",
+                  "GroupId"
+                ]
+              },
+              "\\"]}},\\"Overrides\\":{\\"ContainerOverrides\\":[{\\"Name\\":\\"TroveBackfillTask-TaskContainer\\",\\"Environment\\":[{\\"Name\\":\\"BACKFILL_INPUT\\",\\"Value.$\\":\\"States.JsonToString($)\\"}]}]},\\"LaunchType\\":\\"FARGATE\\",\\"PlatformVersion\\":\\"LATEST\\"}}}}"
+            ]
+          ]
+        },
+        "RoleArn": {
+          "Fn::GetAtt": [
+            "TroveBackfillTaskStateMachineRole51ED3379",
+            "Arn"
+          ]
+        },
+        "StateMachineName": "trove-backfill-task-TEST",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "trove-backfill-task"
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "66.0.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST"
+          }
+        ]
+      },
+      "DependsOn": [
+        "TroveBackfillTaskStateMachineRoleDefaultPolicyDA85BCC4",
+        "TroveBackfillTaskStateMachineRole51ED3379"
+      ],
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete"
+    },
+    "trovebackfilltaskexecutionfailed74877476": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "ActionsEnabled": true,
+        "AlarmActions": [
+          {
+            "Ref": "troveemailalarmtopic69531040"
+          }
+        ],
+        "AlarmDescription": "trove-backfill-task-TEST job failed ",
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "Dimensions": [
+          {
+            "Name": "StateMachineArn",
+            "Value": {
+              "Ref": "TroveBackfillTaskStateMachine44643EF9"
+            }
+          }
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "ExecutionsFailed",
+        "Namespace": "AWS/States",
+        "Period": 3600,
+        "Statistic": "Sum",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "trove-backfill-task"
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "66.0.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST"
+          }
+        ],
+        "Threshold": 1,
+        "TreatMissingData": "notBreaching"
+      }
+    },
+    "trovebackfilltasktimeout12CACC99": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "ActionsEnabled": true,
+        "AlarmActions": [
+          {
+            "Ref": "troveemailalarmtopic69531040"
+          }
+        ],
+        "AlarmDescription": "trove-backfill-task-TEST job timed out ",
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "Dimensions": [
+          {
+            "Name": "StateMachineArn",
+            "Value": {
+              "Ref": "TroveBackfillTaskStateMachine44643EF9"
+            }
+          }
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "ExecutionsTimedOut",
+        "Namespace": "AWS/States",
+        "Period": 3600,
+        "Statistic": "Sum",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "trove-backfill-task"
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "66.0.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST"
+          }
+        ],
+        "Threshold": 1,
+        "TreatMissingData": "notBreaching"
+      }
     }
   },
   "Parameters": {
@@ -1154,6 +1976,23 @@ exports[`The Trove stack > matches the snapshot 1`] = `
       "Type": "AWS::SSM::Parameter::Value<String>",
       "Default": "/account/services/artifact.bucket",
       "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts"
+    },
+    "VpcId": {
+      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
+      "Default": "/account/vpc/primary/id",
+      "Description": "Virtual Private Cloud to run EC2 instances within. Should NOT be the account default VPC."
+    },
+    "trovebackfilltaskPrivateSubnets": {
+      "Type": "AWS::SSM::Parameter::Value<List<AWS::EC2::Subnet::Id>>",
+      "Default": "/account/vpc/primary/subnets/private",
+      "Description": "A list of private subnets"
+    }
+  },
+  "Outputs": {
+    "TroveBackfillTaskStateMachineArnOutput": {
+      "Value": {
+        "Ref": "TroveBackfillTaskStateMachine44643EF9"
+      }
     }
   }
 }

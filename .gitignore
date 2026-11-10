@@ -12,3 +12,6 @@ node_modules/
 
 # Lambda build output
 lambdas/*/dist/
+
+# ECS task build output
+tasks/*/dist/
