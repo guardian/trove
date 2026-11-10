@@ -3,6 +3,9 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+mise install
+npm install
+
 docker compose up -d
 
 echo "Waiting for OpenSearch..."
