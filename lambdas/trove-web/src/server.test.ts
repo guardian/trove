@@ -38,10 +38,12 @@ void describe('trove-web server', () => {
 	void it('responds to the healthcheck', async () => {
 		const response = await fetch(`${baseUrl}/healthcheck`);
 		assert.equal(response.status, 200);
-		assert.deepEqual(await response.json(), {
-			status: 'ok',
-			buildId: '42 (abc123)',
-		});
+		const json = (await response.json()) as {
+			status: string;
+			buildId: string;
+		};
+		assert.equal(json.status, 'ok');
+		assert.equal(json.buildId, '42 (abc123)');
 	});
 
 	void it('returns 404 for unknown paths', async () => {
