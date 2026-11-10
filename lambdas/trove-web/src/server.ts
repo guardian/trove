@@ -6,7 +6,7 @@ export function createTroveWebServer(buildId: string): Server {
 	return createServer((req, res) => {
 		if (req.method === 'GET' && req.url === '/healthcheck') {
 			res.writeHead(200, { 'content-type': 'application/json' });
-			res.end(JSON.stringify({ status: 'ok', buildId }));
+			res.end(JSON.stringify({ status: 'ok', buildId, message: 'hello!' }));
 			return;
 		}
 		res.writeHead(404, { 'content-type': 'application/json' });
