@@ -14,7 +14,7 @@
 	},
 	"workspaces": [
 		"cdk",
-		"datastore",
+		"libs/datastore",
 		"lambdas/trove-backfill",
 		"lambdas/trove-embedder",
 		"lambdas/trove-listener"
