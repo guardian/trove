@@ -2,6 +2,7 @@ import { describe, it, snapshot } from 'node:test';
 import { App } from 'aws-cdk-lib';
 import { Template } from 'aws-cdk-lib/assertions';
 import { TroveOpenSearch } from './trove-open-search.ts';
+import { TroveWeb, TroveWebArtifacts } from './trove-web.ts';
 import { Trove } from './trove.ts';
 
 /** Normalise the 'gu:cdk:version' field if present, for consistent snapshots across version updates
@@ -32,6 +33,33 @@ void describe('The TroveOpenSearch stack', () => {
 		const stack = new TroveOpenSearch(app, 'TroveOpenSearch', {
 			stack: 'capi',
 			stage: 'CODE',
+		});
+		const template = Template.fromStack(stack);
+
+		context.assert.snapshot(template.toJSON());
+	});
+});
+
+void describe('The TroveWebArtifacts stack', () => {
+	void it('matches the snapshot', (context) => {
+		const app = new App();
+		const stack = new TroveWebArtifacts(app, 'TroveWebArtifacts', {
+			stack: 'content-api',
+			stage: 'CODE',
+		});
+		const template = Template.fromStack(stack);
+
+		context.assert.snapshot(template.toJSON());
+	});
+});
+
+void describe('The TroveWeb stack', () => {
+	void it('matches the snapshot', (context) => {
+		const app = new App();
+		const stack = new TroveWeb(app, 'TroveWeb', {
+			stack: 'content-api',
+			stage: 'CODE',
+			buildId: 'TEST',
 		});
 		const template = Template.fromStack(stack);
 
