@@ -9,7 +9,7 @@
 		"typecheck": "tsc --noEmit",
 		"lint": "eslint .",
 		"init-schema": "node scripts/init-schema.ts",
-		"seed": "node scripts/seed-local.ts"
+		"seed-local": "node scripts/seed-local.ts"
 	},
 	"dependencies": {
 		"@aws-sdk/credential-provider-node": "3.972.92",

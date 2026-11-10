@@ -2,7 +2,7 @@
  * Local only: resets the article indices on docker-compose OpenSearch, then
  * seeds a few documents with random embeddings and runs a sample kNN search.
  *
- *   npm run seed -w datastore   (or ./scripts/setup.sh from the repo root)
+ *   npm run seed-local -w datastore   (or ./scripts/setup.sh from the repo root)
  */
 import { ArticleV1 } from '../src/article.ts';
 import { createClient } from '../src/client.ts';

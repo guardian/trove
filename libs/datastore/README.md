@@ -26,7 +26,7 @@ OpenSearch Serverless has no `_reindex`, so moving to a new version goes like th
 ```sh
 ./scripts/setup.sh                    # from the repo root: start docker-compose OpenSearch, reset and seed it
 npm run init-schema -w datastore      # create missing indices and move aliases; safe to re-run
-npm run seed -w datastore             # local only: reset the indices and seed sample articles
+npm run seed-local -w datastore       # local only: reset the indices and seed sample articles
 ```
 
 `init-schema` targets local docker-compose by default. To target OpenSearch Serverless, set `OPENSEARCH_ENDPOINT` to the collection endpoint and get Janus credentials for the `capi` profile.
