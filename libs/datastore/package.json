@@ -8,7 +8,8 @@
 		"test-update": "node --test --test-update-snapshots 'src/**/*.test.ts'",
 		"typecheck": "tsc --noEmit",
 		"lint": "eslint .",
-		"init-schema": "node scripts/init-schema.ts",
+		"apply-schema": "node scripts/apply-schema.ts",
+		"drop-local-indices": "node scripts/drop-local-indices.ts",
 		"seed-local": "node scripts/seed-local.ts"
 	},
 	"dependencies": {

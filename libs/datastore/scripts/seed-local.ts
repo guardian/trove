@@ -1,21 +1,18 @@
 /**
- * Local only: resets the article indices on docker-compose OpenSearch, then
- * seeds a few documents with random embeddings and runs a sample kNN search.
+ * Local only: seeds docker-compose OpenSearch with a few documents with random
+ * embeddings, then runs a sample kNN search. Fixed ids make it safe to re-run.
  *
  *   npm run seed-local -w datastore   (or ./scripts/setup.sh from the repo root)
  */
 import { ArticleV1 } from '../src/article.ts';
 import { createClient } from '../src/client.ts';
-import {
-	articleAliases,
-	articleIndices,
-	resolveWriteIndices,
-} from '../src/indices.ts';
-import { initSchema } from '../src/init.ts';
+import { articleAliases, resolveWriteIndices } from '../src/indices.ts';
 import { embeddingModels } from '../src/open-search-embeddings.ts';
 
 if (process.env.OPENSEARCH_ENDPOINT) {
-	throw new Error('seed-local deletes indices, so refuses to run against AWS');
+	throw new Error(
+		'seed-local writes fake articles, so refuses to run against AWS',
+	);
 }
 
 const client = createClient();
@@ -63,11 +60,11 @@ const samples: Record<string, ArticleV1> = {
 	),
 };
 
-await client.indices.delete({
-	index: Object.values(articleIndices).map(({ name }) => name),
-	ignore_unavailable: true,
-});
-await initSchema(client);
+for (const alias of Object.values(articleAliases)) {
+	if (!(await client.indices.existsAlias({ name: alias })).body) {
+		throw new Error(`Alias "${alias}" is missing, run apply-schema first`);
+	}
+}
 
 const writeIndices = await resolveWriteIndices(client);
 const { body: bulk } = await client.bulk({

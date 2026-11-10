@@ -13,4 +13,5 @@ until curl -sf 'http://localhost:9200/_cluster/health?wait_for_status=yellow' >/
 	sleep 2
 done
 
+npm run apply-schema -w datastore
 npm run seed-local -w datastore

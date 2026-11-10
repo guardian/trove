@@ -23,10 +23,10 @@ export const aliasActions = (
 	});
 
 /**
- * Idempotently creates the article indices and points the aliases at them.
+ * Creates the indices targeted by the aliases, if missing.
  * Never deletes or modifies an existing index: a mapping change means a new version.
  */
-export const initSchema = async (client: Client): Promise<void> => {
+export const applyIndices = async (client: Client): Promise<void> => {
 	for (const version of new Set(Object.values(aliasTargets))) {
 		const { name, mapping } = articleIndices[version];
 		if ((await client.indices.exists({ index: name })).body) {
@@ -39,7 +39,10 @@ export const initSchema = async (client: Client): Promise<void> => {
 		});
 		console.log(`Created index "${name}"`);
 	}
+};
 
+/** Points each alias at its target index, moving it off any other. */
+export const applyAliases = async (client: Client): Promise<void> => {
 	const desired = Object.fromEntries(
 		Object.entries(aliasTargets).map(([role, version]) => [
 			articleAliases[role as keyof typeof articleAliases],
@@ -63,4 +66,10 @@ export const initSchema = async (client: Client): Promise<void> => {
 	// A single request, so aliases switch atomically
 	await client.indices.updateAliases({ body: { actions } });
 	console.log('Updated aliases', JSON.stringify(actions));
+};
+
+/** Idempotently creates the article indices and points the aliases at them. */
+export const applySchema = async (client: Client): Promise<void> => {
+	await applyIndices(client);
+	await applyAliases(client);
 };

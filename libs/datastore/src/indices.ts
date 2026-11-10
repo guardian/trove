@@ -13,7 +13,7 @@ export const articleAliases = {
 };
 type AliasRole = keyof typeof articleAliases;
 
-// To migrate: point `next` to the new version, run init-schema and backfill, then move `current`
+// To migrate: point `next` to the new version, run apply-schema and backfill, then move `current`
 export const aliasTargets: Record<AliasRole, ArticleVersion> = {
 	current: 'v1',
 	next: 'v1',
