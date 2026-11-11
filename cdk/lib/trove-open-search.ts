@@ -87,8 +87,8 @@ export class TroveOpenSearch extends GuStack {
 		collection.addResourceDependency(group);
 		collection.applyRemovalPolicy(RemovalPolicy.RETAIN);
 
-		new CfnAccessPolicy(this, 'DataAccessPolicy', {
-			name: `trove-data-${stage.toLowerCase()}`,
+		new CfnAccessPolicy(this, 'EngineerDataAccessPolicy', {
+			name: `trove-engineers-${stage.toLowerCase()}`,
 			type: 'data',
 			policy: this.toJsonString([
 				{

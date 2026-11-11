@@ -1275,10 +1275,10 @@ exports[`The TroveOpenSearch stack > matches the snapshot 1`] = `
       "UpdateReplacePolicy": "Retain",
       "DeletionPolicy": "Retain"
     },
-    "DataAccessPolicy": {
+    "EngineerDataAccessPolicy": {
       "Type": "AWS::OpenSearchServerless::AccessPolicy",
       "Properties": {
-        "Name": "trove-data-code",
+        "Name": "trove-engineers-code",
         "Policy": {
           "Fn::Join": [
             "",
