@@ -9,6 +9,7 @@
 		"typecheck": "tsc --noEmit",
 		"lint": "eslint .",
 		"apply-schema": "node scripts/apply-schema.ts",
+		"delete-index": "node scripts/delete-index.ts",
 		"drop-local-indices": "node scripts/drop-local-indices.ts",
 		"seed-local": "node scripts/seed-local.ts"
 	},

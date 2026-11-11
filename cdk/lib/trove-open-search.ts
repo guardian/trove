@@ -98,6 +98,7 @@ export class TroveOpenSearch extends GuStack {
 							Resource: [`index/${name}/articles-*`],
 							Permission: [
 								'aoss:CreateIndex',
+								'aoss:DeleteIndex',
 								'aoss:DescribeIndex',
 								'aoss:UpdateIndex',
 								'aoss:ReadDocument',
