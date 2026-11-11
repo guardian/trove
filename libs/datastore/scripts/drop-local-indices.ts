@@ -11,5 +11,6 @@ if (process.env.OPENSEARCH_ENDPOINT) {
 }
 
 const index = Object.values(articleIndices).map(({ name }) => name);
+console.log(`About to drop ${index.join(', ')}`);
 await createClient().indices.delete({ index, ignore_unavailable: true });
 console.log(`Dropped ${index.join(', ')}`);

@@ -23,12 +23,11 @@ export const aliasActions = (
 	});
 
 /**
- * Creates the indices targeted by the aliases, if missing.
- * Never deletes or modifies an existing index: a mapping change means a new version.
+ * Creates every index declared in `articleIndices`, if missing.
+ * Never deletes or modifies an existing index, see datastore/README instructions for creating indices.
  */
 export const applyIndices = async (client: Client): Promise<void> => {
-	for (const version of new Set(Object.values(aliasTargets))) {
-		const { name, mapping } = articleIndices[version];
+	for (const { name, mapping } of Object.values(articleIndices)) {
 		if ((await client.indices.exists({ index: name })).body) {
 			console.log(`Index "${name}" already exists`);
 			continue;
@@ -41,7 +40,7 @@ export const applyIndices = async (client: Client): Promise<void> => {
 	}
 };
 
-/** Points each alias at its target index, moving it off any other. */
+/** Points each alias at its target index, as defined by aliasTargets. */
 export const applyAliases = async (client: Client): Promise<void> => {
 	const desired = Object.fromEntries(
 		Object.entries(aliasTargets).map(([role, version]) => [
