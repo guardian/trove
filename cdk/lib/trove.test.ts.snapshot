@@ -2,6 +2,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
 {
   "Metadata": {
     "gu:cdk:constructs": [
+      "GuDeveloperPolicy",
       "GuDistributionBucketParameter",
       "GuKinesisLambdaExperimental",
       "GuLambdaErrorPercentageAlarm",
@@ -11,6 +12,29 @@ exports[`The Trove stack > matches the snapshot 1`] = `
     "gu:cdk:version": "TEST"
   },
   "Resources": {
+    "TroveLocalRunPolicy8155A46D": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "Description": "Run Trove locally",
+        "Path": "/developer-policy/guardian/trove/capi/TEST/newsroom-ai-trove-local-run/",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "bedrock:InvokeModel",
+                "bedrock:InvokeModelWithResponseStream"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:bedrock:eu-west-1:308506855511:inference-profile/eu.twelvelabs.marengo-embed-3-0-v1:0",
+                "arn:aws:bedrock:*::foundation-model/twelvelabs.marengo-embed-3-0-v1:0"
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
     "troveemailalarmtopic69531040": {
       "Type": "AWS::SNS::Topic",
       "Properties": {

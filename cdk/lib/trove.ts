@@ -19,7 +19,7 @@ export class Trove extends GuStack {
 	constructor(scope: App, id: string, props: GuStackProps) {
 		super(scope, id, props);
 
-		if (['CODE'].includes(this.stage)) {
+		if (['CODE', 'TEST'].includes(this.stage)) {
 			new GuDeveloperPolicy(this, 'TroveLocalRunPolicy', {
 				grantId: 'newsroom-ai-trove-local-run',
 				friendlyName: 'Run Trove locally',
