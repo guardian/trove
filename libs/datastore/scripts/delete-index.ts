@@ -14,7 +14,7 @@ const index = process.argv[2];
 if (!index) {
 	throw new Error('Usage: npm run delete-index -w datastore -- <index>');
 }
-// Deployed code may still read or write a declared index
+// On CODE and PROD, we don't want to delete an index that's still referenced in our logic
 if (
 	process.env.OPENSEARCH_ENDPOINT &&
 	Object.values(articleIndices).some(({ name }) => name === index)
