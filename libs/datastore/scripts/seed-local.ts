@@ -1,6 +1,6 @@
 /**
  * Local only: seeds docker-compose OpenSearch with a few documents with random
- * embeddings, then runs a sample kNN search. Fixed ids make it safe to re-run.
+ * embeddings. Fixed ids make it safe to re-run.
  *
  *   npm run seed-local -w datastore   (or ./scripts/setup.sh from the repo root)
  */
@@ -76,31 +76,3 @@ if (bulk.errors) {
 	throw new Error(JSON.stringify(bulk.items, null, 2));
 }
 console.log(`Indexed ${bulk.items.length} documents into ${index}`);
-
-// Embeddings are excluded from search results, so parse with a schema that omits them
-const textOnly = ArticleV1.shape.headline.omit({ embeddings: true });
-const SearchHit = ArticleV1.extend({
-	headline: textOnly,
-	standfirst: textOnly,
-	headlineAndStandfirst: textOnly,
-});
-
-const { body: search } = await client.search({
-	index,
-	body: {
-		size: 3,
-		_source: { excludes: ['*.embeddings'] },
-		query: {
-			knn: {
-				'headlineAndStandfirst.embeddings.marengo_3_0': {
-					vector: randomVector(),
-					k: 3,
-				},
-			},
-		},
-	},
-});
-for (const hit of search.hits.hits) {
-	const doc = SearchHit.parse(hit._source);
-	console.log(hit._score?.toFixed(3), hit._id, doc.headline.value);
-}

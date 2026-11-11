@@ -46,7 +46,7 @@ OPENSEARCH_ENDPOINT=https://... npm run delete-index -w datastore -- articles-v1
 
 ### seed-local
 
-Local only: seeds docker-compose OpenSearch with a few documents with random embeddings, then runs a sample kNN search. Fixed ids make it safe to re-run.
+Local only: seeds docker-compose OpenSearch with a few documents with random embeddings. Fixed ids make it safe to re-run.
 
 ```sh
 npm run seed-local -w datastore   # or ./scripts/setup.sh from the repo root
