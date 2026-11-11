@@ -94,15 +94,6 @@ export class TroveOpenSearch extends GuStack {
 				{
 					Rules: [
 						{
-							ResourceType: 'collection',
-							Resource: [collectionResource],
-							Permission: [
-								'aoss:CreateCollectionItems',
-								'aoss:DescribeCollectionItems',
-								'aoss:UpdateCollectionItems',
-							],
-						},
-						{
 							ResourceType: 'index',
 							Resource: [`index/${name}/articles-*`],
 							Permission: [

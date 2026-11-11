@@ -6,7 +6,7 @@
  */
 import { ArticleV1 } from '../src/article.ts';
 import { createClient } from '../src/client.ts';
-import { articleAliases, resolveWriteIndices } from '../src/indices.ts';
+import { articleIndices } from '../src/indices.ts';
 import { embeddingModels } from '../src/open-search-embeddings.ts';
 
 if (process.env.OPENSEARCH_ENDPOINT) {
@@ -60,28 +60,22 @@ const samples: Record<string, ArticleV1> = {
 	),
 };
 
-for (const alias of Object.values(articleAliases)) {
-	if (!(await client.indices.existsAlias({ name: alias })).body) {
-		throw new Error(`Alias "${alias}" is missing, run apply-schema first`);
-	}
+const index = articleIndices.v1.name;
+if (!(await client.indices.exists({ index })).body) {
+	throw new Error(`Index "${index}" is missing, run apply-schema first`);
 }
 
-const writeIndices = await resolveWriteIndices(client);
 const { body: bulk } = await client.bulk({
 	refresh: true,
-	body: writeIndices.flatMap((index) =>
-		Object.entries(samples).flatMap(([id, doc]) => [
-			{ index: { _index: index, _id: id } },
-			doc,
-		]),
-	),
+	body: Object.entries(samples).flatMap(([id, doc]) => [
+		{ index: { _index: index, _id: id } },
+		doc,
+	]),
 });
 if (bulk.errors) {
 	throw new Error(JSON.stringify(bulk.items, null, 2));
 }
-console.log(
-	`Indexed ${bulk.items.length} documents into ${writeIndices.join(', ')}`,
-);
+console.log(`Indexed ${bulk.items.length} documents into ${index}`);
 
 // Embeddings are excluded from search results, so parse with a schema that omits them
 const textOnly = ArticleV1.shape.headline.omit({ embeddings: true });
@@ -92,7 +86,7 @@ const SearchHit = ArticleV1.extend({
 });
 
 const { body: search } = await client.search({
-	index: articleAliases.current,
+	index,
 	body: {
 		size: 3,
 		_source: { excludes: ['*.embeddings'] },

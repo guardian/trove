@@ -1283,7 +1283,7 @@ exports[`The TroveOpenSearch stack > matches the snapshot 1`] = `
           "Fn::Join": [
             "",
             [
-              "[{\\"Rules\\":[{\\"ResourceType\\":\\"collection\\",\\"Resource\\":[\\"collection/trove-code\\"],\\"Permission\\":[\\"aoss:CreateCollectionItems\\",\\"aoss:DescribeCollectionItems\\",\\"aoss:UpdateCollectionItems\\"]},{\\"ResourceType\\":\\"index\\",\\"Resource\\":[\\"index/trove-code/articles-*\\"],\\"Permission\\":[\\"aoss:CreateIndex\\",\\"aoss:DescribeIndex\\",\\"aoss:UpdateIndex\\",\\"aoss:ReadDocument\\",\\"aoss:WriteDocument\\"]}],\\"Principal\\":[\\"arn:aws:iam::",
+              "[{\\"Rules\\":[{\\"ResourceType\\":\\"index\\",\\"Resource\\":[\\"index/trove-code/articles-*\\"],\\"Permission\\":[\\"aoss:CreateIndex\\",\\"aoss:DescribeIndex\\",\\"aoss:UpdateIndex\\",\\"aoss:ReadDocument\\",\\"aoss:WriteDocument\\"]}],\\"Principal\\":[\\"arn:aws:iam::",
               {
                 "Ref": "AWS::AccountId"
               },

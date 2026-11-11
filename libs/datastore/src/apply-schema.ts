@@ -1,32 +1,11 @@
-import type { Client, Types } from '@opensearch-project/opensearch';
-import { aliasTargets, articleAliases, articleIndices } from './indices.ts';
-
-type AliasAction = Types.Indices_UpdateAliases.Action;
-
-/**
- * Actions that move each alias onto its desired index, and off any other.
- * @param existing alias name -> indices it currently points to
- * @param desired alias name -> index it should point to
- */
-export const aliasActions = (
-	existing: Record<string, string[]>,
-	desired: Record<string, string>,
-): AliasAction[] =>
-	Object.entries(desired).flatMap(([alias, index]) => {
-		const current = existing[alias] ?? [];
-		return [
-			...current
-				.filter((i) => i !== index)
-				.map((i) => ({ remove: { index: i, alias } })),
-			...(current.includes(index) ? [] : [{ add: { index, alias } }]),
-		];
-	});
+import type { Client } from '@opensearch-project/opensearch';
+import { articleIndices } from './indices.ts';
 
 /**
  * Creates every index declared in `articleIndices`, if missing.
  * Never deletes or modifies an existing index, see datastore/README instructions for creating indices.
  */
-export const applyIndices = async (client: Client): Promise<void> => {
+export const applySchema = async (client: Client): Promise<void> => {
 	for (const { name, mapping } of Object.values(articleIndices)) {
 		if ((await client.indices.exists({ index: name })).body) {
 			console.log(`Index "${name}" already exists`);
@@ -38,37 +17,4 @@ export const applyIndices = async (client: Client): Promise<void> => {
 		});
 		console.log(`Created index "${name}"`);
 	}
-};
-
-/** Points each alias at its target index, as defined by aliasTargets. */
-export const applyAliases = async (client: Client): Promise<void> => {
-	const desired = Object.fromEntries(
-		Object.entries(aliasTargets).map(([role, version]) => [
-			articleAliases[role as keyof typeof articleAliases],
-			articleIndices[version].name,
-		]),
-	);
-
-	const { body } = await client.indices.getAlias();
-	const existing: Record<string, string[]> = {};
-	for (const [index, { aliases }] of Object.entries(body)) {
-		for (const alias of Object.keys(aliases)) {
-			(existing[alias] ??= []).push(index);
-		}
-	}
-
-	const actions = aliasActions(existing, desired);
-	if (actions.length === 0) {
-		console.log('Aliases are up to date');
-		return;
-	}
-	// A single request, so aliases switch atomically
-	await client.indices.updateAliases({ body: { actions } });
-	console.log('Updated aliases', JSON.stringify(actions));
-};
-
-/** Idempotently creates the article indices and points the aliases at them. */
-export const applySchema = async (client: Client): Promise<void> => {
-	await applyIndices(client);
-	await applyAliases(client);
 };
