@@ -1,0 +1,20 @@
+{
+	"name": "trove-backfill-ecs",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "esbuild src/index.ts --bundle --platform=node --target=node26 --outfile=dist/index.cjs",
+		"start": "node src/index.ts",
+		"test": "node --test 'src/**/*.test.ts'",
+		"typecheck": "tsc --noEmit",
+		"lint": "eslint ."
+	},
+	"dependencies": {
+		"@aws-sdk/client-sqs": "3.1166.0",
+		"shared": "*"
+	},
+	"devDependencies": {
+		"esbuild": "0.28.2"
+	}
+}
