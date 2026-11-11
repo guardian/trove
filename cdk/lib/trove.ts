@@ -16,7 +16,7 @@ export class Trove extends GuStack {
 	constructor(scope: App, id: string, props: GuStackProps) {
 		super(scope, id, props);
 
-		if (['CODE', 'TEST'].includes(this.stage)) {
+		if (['CODE'].includes(this.stage)) {
 			new GuDeveloperPolicy(this, 'TroveLocalRunPolicy', {
 				grantId: 'newsroom-ai-trove-local-run',
 				friendlyName: 'Run Trove locally',
@@ -26,12 +26,11 @@ export class Trove extends GuStack {
 						effect: Effect.ALLOW,
 						actions: [
 							'bedrock:InvokeModel',
-							'bedrock:InvokeModelWithResponseStream',
-							'bedrock:GetPrompt',
-							'bedrock:ListPrompts',
-							'bedrock:ListTagsForResource',
+							'bedrock:InvokeModelWithResponseStream'
 						],
-						resources: ['*'],
+						resources: [
+							'arn:aws:bedrock:eu-west-1:308506855511:inference-profile/eu.twelvelabs.marengo-embed-3-0-v1:0',
+						],
 					}),
 				],
 			});
