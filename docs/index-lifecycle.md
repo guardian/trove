@@ -33,9 +33,9 @@ BUT - OpenSearch only allows adding new fields. Changing a field type, or an emb
 
 BUT - reindex isn't available on OpenSearch Serverless. We need to re-embed through our backfill pipeline anyway.
 
-**Alternative**: Two aliases, moved independently of deploys: one that readers query, and one for the version being built. Writers write to both.
+**Alternative**: Two aliases `live` and `next`: one that readers query, and one for the version being built. Writers write to both.
 
-BUT - aliases change when someone moves them, while the document shape changes on deploy. Whichever goes first, running code reads or writes an index with a mapping it doesn't know about.
+BUT - aliases change when someone moves them, while the document shape changes on deploy. However, in order to switch to a new version, we need to deploy and move the aliases at the same time, which is impractical.
 
 **Consequences**:
 
