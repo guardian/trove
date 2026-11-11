@@ -18,7 +18,7 @@ To create a new version:
 4. When the backfill is complete, remove `v1` from `articleIndices`, update the API to read from `v2`. PR merge and deploy.
 5. Delete the old index with `npm run delete-index -w datastore -- articles-v1`.
 
-When iterating locally, run `npm run drop-local-indices -w datastore` then `./scripts/setup.sh` to recreate the indices.
+When iterating locally, run `npm run delete-index -w datastore -- articles-v1` then `./scripts/setup.sh` to recreate the index.
 
 ## Scripts
 
@@ -35,18 +35,13 @@ OPENSEARCH_ENDPOINT=https://... npm run apply-schema -w datastore  # Serverless
 
 ### delete-index
 
-Deletes an index that's no longer declared in `articleIndices`, e.g. the old version after a migration. Asks for confirmation first.
+Deletes an index after asking for confirmation.
+On AWS, only indices no longer declared in `articleIndices` can be deleted, e.g. the old version after a migration.
+Locally, declared indices can be deleted too, e.g. to recreate one after changing its mapping.
 
 ```sh
-OPENSEARCH_ENDPOINT=https://... npm run delete-index -w datastore -- articles-v1
-```
-
-### drop-local-indices
-
-Local only: deletes the article indices on docker-compose OpenSearch, e.g. after changing a mapping.
-
-```sh
-npm run drop-local-indices -w datastore
+npm run delete-index -w datastore -- articles-v1                                  # local docker-compose
+OPENSEARCH_ENDPOINT=https://... npm run delete-index -w datastore -- articles-v1  # Serverless
 ```
 
 ### seed-local

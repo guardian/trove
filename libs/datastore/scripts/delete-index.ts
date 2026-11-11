@@ -1,8 +1,10 @@
 /**
- * Deletes an index that's no longer declared in `articleIndices`, e.g. the old version after a migration.
- * Asks for confirmation first.
+ * Deletes an index after asking for confirmation.
+ * On AWS, only indices no longer declared in `articleIndices` can be deleted, e.g. the old version after a migration.
+ * Locally, declared indices can be deleted too, e.g. to recreate one after changing its mapping.
  *
- *   OPENSEARCH_ENDPOINT=https://... npm run delete-index -w datastore -- articles-v1
+ *   npm run delete-index -w datastore -- articles-v1                                  # local docker-compose
+ *   OPENSEARCH_ENDPOINT=https://... npm run delete-index -w datastore -- articles-v1  # Serverless
  */
 import { createInterface } from 'node:readline/promises';
 import { createClient } from '../src/client.ts';
@@ -12,8 +14,11 @@ const index = process.argv[2];
 if (!index) {
 	throw new Error('Usage: npm run delete-index -w datastore -- <index>');
 }
-// Code may still read or write a declared index, and apply-schema would re-create it anyway
-if (Object.values(articleIndices).some(({ name }) => name === index)) {
+// Deployed code may still read or write a declared index
+if (
+	process.env.OPENSEARCH_ENDPOINT &&
+	Object.values(articleIndices).some(({ name }) => name === index)
+) {
 	throw new Error(
 		`"${index}" is still declared in articleIndices, remove it first`,
 	);
