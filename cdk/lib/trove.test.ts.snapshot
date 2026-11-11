@@ -492,7 +492,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
         "Tags": [
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -526,7 +526,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
         "Tags": [
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -552,7 +552,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
         "Tags": [
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -586,7 +586,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
         "Tags": [
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -641,7 +641,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -826,7 +826,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -867,7 +867,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -903,7 +903,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -956,7 +956,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -1126,7 +1126,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
