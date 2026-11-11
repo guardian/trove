@@ -33,6 +33,7 @@ export class Trove extends GuStack {
 						],
 						resources: [
 							'arn:aws:bedrock:eu-west-1:308506855511:inference-profile/eu.twelvelabs.marengo-embed-3-0-v1:0',
+							'arn:aws:bedrock:*::foundation-model/twelvelabs.marengo-embed-3-0-v1:0',
 						],
 					}),
 				],
