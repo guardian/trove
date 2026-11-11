@@ -3,7 +3,7 @@ import { articleIndices } from './indices.ts';
 
 /**
  * Creates every index declared in `articleIndices`, if missing.
- * Never deletes or modifies an existing index, see datastore/README instructions for creating indices.
+ * Never deletes or modifies an existing index, see libs/datastore/README.md instructions for creating indices.
  */
 export const applySchema = async (client: Client): Promise<void> => {
 	for (const { name, mapping } of Object.values(articleIndices)) {
