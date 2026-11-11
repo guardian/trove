@@ -29,7 +29,7 @@ export class Trove extends GuStack {
 						effect: Effect.ALLOW,
 						actions: [
 							'bedrock:InvokeModel',
-							'bedrock:InvokeModelWithResponseStream'
+							'bedrock:InvokeModelWithResponseStream',
 						],
 						resources: [
 							'arn:aws:bedrock:eu-west-1:308506855511:inference-profile/eu.twelvelabs.marengo-embed-3-0-v1:0',
