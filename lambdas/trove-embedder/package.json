@@ -1,0 +1,17 @@
+{
+	"name": "trove-embedder",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "esbuild src/index.ts --bundle --platform=node --external:@aws-sdk/* --outfile=dist/index.js",
+		"package": "npm run build && cd dist && rm -f trove-embedder.zip && zip trove-embedder.zip index.js",
+		"test": "node --test 'src/**/*.test.ts'",
+		"typecheck": "tsc --noEmit",
+		"lint": "eslint ."
+	},
+	"devDependencies": {
+		"@types/aws-lambda": "8.10.164",
+		"esbuild": "0.28.2"
+	}
+}

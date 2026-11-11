@@ -1,0 +1,14 @@
+{
+	"name": "shared",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"test": "node --test 'src/**/*.test.ts'",
+		"typecheck": "tsc --noEmit",
+		"lint": "eslint ."
+	},
+	"dependencies": {
+		"zod": "4.6.7"
+	}
+}

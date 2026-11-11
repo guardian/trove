@@ -29,7 +29,7 @@ The actual flow would be as follows:
 
 1. Fetch historical content via CAPI's Concierge API by paginating through the content and requesting the next date range.
 2. Place it on a dedicated backfill queue to be embedded one by one. These queue items will have the same schema as the listeners’ queue.
-3. Another copy of the EmbedderLambda takes messages from the queue, calls the embedding provider, and writes the resulting vectors to OpenSearch.
+3. The EmbedderLambda takes messages from the queue, calls the embedding provider, and writes the resulting vectors to OpenSearch.
 
 # Architecture diagram
 
@@ -55,7 +55,7 @@ flowchart TD
         BackfillQueue[[Backfill Queue]]
         Listener[listener]
         Queue[[Queue]]
-        Embedder["EmbedderLambda x2"]
+        Embedder["EmbedderLambda"]
         OpenSearch[(Open-search)]
         API
     end
@@ -100,11 +100,12 @@ We don’t want to cause any issues on CAPI. Processing large numbers of embeddi
 
 BUT - Historical content can’t be replayed through Crier, so we need a queue for backfill regardless.
 
-## Decision: Run two copies of the Embedder lambda
+## Decision: Two event sources for a single Embedder lambda
 
 **Reasoning**:
-Having two copies gives us independent concurrency. It makes it easier to tweak the limits and throughput of backfill vs live stream.
+We can control each side of the pipeline independently by setting a limit on each event source, as well as centrally manage the throughput of the embedder lambda by adding a max concurrency on the lambda itself.
+This gives us one (albeit a bit crude) way to remain below our inference limit.
 
-**Alternative**: The two queues feed into one embedderLambda.
+**Alternative**: A separate embedder lambda for each queue.
 
-BUT - When we do a big backfill that will interfere very heavily with the live events, so it would take much longer to get back up-to-date with live events post-backfill.
+BUT - it would create two separate functions, and controlling throughput is marginally more complex.
