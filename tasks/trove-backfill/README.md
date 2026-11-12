@@ -14,18 +14,18 @@ resume yet.
 
 ```sh
 # Without Docker
-DRY_RUN=true CAPI_API_KEY=… npm start -w trove-backfill
+DRY_RUN=true CAPI_API_KEY=… FROM_DATE=2020-01-01 TO_DATE=2020-01-02 npm start -w trove-backfill
 
 # With Docker (build from the repo root)
 docker build -f tasks/trove-backfill/Dockerfile -t trove-backfill .
-docker run --rm --read-only -e DRY_RUN=true -e CAPI_API_KEY=… trove-backfill
+docker run --rm --read-only -e DRY_RUN=true -e CAPI_API_KEY=… -e FROM_DATE=2020-01-01 trove-backfill
 ```
 
 | Env var                       | Default                            |                                         |
 | ----------------------------- | ---------------------------------- | --------------------------------------- |
 | `CAPI_API_KEY`                | required                           | Read from SSM by ECS in AWS             |
 | `BACKFILL_EMBEDDER_QUEUE_URL` | required unless `DRY_RUN=true`     | Set by CDK                              |
-| `LAST_SEEN_ID`                | oldest content                     | Set from the Step Function input in AWS |
+| `FROM_DATE` / `TO_DATE`       | unbounded                          | Set from the Step Function input in AWS |
 | `CAPI_URL`                    | `https://content.guardianapis.com` |                                         |
 | `DRY_RUN`                     | `false`                            | Logs instead of sending to SQS          |
 
@@ -40,11 +40,10 @@ docker run --rm --read-only -e DRY_RUN=true -e CAPI_API_KEY=… trove-backfill
 To run a backfill, start an execution of the `trove-backfill-<STAGE>` Step Function (created by `GuEcsTask`):
 
 ```json
-{ "lastSeenId": "world/2020/jan/01/some-article" }
+{ "fromDate": "2020-01-01", "toDate": "2020-12-31" }
 ```
 
-`lastSeenId` is required. Pass `""` to start from the oldest content. To continue a previous run, pass the
-last seen ID from its final log line.
+Both keys are required. Shard by date range by starting several executions.
 
 ### Prerequisites before this can deploy
 

@@ -1635,7 +1635,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
                   "GroupId"
                 ]
               },
-              "\\"]}},\\"Overrides\\":{\\"ContainerOverrides\\":[{\\"Name\\":\\"TroveBackfill-TaskContainer\\",\\"Environment\\":[{\\"Name\\":\\"LAST_SEEN_ID\\",\\"Value.$\\":\\"$.lastSeenId\\"}]}]},\\"LaunchType\\":\\"FARGATE\\",\\"PlatformVersion\\":\\"LATEST\\"}}}}"
+              "\\"]}},\\"Overrides\\":{\\"ContainerOverrides\\":[{\\"Name\\":\\"TroveBackfill-TaskContainer\\",\\"Environment\\":[{\\"Name\\":\\"FROM_DATE\\",\\"Value.$\\":\\"$.fromDate\\"},{\\"Name\\":\\"TO_DATE\\",\\"Value.$\\":\\"$.toDate\\"}]}]},\\"LaunchType\\":\\"FARGATE\\",\\"PlatformVersion\\":\\"LATEST\\"}}}}"
             ]
           ]
         },

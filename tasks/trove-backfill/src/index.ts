@@ -31,6 +31,8 @@ function requireEnv(name: string): string {
 
 const capiUrl = process.env.CAPI_URL ?? 'https://content.guardianapis.com';
 const capiApiKey = requireEnv('CAPI_API_KEY');
+const fromDate = process.env.FROM_DATE;
+const toDate = process.env.TO_DATE;
 const dryRun = process.env.DRY_RUN === 'true';
 const queueUrl = dryRun ? '' : requireEnv('BACKFILL_EMBEDDER_QUEUE_URL');
 const sqs = new SQSClient({});
@@ -52,6 +54,12 @@ async function fetchPage(lastSeenId: string | undefined) {
 		'show-tags': 'keyword',
 		'api-key': capiApiKey,
 	});
+	if (fromDate) {
+		params.set('from-date', fromDate);
+	}
+	if (toDate) {
+		params.set('to-date', toDate);
+	}
 
 	console.log(`Fetching /${path}`);
 	const res = await fetch(`${capiUrl}/${path}?${params.toString()}`);
@@ -81,15 +89,13 @@ function toEmbeddingEvent(content: CapiContent) {
 }
 
 async function main() {
-	// Empty means start from the oldest content (the Step Function input always sets it)
-	let lastSeenId =
-		process.env.LAST_SEEN_ID === '' ? undefined : process.env.LAST_SEEN_ID;
-	let sent = 0;
-
 	console.log(
-		`Starting backfill after ${lastSeenId ?? 'the oldest content'}, ` +
+		`Starting backfill from ${fromDate ?? 'the beginning'} to ${toDate ?? 'now'}, ` +
 			`${MAX_PAGES} pages of ${PAGE_SIZE}${dryRun ? ' (dry run, nothing will be sent)' : ''}`,
 	);
+
+	let lastSeenId: string | undefined;
+	let sent = 0;
 
 	for (let page = 1; page <= MAX_PAGES; page++) {
 		const results = await fetchPage(lastSeenId);
@@ -118,16 +124,15 @@ async function main() {
 			sent++;
 		}
 
-		const last = results.at(-1);
-		if (!last) {
+		lastSeenId = results.at(-1)?.id;
+		if (!lastSeenId) {
 			console.log('No more results');
 			break;
 		}
-		lastSeenId = last.id;
 	}
 
 	console.log(
-		`Finished: sent ${sent} events, last seen ${lastSeenId ?? 'none'}`,
+		`Finished: sent ${sent} events, last seen ${lastSeenId ?? 'nothing'}`,
 	);
 }
 
