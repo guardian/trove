@@ -27,7 +27,7 @@ A new version goes through this lifecycle:
 
 **Alternative**: Update the mapping of the existing index in place.
 
-BUT - OpenSearch only allows adding new fields. Changing a field type, or an embedding's dimension, is impossible, so we need versions anyway. Adding an optional field to an existing index remains possible, but isn't supported by our tooling yet, and existing documents wouldn't have the field until they're re-written.
+BUT - OpenSearch only allows adding new fields. Changing a field type, or an embedding's dimension, is impossible, so we need versions anyway. Adding an optional field to an existing index remains possible, but isn't supported by our tooling yet, and existing documents wouldn't have the field until they're re-written. This could introduce a danger that searches are based on incomplete subsets of the data without us realising.
 
 **Alternative**: Create a new index and copy the documents across with OpenSearch's reindex operation.
 
