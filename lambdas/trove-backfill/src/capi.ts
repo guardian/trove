@@ -32,7 +32,6 @@ export type CapiQuery = {
  */
 export function createCapiPageFetcher(query: CapiQuery) {
 	const params = new URLSearchParams({
-		type: 'article,liveblog',
 		'order-by': 'oldest',
 		'use-date': 'published',
 		'page-size': String(query.pageSize),
@@ -62,7 +61,8 @@ async function fetchWithRetry(url: string, attempts = 3): Promise<unknown> {
 			if (!res.ok) {
 				throw new Error(`CAPI responded ${res.status}`);
 			}
-			return await res.json();
+			const json = await res.json();
+			return json;
 		} catch (error) {
 			if (attempt >= attempts) {
 				throw error;
