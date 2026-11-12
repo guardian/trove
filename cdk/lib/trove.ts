@@ -74,7 +74,7 @@ export class Trove extends GuStack {
 		embedder.addEventSource(new SqsEventSource(backfillQueue));
 
 		// Backfill is a long-running Fargate task, wrapped by GuEcsTask in a Step Function.
-		// Start an execution with input {"fromDate": "YYYY-MM-DD", "toDate": "YYYY-MM-DD"}.
+		// Start an execution with input {"lastSeenId": "<content id>"}, or {"lastSeenId": ""} to start from the oldest content.
 		const backfillApp = 'trove-backfill';
 		const vpc = GuVpc.fromIdParameter(this, 'Vpc');
 		const backfill = new GuEcsTask(this, 'TroveBackfill', {
@@ -107,8 +107,7 @@ export class Trove extends GuStack {
 				? { noMonitoring: false, snsTopicArn: alarmTopic.topicArn }
 				: { noMonitoring: true },
 			environmentOverrides: [
-				{ name: 'FROM_DATE', value: JsonPath.stringAt('$.fromDate') },
-				{ name: 'TO_DATE', value: JsonPath.stringAt('$.toDate') },
+				{ name: 'LAST_SEEN_ID', value: JsonPath.stringAt('$.lastSeenId') },
 			],
 		});
 		backfillQueue.grantSendMessages(backfill.taskDefinition.taskRole);
