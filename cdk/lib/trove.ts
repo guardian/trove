@@ -1,11 +1,13 @@
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core/index.js';
 import { GuStack } from '@guardian/cdk/lib/constructs/core/index.js';
+import { GuDeveloperPolicy } from '@guardian/cdk/lib/constructs/iam/policies/developer-policy.js';
 import { GuLambdaFunction } from '@guardian/cdk/lib/constructs/lambda/index.js';
 import type { GuKinesisLambdaProps } from '@guardian/cdk/lib/experimental/patterns/kinesis-lambda.js';
 import { GuKinesisLambdaExperimental } from '@guardian/cdk/lib/experimental/patterns/kinesis-lambda.js';
 import { StreamRetry } from '@guardian/cdk/lib/utils/lambda/event-source.js';
 import type { App } from 'aws-cdk-lib';
 import { Duration } from 'aws-cdk-lib';
+import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { StartingPosition } from 'aws-cdk-lib/aws-lambda';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
@@ -16,6 +18,27 @@ import { Queue } from 'aws-cdk-lib/aws-sqs';
 export class Trove extends GuStack {
 	constructor(scope: App, id: string, props: GuStackProps) {
 		super(scope, id, props);
+
+		if (['CODE', 'TEST'].includes(this.stage)) {
+			new GuDeveloperPolicy(this, 'TroveLocalRunPolicy', {
+				grantId: 'newsroom-ai-trove-local-run',
+				friendlyName: 'Run Trove locally',
+				withoutPolicyChecks: true,
+				statements: [
+					new PolicyStatement({
+						effect: Effect.ALLOW,
+						actions: [
+							'bedrock:InvokeModel',
+							'bedrock:InvokeModelWithResponseStream',
+						],
+						resources: [
+							'arn:aws:bedrock:eu-west-1:308506855511:inference-profile/eu.twelvelabs.marengo-embed-3-0-v1:0',
+							'arn:aws:bedrock:*::foundation-model/twelvelabs.marengo-embed-3-0-v1:0',
+						],
+					}),
+				],
+			});
+		}
 
 		const listener = new GuKinesisLambdaExperimental(this, 'TroveListener', {
 			app: 'trove-listener',
