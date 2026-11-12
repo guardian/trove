@@ -21,7 +21,7 @@ import { JsonPath } from 'aws-cdk-lib/aws-stepfunctions';
 
 export interface TroveProps extends GuStackProps {
 	/**
-	 * Digest (e.g. `sha256:abc…`) of the trove-backfill-ecs image in the central ECR repository.
+	 * Digest (e.g. `sha256:abc…`) of the trove-backfill image in the central ECR repository.
 	 * Baked into the template, so a Riff-Raff CloudFormation deploy is all that's needed to roll out a new image.
 	 */
 	backfillImageDigest: string;
@@ -73,42 +73,28 @@ export class Trove extends GuStack {
 		embedder.addEventSource(new SqsEventSource(liveQueue));
 		embedder.addEventSource(new SqsEventSource(backfillQueue));
 
-		// No trigger yet: invoked manually until we decide how backfill runs are driven
-		const backfill = new GuLambdaFunction(this, 'TroveBackfill', {
-			app: 'trove-backfill',
-			fileName: 'trove-backfill.zip',
-			functionName: `trove-backfill-${this.stage}`,
-			runtime: Runtime.NODEJS_24_X,
-			handler: 'index.handler',
-		});
-		backfillQueue.grantSendMessages(backfill);
-		backfill.addEnvironment(
-			'BACKFILL_EMBEDDER_QUEUE_URL',
-			backfillQueue.queueUrl,
-		);
-
-		// PoC: backfill as a long-running Fargate task, wrapped by GuEcsTask in a Step Function.
+		// Backfill is a long-running Fargate task, wrapped by GuEcsTask in a Step Function.
 		// Start an execution with input {"fromDate": "YYYY-MM-DD", "toDate": "YYYY-MM-DD"}.
-		const backfillEcsApp = 'trove-backfill-ecs';
+		const backfillApp = 'trove-backfill';
 		const vpc = GuVpc.fromIdParameter(this, 'Vpc');
-		const backfillEcs = new GuEcsTask(this, 'TroveBackfillEcs', {
-			app: backfillEcsApp,
+		const backfill = new GuEcsTask(this, 'TroveBackfill', {
+			app: backfillApp,
 			vpc,
 			subnets: GuVpc.subnetsFromParameterFixedNumber(this, {
 				type: SubnetType.PRIVATE,
-				app: backfillEcsApp,
+				app: backfillApp,
 			}),
 			securityGroups: [
-				new SecurityGroup(this, 'TroveBackfillEcsSecurityGroup', {
+				new SecurityGroup(this, 'TroveBackfillSecurityGroup', {
 					vpc,
-					description: 'Egress to CAPI and SQS for trove-backfill-ecs',
+					description: 'Egress to CAPI and SQS for trove-backfill',
 					allowAllOutbound: true,
 				}),
 			],
 			containerConfiguration: {
 				type: 'repository',
-				repository: new GuRepository(this, 'TroveBackfillEcsRepository', {
-					name: `guardian/trove/${backfillEcsApp}`,
+				repository: new GuRepository(this, 'TroveBackfillRepository', {
+					name: `guardian/trove/${backfillApp}`,
 				}),
 				version: props.backfillImageDigest,
 			},
@@ -125,19 +111,19 @@ export class Trove extends GuStack {
 				{ name: 'TO_DATE', value: JsonPath.stringAt('$.toDate') },
 			],
 		});
-		backfillQueue.grantSendMessages(backfillEcs.taskDefinition.taskRole);
-		backfillEcs.containerDefinition.addEnvironment(
+		backfillQueue.grantSendMessages(backfill.taskDefinition.taskRole);
+		backfill.containerDefinition.addEnvironment(
 			'BACKFILL_EMBEDDER_QUEUE_URL',
 			backfillQueue.queueUrl,
 		);
-		backfillEcs.containerDefinition.addSecret(
+		backfill.containerDefinition.addSecret(
 			'CAPI_API_KEY',
 			EcsSecret.fromSsmParameter(
 				StringParameter.fromSecureStringParameterAttributes(
 					this,
-					'TroveBackfillEcsCapiApiKey',
+					'TroveBackfillCapiApiKey',
 					{
-						parameterName: `/${this.stage}/${this.stack}/${backfillEcsApp}/capi-api-key`,
+						parameterName: `/${this.stage}/${this.stack}/${backfillApp}/capi-api-key`,
 					},
 				),
 			),

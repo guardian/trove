@@ -21,13 +21,13 @@ jobs:
       imageDigest: ${{ steps.publish-image.outputs.imageDigest }}
     steps:
       - uses: actions/checkout@v4
-      - run: docker build -f tasks/trove-backfill/Dockerfile -t trove-backfill-ecs .
-        name: '[trove-backfill-ecs] build image'
+      - run: docker build -f tasks/trove-backfill/Dockerfile -t trove-backfill .
+        name: '[trove-backfill] build image'
       - uses: guardian/actions-ecr/push@1b5a5070838c494e90a4492f15f69c3f83247ef4 # v1.1.0
-        name: '[trove-backfill-ecs] push image to ECR'
+        name: '[trove-backfill] push image to ECR'
         id: publish-image
         with:
-          app: trove-backfill-ecs
+          app: trove-backfill
           roleArn: ${{ secrets.GU_ARTIFACTS_ROLE_ARN }}
           githubToken: ${{ secrets.GITHUB_TOKEN }}
 
@@ -61,8 +61,6 @@ jobs:
         name: '[trove-listener] build and package'
       - run: npm run package --workspace=trove-embedder
         name: '[trove-embedder] build and package'
-      - run: npm run package --workspace=trove-backfill
-        name: '[trove-backfill] build and package'
       - run: npm run synth --workspace=cdk
         name: '[CDK] synth'
         env:
@@ -83,5 +81,3 @@ jobs:
               - lambdas/trove-listener/dist/trove-listener.zip
             trove-embedder:
               - lambdas/trove-embedder/dist/trove-embedder.zip
-            trove-backfill:
-              - lambdas/trove-backfill/dist/trove-backfill.zip

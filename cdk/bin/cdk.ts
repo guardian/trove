@@ -2,11 +2,11 @@ import { GuRoot } from '@guardian/cdk/lib/constructs/root.js';
 import { TroveOpenSearch } from '../lib/trove-open-search.ts';
 import { Trove } from '../lib/trove.ts';
 
-// Set by CI after pushing the trove-backfill-ecs image to ECR.
+// Set by CI after pushing the trove-backfill image to ECR.
 const backfillImageDigest = process.env.IMAGE_DIGEST;
 if (!backfillImageDigest) {
 	throw new Error(
-		'IMAGE_DIGEST must be set to the trove-backfill-ecs image digest',
+		'IMAGE_DIGEST must be set to the trove-backfill image digest',
 	);
 }
 

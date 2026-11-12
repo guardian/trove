@@ -1,10 +1,10 @@
 # Build from the repo root so npm workspaces (e.g. libs/shared) resolve:
-#   docker build -f tasks/trove-backfill/Dockerfile -t trove-backfill-ecs .
+#   docker build -f tasks/trove-backfill/Dockerfile -t trove-backfill .
 FROM node:26-alpine AS builder
 WORKDIR /app
 COPY . .
-RUN npm ci --workspace=trove-backfill-ecs --ignore-scripts \
-	&& npm run build --workspace=trove-backfill-ecs
+RUN npm ci --workspace=trove-backfill --ignore-scripts \
+	&& npm run build --workspace=trove-backfill
 
 # The bundle is self-contained, so the runtime image only needs node.
 FROM node:26-alpine
