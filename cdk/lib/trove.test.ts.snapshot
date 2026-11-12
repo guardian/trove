@@ -1080,6 +1080,45 @@ exports[`The Trove stack > matches the snapshot 1`] = `
                   "Arn"
                 ]
               }
+            },
+            {
+              "Action": "sqs:GetQueueAttributes",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "EmbedderBackfillQueue996A2FEF",
+                  "Arn"
+                ]
+              }
+            },
+            {
+              "Action": [
+                "ssm:DescribeParameters",
+                "ssm:GetParameters",
+                "ssm:GetParameter",
+                "ssm:GetParameterHistory"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":ssm:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":parameter/TEST/capi/trove-backfill/capi-api-key"
+                  ]
+                ]
+              }
             }
           ],
           "Version": "2012-10-17"
@@ -1108,7 +1147,8 @@ exports[`The Trove stack > matches the snapshot 1`] = `
             "APP": "trove-backfill",
             "BACKFILL_EMBEDDER_QUEUE_URL": {
               "Ref": "EmbedderBackfillQueue996A2FEF"
-            }
+            },
+            "CAPI_API_KEY_PARAMETER_NAME": "/TEST/capi/trove-backfill/capi-api-key"
           }
         },
         "FunctionName": "trove-backfill-TEST",
@@ -1146,12 +1186,140 @@ exports[`The Trove stack > matches the snapshot 1`] = `
             "Value": "TEST"
           }
         ],
-        "Timeout": 30
+        "Timeout": 300
       },
       "DependsOn": [
         "TroveBackfillServiceRoleDefaultPolicy349CB304",
         "TroveBackfillServiceRoleF3620C62"
       ]
+    },
+    "TroveBackfillStateMachineRole48A8FF3B": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "states.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "66.0.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST"
+          }
+        ]
+      }
+    },
+    "TroveBackfillStateMachineRoleDefaultPolicyF668F555": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "TroveBackfill3621B4EF",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "TroveBackfill3621B4EF",
+                          "Arn"
+                        ]
+                      },
+                      ":*"
+                    ]
+                  ]
+                }
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "PolicyName": "TroveBackfillStateMachineRoleDefaultPolicyF668F555",
+        "Roles": [
+          {
+            "Ref": "TroveBackfillStateMachineRole48A8FF3B"
+          }
+        ]
+      }
+    },
+    "TroveBackfillStateMachine76C3D64F": {
+      "Type": "AWS::StepFunctions::StateMachine",
+      "Properties": {
+        "DefinitionString": {
+          "Fn::Join": [
+            "",
+            [
+              "{\\"StartAt\\":\\"BackfillBatch\\",\\"States\\":{\\"BackfillBatch\\":{\\"Next\\":\\"BackfillProgress\\",\\"Retry\\":[{\\"ErrorEquals\\":[\\"Lambda.ClientExecutionTimeoutException\\",\\"Lambda.ServiceException\\",\\"Lambda.AWSLambdaException\\",\\"Lambda.SdkClientException\\"],\\"IntervalSeconds\\":2,\\"MaxAttempts\\":6,\\"BackoffRate\\":2},{\\"ErrorEquals\\":[\\"States.TaskFailed\\",\\"States.Timeout\\"],\\"IntervalSeconds\\":5,\\"MaxAttempts\\":3,\\"BackoffRate\\":2}],\\"Type\\":\\"Task\\",\\"Resource\\":\\"",
+              {
+                "Fn::GetAtt": [
+                  "TroveBackfill3621B4EF",
+                  "Arn"
+                ]
+              },
+              "\\"},\\"WaitForBackfillQueue\\":{\\"Type\\":\\"Wait\\",\\"Seconds\\":30,\\"Next\\":\\"BackfillBatch\\"},\\"BackfillProgress\\":{\\"Type\\":\\"Choice\\",\\"Choices\\":[{\\"Variable\\":\\"$.complete\\",\\"BooleanEquals\\":true,\\"Next\\":\\"BackfillComplete\\"},{\\"Variable\\":\\"$.waiting\\",\\"BooleanEquals\\":true,\\"Next\\":\\"WaitForBackfillQueue\\"}],\\"Default\\":\\"BackfillBatch\\"},\\"BackfillComplete\\":{\\"Type\\":\\"Succeed\\"}},\\"TimeoutSeconds\\":604800}"
+            ]
+          ]
+        },
+        "RoleArn": {
+          "Fn::GetAtt": [
+            "TroveBackfillStateMachineRole48A8FF3B",
+            "Arn"
+          ]
+        },
+        "StateMachineName": "trove-backfill-TEST",
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "66.0.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST"
+          }
+        ]
+      },
+      "DependsOn": [
+        "TroveBackfillStateMachineRoleDefaultPolicyF668F555",
+        "TroveBackfillStateMachineRole48A8FF3B"
+      ],
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete"
     },
     "TroveBackfillEcsSecurityGroup803A2075": {
       "Type": "AWS::EC2::SecurityGroup",
