@@ -6,11 +6,9 @@ It pages through CAPI oldest-first and sends an `UpdateEmbeddingEvent` for each 
 queue, where the embedder picks it up. The first page comes from `/search`. Every later page comes from
 `/content/{lastSeenId}/next` (see [content-api#2812](https://github.com/guardian/content-api/pull/2812)).
 
-- **Back-pressure:** paging pauses while the backfill queue holds more than `MAX_QUEUE_DEPTH` messages. The embedder is
-  deliberately throttled, so this stops messages from expiring in the queue before they're embedded.
-- **Resuming:** progress, including `lastSeenWebPublicationDate`, is logged after every page. To resume a failed or
-  stopped run, start a new one with `fromDate` set to that date. Re-embedding the same article is idempotent.
-- **Stopping:** on `SIGTERM` (ECS `StopTask`) the task finishes the current page, logs the cursor and exits.
+For now it deliberately sends only a few pages (`MAX_PAGES` × `PAGE_SIZE` in `src/index.ts`), so a run demonstrates the
+whole pipeline (backfill → queue → embedder logs) without flooding the queue. There is no back-pressure, retry or
+resume yet.
 
 ## Running locally
 
@@ -29,8 +27,6 @@ docker run --rm --read-only -e DRY_RUN=true -e CAPI_API_KEY=… -e FROM_DATE=202
 | `BACKFILL_EMBEDDER_QUEUE_URL` | required unless `DRY_RUN=true`     | Set by CDK                              |
 | `FROM_DATE` / `TO_DATE`       | unbounded                          | Set from the Step Function input in AWS |
 | `CAPI_URL`                    | `https://content.guardianapis.com` |                                         |
-| `PAGE_SIZE`                   | `200`                              |                                         |
-| `MAX_QUEUE_DEPTH`             | `10000`                            |                                         |
 | `DRY_RUN`                     | `false`                            | Logs instead of sending to SQS          |
 
 ## Build and deploy
