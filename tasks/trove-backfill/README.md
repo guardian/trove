@@ -3,6 +3,9 @@
 Proof of concept for running the historical backfill as a long-running ECS Fargate task, as an alternative to
 the `trove-backfill` Lambda driven by a Step Function.
 
+The package, Riff-Raff app, ECR image and SSM path are all named `trove-backfill-ecs`, so they don't clash with that
+Lambda (`lambdas/trove-backfill`).
+
 It pages through CAPI oldest-first and sends an `UpdateEmbeddingEvent` for each article/liveblog to the backfill
 queue, where the embedder picks it up. The first page comes from `/search`. Every later page comes from
 `/content/{lastSeenId}/next` (see [content-api#2812](https://github.com/guardian/content-api/pull/2812)).
@@ -20,7 +23,7 @@ queue, where the embedder picks it up. The first page comes from `/search`. Ever
 DRY_RUN=true CAPI_API_KEY=… FROM_DATE=2020-01-01 TO_DATE=2020-01-02 npm start -w trove-backfill-ecs
 
 # With Docker (build from the repo root)
-docker build -f ecs/trove-backfill-ecs/Dockerfile -t trove-backfill-ecs .
+docker build -f tasks/trove-backfill/Dockerfile -t trove-backfill-ecs .
 docker run --rm --read-only -e DRY_RUN=true -e CAPI_API_KEY=… -e FROM_DATE=2020-01-01 trove-backfill-ecs
 ```
 

@@ -21,7 +21,7 @@ jobs:
       imageDigest: ${{ steps.publish-image.outputs.imageDigest }}
     steps:
       - uses: actions/checkout@v4
-      - run: docker build -f ecs/trove-backfill-ecs/Dockerfile -t trove-backfill-ecs .
+      - run: docker build -f tasks/trove-backfill/Dockerfile -t trove-backfill-ecs .
         name: '[trove-backfill-ecs] build image'
       - uses: guardian/actions-ecr/push@1b5a5070838c494e90a4492f15f69c3f83247ef4 # v1.1.0
         name: '[trove-backfill-ecs] push image to ECR'

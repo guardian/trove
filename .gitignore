@@ -12,4 +12,4 @@ node_modules/
 
 # Lambda build output
 lambdas/*/dist/
-ecs/*/dist/
+tasks/*/dist/
