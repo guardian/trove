@@ -13,5 +13,11 @@
 	"devDependencies": {
 		"@types/aws-lambda": "8.10.164",
 		"esbuild": "0.28.2"
+	},
+	"dependencies": {
+		"@aws-sdk/client-bedrock-runtime": "3.1167.0",
+		"datastore": "0.0.0",
+		"shared": "0.0.0",
+		"zod": "4.6.7"
 	}
 }
