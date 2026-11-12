@@ -17,7 +17,17 @@ import { Topic } from 'aws-cdk-lib/aws-sns';
 import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
-import { JsonPath } from 'aws-cdk-lib/aws-stepfunctions';
+import {
+	Choice,
+	Condition,
+	DefinitionBody,
+	JsonPath,
+	StateMachine,
+	Succeed,
+	Wait,
+	WaitTime,
+} from 'aws-cdk-lib/aws-stepfunctions';
+import { LambdaInvoke } from 'aws-cdk-lib/aws-stepfunctions-tasks';
 
 export interface TroveProps extends GuStackProps {
 	/**
@@ -73,19 +83,65 @@ export class Trove extends GuStack {
 		embedder.addEventSource(new SqsEventSource(liveQueue));
 		embedder.addEventSource(new SqsEventSource(backfillQueue));
 
-		// No trigger yet: invoked manually until we decide how backfill runs are driven
 		const backfill = new GuLambdaFunction(this, 'TroveBackfill', {
 			app: 'trove-backfill',
 			fileName: 'trove-backfill.zip',
 			functionName: `trove-backfill-${this.stage}`,
 			runtime: Runtime.NODEJS_24_X,
 			handler: 'index.handler',
+			timeout: Duration.minutes(5),
 		});
 		backfillQueue.grantSendMessages(backfill);
+		backfillQueue.grant(backfill, 'sqs:GetQueueAttributes');
 		backfill.addEnvironment(
 			'BACKFILL_EMBEDDER_QUEUE_URL',
 			backfillQueue.queueUrl,
 		);
+		const backfillCapiApiKey =
+			StringParameter.fromSecureStringParameterAttributes(
+				this,
+				'TroveBackfillCapiApiKey',
+				{
+					parameterName: `/${this.stage}/${this.stack}/trove-backfill/capi-api-key`,
+				},
+			);
+		backfillCapiApiKey.grantRead(backfill);
+		backfill.addEnvironment(
+			'CAPI_API_KEY_PARAMETER_NAME',
+			backfillCapiApiKey.parameterName,
+		);
+
+		const processBatch = new LambdaInvoke(this, 'BackfillBatch', {
+			lambdaFunction: backfill,
+			payloadResponseOnly: true,
+		});
+		// A retry may enqueue the same articles again; embedding updates are idempotent.
+		processBatch.addRetry({
+			errors: ['States.TaskFailed', 'States.Timeout'],
+			interval: Duration.seconds(5),
+			backoffRate: 2,
+			maxAttempts: 3,
+		});
+		const waitForQueue = new Wait(this, 'WaitForBackfillQueue', {
+			time: WaitTime.duration(Duration.seconds(30)),
+		});
+		processBatch.next(
+			new Choice(this, 'BackfillProgress')
+				.when(
+					Condition.booleanEquals('$.complete', true),
+					new Succeed(this, 'BackfillComplete'),
+				)
+				.when(
+					Condition.booleanEquals('$.waiting', true),
+					waitForQueue.next(processBatch),
+				)
+				.otherwise(processBatch),
+		);
+		new StateMachine(this, 'TroveBackfillStateMachine', {
+			stateMachineName: `trove-backfill-${this.stage}`,
+			definitionBody: DefinitionBody.fromChainable(processBatch),
+			timeout: Duration.days(7),
+		});
 
 		// PoC: backfill as a long-running Fargate task, wrapped by GuEcsTask in a Step Function.
 		// Start an execution with input {"fromDate": "YYYY-MM-DD", "toDate": "YYYY-MM-DD"}.

@@ -34,7 +34,6 @@ export type CapiQuery = {
  */
 export function createCapiPageFetcher(query: CapiQuery) {
 	const params = new URLSearchParams({
-		type: 'article,liveblog',
 		'order-by': 'oldest',
 		'use-date': 'published',
 		'page-size': String(query.pageSize),

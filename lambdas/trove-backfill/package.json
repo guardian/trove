@@ -10,6 +10,12 @@
 		"typecheck": "tsc --noEmit",
 		"lint": "eslint ."
 	},
+	"dependencies": {
+		"@aws-sdk/client-sqs": "3.1166.0",
+		"@aws-sdk/client-ssm": "3.1166.0",
+		"shared": "*",
+		"zod": "4.6.7"
+	},
 	"devDependencies": {
 		"@types/aws-lambda": "8.10.164",
 		"esbuild": "0.28.2"
