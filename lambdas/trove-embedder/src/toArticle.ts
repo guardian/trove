@@ -15,11 +15,18 @@ export const toArticleV1 = async (
 		embeddings: { marengo_3_0: await embed(value) },
 	});
 
-	const [headline, standfirst, combined] = await Promise.all([
-		embedText(payload.headline),
-		embedText(payload.standfirst),
-		embedText(headlineAndStandfirst(payload.headline, payload.standfirst)),
-	]);
+	const [headline, standfirst, combined] = (
+		await Promise.allSettled([
+			embedText(payload.headline),
+			embedText(payload.standfirst),
+			embedText(headlineAndStandfirst(payload.headline, payload.standfirst)),
+		])
+	).map((result) => {
+		if (result.status === 'rejected') {
+			throw result.reason as unknown;
+		}
+		return result.value;
+	});
 
 	return ArticleV1.parse({
 		headline,
