@@ -67,7 +67,7 @@ docker image rm trove-backfill
 The backfill currently finishes in a second or two, so `docker exec` only works for a moment. To look around the
 image, use `docker run --rm -it trove-backfill sh` instead.
 
-### Running and observing the deployed task
+## Running and observing the deployed task
 
 You need AWS credentials for the account (e.g. a Janus profile). Set these once per terminal:
 
