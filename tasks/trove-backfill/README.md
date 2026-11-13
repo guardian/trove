@@ -9,7 +9,13 @@ already wired up in CDK for that.
 
 ## Running locally
 
-Needs AWS credentials that can send to the queue.
+Without `BACKFILL_EMBEDDER_QUEUE_URL`, the messages are logged instead of sent, so no AWS credentials are needed:
+
+```sh
+npm start -w trove-backfill
+```
+
+To send to a real queue, set it and provide AWS credentials that can send to the queue:
 
 ```sh
 BACKFILL_EMBEDDER_QUEUE_URL=… npm start -w trove-backfill
