@@ -4,6 +4,7 @@ import type { App } from 'aws-cdk-lib';
 import { RemovalPolicy } from 'aws-cdk-lib';
 import type { CfnCollectionGroupProps } from 'aws-cdk-lib/aws-opensearchserverless';
 import {
+	CfnAccessPolicy,
 	CfnCollection,
 	CfnCollectionGroup,
 	CfnSecurityPolicy,
@@ -85,5 +86,32 @@ export class TroveOpenSearch extends GuStack {
 		collection.addResourceDependency(networkPolicy);
 		collection.addResourceDependency(group);
 		collection.applyRemovalPolicy(RemovalPolicy.RETAIN);
+
+		new CfnAccessPolicy(this, 'EngineerDataAccessPolicy', {
+			name: `trove-engineers-${stage.toLowerCase()}`,
+			type: 'data',
+			policy: this.toJsonString([
+				{
+					Rules: [
+						{
+							ResourceType: 'index',
+							Resource: [`index/${name}/articles-*`],
+							Permission: [
+								'aoss:CreateIndex',
+								'aoss:DeleteIndex',
+								'aoss:DescribeIndex',
+								'aoss:UpdateIndex',
+								'aoss:ReadDocument',
+								'aoss:WriteDocument',
+							],
+						},
+					],
+					Principal: [
+						// engineer access
+						`arn:aws:iam::${this.account}:role/federation/janus-access-role-${this.region}`,
+					],
+				},
+			]),
+		});
 	}
 }
