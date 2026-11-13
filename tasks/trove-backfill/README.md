@@ -9,10 +9,11 @@ already wired up in CDK for that.
 
 ## Running locally
 
-Needs AWS credentials that can send to the queue.
+This sends the events to the real `trove-embedder-backfill-<STAGE>` queue, so you can watch the embedder logs in
+that stage. It needs AWS credentials for the account (e.g. from Janus).
 
 ```sh
-BACKFILL_EMBEDDER_QUEUE_URL=… npm start -w trove-backfill
+AWS_PROFILE=… STAGE=CODE npm start -w trove-backfill
 ```
 
 ## Build and deploy

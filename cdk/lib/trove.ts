@@ -15,6 +15,7 @@ import { StartingPosition } from 'aws-cdk-lib/aws-lambda';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { Topic } from 'aws-cdk-lib/aws-sns';
 import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
+import type { QueueProps } from 'aws-cdk-lib/aws-sqs';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 
@@ -56,7 +57,10 @@ export class Trove extends GuStack {
 		});
 
 		const liveQueue = createQueueWithDLQ(this, 'EmbedderLive');
-		const backfillQueue = createQueueWithDLQ(this, 'EmbedderBackfill');
+		const backfillQueue = createQueueWithDLQ(this, 'EmbedderBackfill', {
+			// A fixed name, so the backfill can look up the queue from the stage alone (including locally)
+			queueName: `trove-embedder-backfill-${this.stage}`,
+		});
 
 		liveQueue.grantSendMessages(listener);
 		listener.addEnvironment('LIVE_EMBEDDER_QUEUE_URL', liveQueue.queueUrl);
@@ -106,10 +110,7 @@ export class Trove extends GuStack {
 				: { noMonitoring: true },
 		});
 		backfillQueue.grantSendMessages(backfill.taskDefinition.taskRole);
-		backfill.containerDefinition.addEnvironment(
-			'BACKFILL_EMBEDDER_QUEUE_URL',
-			backfillQueue.queueUrl,
-		);
+		backfill.containerDefinition.addEnvironment('STAGE', this.stage);
 		backfill.containerDefinition.addSecret(
 			'CAPI_API_KEY',
 			EcsSecret.fromSsmParameter(
@@ -125,11 +126,16 @@ export class Trove extends GuStack {
 	}
 }
 
-function createQueueWithDLQ(scope: GuStack, id: string): Queue {
+function createQueueWithDLQ(
+	scope: GuStack,
+	id: string,
+	props: QueueProps = {},
+): Queue {
 	const deadLetterQueue = new Queue(scope, `${id}DeadLetterQueue`, {
 		retentionPeriod: Duration.days(14),
 	});
 	return new Queue(scope, `${id}Queue`, {
+		...props,
 		deadLetterQueue: { queue: deadLetterQueue, maxReceiveCount: 3 },
 	});
 }
