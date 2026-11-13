@@ -1,25 +1,15 @@
 import { randomUUID } from 'node:crypto';
-import {
-	GetQueueUrlCommand,
-	SendMessageCommand,
-	SQSClient,
-} from '@aws-sdk/client-sqs';
+import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import type { UpdateEmbeddingEvent } from 'shared/src/embeddingEvent.ts';
 
-const stage = process.env.STAGE;
-if (!stage) {
-	throw new Error('Missing STAGE (e.g. CODE)');
+const queueUrl = process.env.BACKFILL_EMBEDDER_QUEUE_URL;
+if (!queueUrl) {
+	throw new Error('Missing BACKFILL_EMBEDDER_QUEUE_URL');
 }
 
-const sqs = new SQSClient({ region: 'eu-west-1' });
+const sqs = new SQSClient({});
 
 async function main() {
-	const queueName = `trove-embedder-backfill-${stage}`;
-	const { QueueUrl: queueUrl } = await sqs.send(
-		new GetQueueUrlCommand({ QueueName: queueName }),
-	);
-	console.log(`Sending to ${queueUrl}`);
-
 	for (let i = 1; i <= 10; i++) {
 		const event: UpdateEmbeddingEvent = {
 			embeddingEventId: randomUUID(),

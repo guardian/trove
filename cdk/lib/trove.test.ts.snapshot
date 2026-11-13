@@ -602,7 +602,6 @@ exports[`The Trove stack > matches the snapshot 1`] = `
     "EmbedderBackfillQueue996A2FEF": {
       "Type": "AWS::SQS::Queue",
       "Properties": {
-        "QueueName": "trove-embedder-backfill-TEST",
         "RedrivePolicy": {
           "deadLetterTargetArn": {
             "Fn::GetAtt": [
@@ -1107,8 +1106,10 @@ exports[`The Trove stack > matches the snapshot 1`] = `
             "Cpu": 256,
             "Environment": [
               {
-                "Name": "STAGE",
-                "Value": "TEST"
+                "Name": "BACKFILL_EMBEDDER_QUEUE_URL",
+                "Value": {
+                  "Ref": "EmbedderBackfillQueue996A2FEF"
+                }
               }
             ],
             "Essential": true,
