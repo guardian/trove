@@ -25,9 +25,3 @@ BACKFILL_EMBEDDER_QUEUE_URL=… npm start -w trove-backfill
 
 To run a backfill, start an execution of the `trove-backfill-<STAGE>` Step Function (created by `GuEcsTask`). The
 input is ignored.
-
-### Prerequisites before this can deploy
-
-- The ECR repository `guardian/trove/trove-backfill` must exist, and the repo needs a `GU_ARTIFACTS_ROLE_ARN`
-  secret with push access. Both are set up in [guardian/riffraff-platform](https://github.com/guardian/riffraff-platform).
-- The SSM SecureString `/<STAGE>/content-api/trove-backfill/capi-api-key` must exist.
