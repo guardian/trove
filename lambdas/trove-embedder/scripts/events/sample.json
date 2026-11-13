@@ -1,0 +1,23 @@
+[
+	{
+		"embeddingEventId": "local-update-1",
+		"source": "listener",
+		"eventType": "update",
+		"payload": {
+			"articleId": "world/2026/oct/26/lula-wins-brazil-election",
+			"byline": "A Reporter",
+			"articleType": "article",
+			"headline": "Lula wins Brazil election",
+			"standfirst": "Incumbent secures another term after a tight run-off",
+			"keywordTagIds": ["world/brazil", "world/luiz-inacio-lula-da-silva"],
+			"internalRevision": 1,
+			"webPublicationDate": "2026-10-26T10:00:00Z"
+		}
+	},
+	{
+		"embeddingEventId": "local-delete-1",
+		"source": "backfiller",
+		"eventType": "delete",
+		"payload": { "articleId": "food/2026/oct/20/cucumber-salad-recipe" }
+	}
+]

@@ -3,6 +3,10 @@
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
+	"exports": {
+		"./article": "./src/article.ts",
+		"./open-search-embeddings": "./src/open-search-embeddings.ts"
+	},
 	"scripts": {
 		"test": "node --test 'src/**/*.test.ts'",
 		"test-update": "node --test --test-update-snapshots 'src/**/*.test.ts'",

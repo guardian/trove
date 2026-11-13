@@ -15,6 +15,21 @@ import { Topic } from 'aws-cdk-lib/aws-sns';
 import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
 
+const marengoInvokeStatement = new PolicyStatement({
+	effect: Effect.ALLOW,
+	actions: ['bedrock:InvokeModel', 'bedrock:InvokeModelWithResponseStream'],
+	resources: [
+		'arn:aws:bedrock:eu-west-1:308506855511:inference-profile/eu.twelvelabs.marengo-embed-3-0-v1:0',
+		'arn:aws:bedrock:*::foundation-model/twelvelabs.marengo-embed-3-0-v1:0',
+	],
+});
+
+// Lambda's recommendation: at least 6x the function timeout, so retries don't overlap
+const embedderTimeout = Duration.seconds(60);
+const embedderQueueVisibilityTimeout = Duration.seconds(
+	embedderTimeout.toSeconds() * 6,
+);
+
 export class Trove extends GuStack {
 	constructor(scope: App, id: string, props: GuStackProps) {
 		super(scope, id, props);
@@ -24,19 +39,7 @@ export class Trove extends GuStack {
 				grantId: 'newsroom-ai-trove-local-run',
 				friendlyName: 'Run Trove locally',
 				withoutPolicyChecks: true,
-				statements: [
-					new PolicyStatement({
-						effect: Effect.ALLOW,
-						actions: [
-							'bedrock:InvokeModel',
-							'bedrock:InvokeModelWithResponseStream',
-						],
-						resources: [
-							'arn:aws:bedrock:eu-west-1:308506855511:inference-profile/eu.twelvelabs.marengo-embed-3-0-v1:0',
-							'arn:aws:bedrock:*::foundation-model/twelvelabs.marengo-embed-3-0-v1:0',
-						],
-					}),
-				],
+				statements: [marengoInvokeStatement],
 			});
 		}
 
@@ -74,9 +77,16 @@ export class Trove extends GuStack {
 			functionName: `trove-embedder-${this.stage}`,
 			runtime: Runtime.NODEJS_24_X,
 			handler: 'index.handler',
+			timeout: embedderTimeout,
 		});
-		embedder.addEventSource(new SqsEventSource(liveQueue));
-		embedder.addEventSource(new SqsEventSource(backfillQueue));
+		embedder.addToRolePolicy(marengoInvokeStatement);
+		// Failed messages are reported individually, so only they are retried
+		embedder.addEventSource(
+			new SqsEventSource(liveQueue, { reportBatchItemFailures: true }),
+		);
+		embedder.addEventSource(
+			new SqsEventSource(backfillQueue, { reportBatchItemFailures: true }),
+		);
 
 		// No trigger yet: invoked manually until we decide how backfill runs are driven
 		const backfill = new GuLambdaFunction(this, 'TroveBackfill', {
@@ -99,6 +109,7 @@ function createQueueWithDLQ(scope: GuStack, id: string): Queue {
 		retentionPeriod: Duration.days(14),
 	});
 	return new Queue(scope, `${id}Queue`, {
+		visibilityTimeout: embedderQueueVisibilityTimeout,
 		deadLetterQueue: { queue: deadLetterQueue, maxReceiveCount: 3 },
 	});
 }
