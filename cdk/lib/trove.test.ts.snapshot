@@ -2,6 +2,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
 {
   "Metadata": {
     "gu:cdk:constructs": [
+      "GuDeveloperPolicy",
       "GuDistributionBucketParameter",
       "GuKinesisLambdaExperimental",
       "GuLambdaErrorPercentageAlarm",
@@ -21,7 +22,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
         "Tags": [
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -45,6 +46,29 @@ exports[`The Trove stack > matches the snapshot 1`] = `
         "Protocol": "email",
         "TopicArn": {
           "Ref": "troveemailalarmtopic69531040"
+        }
+      }
+    },
+    "TroveLocalRunPolicy8155A46D": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "Description": "Run Trove locally",
+        "Path": "/developer-policy/guardian/trove/capi/TEST/newsroom-ai-trove-local-run/",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "bedrock:InvokeModel",
+                "bedrock:InvokeModelWithResponseStream"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:bedrock:eu-west-1:308506855511:inference-profile/eu.twelvelabs.marengo-embed-3-0-v1:0",
+                "arn:aws:bedrock:*::foundation-model/twelvelabs.marengo-embed-3-0-v1:0"
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
         }
       }
     },
@@ -84,7 +108,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -283,7 +307,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -339,7 +363,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -470,7 +494,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
         "Tags": [
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -496,7 +520,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
         "Tags": [
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -530,7 +554,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
         "Tags": [
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -556,7 +580,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
         "Tags": [
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -591,7 +615,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
         "Tags": [
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -646,7 +670,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -831,7 +855,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -872,7 +896,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -908,7 +932,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -939,7 +963,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
         "Tags": [
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -976,7 +1000,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -1028,7 +1052,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -1169,7 +1193,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -1203,7 +1227,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -1244,7 +1268,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -1379,7 +1403,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -1652,7 +1676,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -1706,7 +1730,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -1756,7 +1780,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -1846,7 +1870,7 @@ exports[`The TroveOpenSearch stack > matches the snapshot 1`] = `
         "Tags": [
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -1875,7 +1899,7 @@ exports[`The TroveOpenSearch stack > matches the snapshot 1`] = `
         "Tags": [
           {
             "Key": "gu:cdk:version",
-            "Value": "66.0.0"
+            "Value": "67.0.0"
           },
           {
             "Key": "gu:repo",
@@ -1899,6 +1923,29 @@ exports[`The TroveOpenSearch stack > matches the snapshot 1`] = `
       ],
       "UpdateReplacePolicy": "Retain",
       "DeletionPolicy": "Retain"
+    },
+    "EngineerDataAccessPolicy": {
+      "Type": "AWS::OpenSearchServerless::AccessPolicy",
+      "Properties": {
+        "Name": "trove-engineers-code",
+        "Policy": {
+          "Fn::Join": [
+            "",
+            [
+              "[{\\"Rules\\":[{\\"ResourceType\\":\\"index\\",\\"Resource\\":[\\"index/trove-code/articles-*\\"],\\"Permission\\":[\\"aoss:CreateIndex\\",\\"aoss:DeleteIndex\\",\\"aoss:DescribeIndex\\",\\"aoss:UpdateIndex\\",\\"aoss:ReadDocument\\",\\"aoss:WriteDocument\\"]}],\\"Principal\\":[\\"arn:aws:iam::",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":role/federation/janus-access-role-",
+              {
+                "Ref": "AWS::Region"
+              },
+              "\\"]}]"
+            ]
+          ]
+        },
+        "Type": "data"
+      }
     }
   }
 }

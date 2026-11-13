@@ -14,7 +14,13 @@ Vector search for Guardian articles
 
 `mise` and the `.tool-versions` toolchain will be installed automatically when the container is created.
 
-You just need to `npm install` the application dependencies.
+You need to run `./scripts/setup.sh`, it will:
+
+- install the tools from `.tool-versions`.
+- install the dependencies.
+- start the local OpenSearch.
+- create the indices and mappings.
+- seed the local indices.
 
 ## Monorepo structure
 

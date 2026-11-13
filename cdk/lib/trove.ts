@@ -3,6 +3,7 @@ import { GuStack } from '@guardian/cdk/lib/constructs/core/index.js';
 import { GuVpc, SubnetType } from '@guardian/cdk/lib/constructs/ec2/index.js';
 import { GuRepository } from '@guardian/cdk/lib/constructs/ecr/repository.js';
 import { GuEcsTask } from '@guardian/cdk/lib/constructs/ecs/index.js';
+import { GuDeveloperPolicy } from '@guardian/cdk/lib/constructs/iam/policies/developer-policy.js';
 import { GuLambdaFunction } from '@guardian/cdk/lib/constructs/lambda/index.js';
 import { GuKinesisLambdaExperimental } from '@guardian/cdk/lib/experimental/patterns/kinesis-lambda.js';
 import { StreamRetry } from '@guardian/cdk/lib/utils/lambda/event-source.js';
@@ -10,6 +11,7 @@ import type { App } from 'aws-cdk-lib';
 import { Duration } from 'aws-cdk-lib';
 import { SecurityGroup } from 'aws-cdk-lib/aws-ec2';
 import { ContainerInsights, Secret as EcsSecret } from 'aws-cdk-lib/aws-ecs';
+import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { StartingPosition } from 'aws-cdk-lib/aws-lambda';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
@@ -32,6 +34,26 @@ export class Trove extends GuStack {
 		super(scope, id, props);
 
 		const alarmTopic = createAlarmTopic(this);
+		if (['CODE', 'TEST'].includes(this.stage)) {
+			new GuDeveloperPolicy(this, 'TroveLocalRunPolicy', {
+				grantId: 'newsroom-ai-trove-local-run',
+				friendlyName: 'Run Trove locally',
+				withoutPolicyChecks: true,
+				statements: [
+					new PolicyStatement({
+						effect: Effect.ALLOW,
+						actions: [
+							'bedrock:InvokeModel',
+							'bedrock:InvokeModelWithResponseStream',
+						],
+						resources: [
+							'arn:aws:bedrock:eu-west-1:308506855511:inference-profile/eu.twelvelabs.marengo-embed-3-0-v1:0',
+							'arn:aws:bedrock:*::foundation-model/twelvelabs.marengo-embed-3-0-v1:0',
+						],
+					}),
+				],
+			});
+		}
 
 		const listener = new GuKinesisLambdaExperimental(this, 'TroveListener', {
 			app: 'trove-listener',
