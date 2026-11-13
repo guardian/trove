@@ -17,12 +17,9 @@ const MarengoEmbedding = z.object({
 	embedding: z.array(z.number()).length(model.dimension),
 });
 
-// Text input yields a single embedding; the docs are ambiguous on whether it's wrapped in a list
+// .transform parses {"data":[{"embedding": into {"data":{"embedding":
 const MarengoTextResponse = z.object({
-	data: z.union([
-		MarengoEmbedding,
-		z.tuple([MarengoEmbedding]).transform(([embedding]) => embedding),
-	]),
+	data: z.tuple([MarengoEmbedding]).transform(([embedding]) => embedding)
 });
 
 export const createMarengoEmbedder =
