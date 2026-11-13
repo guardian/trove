@@ -17,7 +17,6 @@ import { Topic } from 'aws-cdk-lib/aws-sns';
 import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
-import { JsonPath } from 'aws-cdk-lib/aws-stepfunctions';
 
 export interface TroveProps extends GuStackProps {
 	/**
@@ -74,7 +73,6 @@ export class Trove extends GuStack {
 		embedder.addEventSource(new SqsEventSource(backfillQueue));
 
 		// Backfill is a long-running Fargate task, wrapped by GuEcsTask in a Step Function.
-		// Start an execution with input {"fromDate": "YYYY-MM-DD", "toDate": "YYYY-MM-DD"}.
 		const backfillApp = 'trove-backfill';
 		const vpc = GuVpc.fromIdParameter(this, 'Vpc');
 		const backfill = new GuEcsTask(this, 'TroveBackfill', {
@@ -106,10 +104,6 @@ export class Trove extends GuStack {
 			monitoringConfiguration: alarmTopic
 				? { noMonitoring: false, snsTopicArn: alarmTopic.topicArn }
 				: { noMonitoring: true },
-			environmentOverrides: [
-				{ name: 'FROM_DATE', value: JsonPath.stringAt('$.fromDate') },
-				{ name: 'TO_DATE', value: JsonPath.stringAt('$.toDate') },
-			],
 		});
 		backfillQueue.grantSendMessages(backfill.taskDefinition.taskRole);
 		backfill.containerDefinition.addEnvironment(
