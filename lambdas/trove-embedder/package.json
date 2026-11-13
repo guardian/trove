@@ -8,7 +8,8 @@
 		"package": "npm run build && cd dist && rm -f trove-embedder.zip && zip trove-embedder.zip index.js",
 		"test": "node --test 'src/**/*.test.ts'",
 		"typecheck": "tsc --noEmit",
-		"lint": "eslint ."
+		"lint": "eslint .",
+		"invoke-local": "node scripts/invoke-local.ts"
 	},
 	"devDependencies": {
 		"@types/aws-lambda": "8.10.164",
