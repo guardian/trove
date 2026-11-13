@@ -8,8 +8,32 @@ on:
       - main
 
 jobs:
+  backfill-image:
+    # GuEcsTask runs on ARM64 Fargate, so build natively on an ARM runner rather than via emulation
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: read
+      # Allow GitHub to request an OIDC JWT ID token, for exchange with AWS STS
+      id-token: write
+      # Required by guardian/actions-ecr to comment on pull requests
+      pull-requests: write
+    outputs:
+      imageDigest: ${{ steps.publish-image.outputs.imageDigest }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -f tasks/trove-backfill/Dockerfile -t trove-backfill .
+        name: '[trove-backfill] build image'
+      - uses: guardian/actions-ecr/push@1b5a5070838c494e90a4492f15f69c3f83247ef4 # v1.1.0
+        name: '[trove-backfill] push image to ECR'
+        id: publish-image
+        with:
+          app: trove-backfill
+          roleArn: ${{ secrets.GU_ARTIFACTS_ROLE_ARN }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+
   ci:
     runs-on: ubuntu-latest
+    needs: backfill-image
     permissions:
       # Allow GitHub to request an OIDC JWT ID token, for exchange with AWS STS
       id-token: write
@@ -37,10 +61,11 @@ jobs:
         name: '[trove-listener] build and package'
       - run: npm run package --workspace=trove-embedder
         name: '[trove-embedder] build and package'
-      - run: npm run package --workspace=trove-backfill
-        name: '[trove-backfill] build and package'
       - run: npm run synth --workspace=cdk
         name: '[CDK] synth'
+        env:
+          # Baked into the CloudFormation template, so Riff-Raff's cloud-formation deploy rolls out the new image
+          IMAGE_DIGEST: ${{ needs.backfill-image.outputs.imageDigest }}
       - uses: guardian/actions-riff-raff@eecac3ac4f7a446dd59aaa636163c9ae88baf4a4 # v4.3.6
         name: 'upload to Riff-Raff'
         with:
@@ -56,5 +81,3 @@ jobs:
               - lambdas/trove-listener/dist/trove-listener.zip
             trove-embedder:
               - lambdas/trove-embedder/dist/trove-embedder.zip
-            trove-backfill:
-              - lambdas/trove-backfill/dist/trove-backfill.zip
