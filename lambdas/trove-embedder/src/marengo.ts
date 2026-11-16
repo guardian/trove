@@ -19,7 +19,7 @@ const MarengoEmbedding = z.object({
 
 // .transform parses {"data":[{"embedding": into {"data":{"embedding":
 const MarengoTextResponse = z.object({
-	data: z.tuple([MarengoEmbedding]).transform(([embedding]) => embedding)
+	data: z.tuple([MarengoEmbedding]).transform(([embedding]) => embedding),
 });
 
 export const createMarengoEmbedder =
