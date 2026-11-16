@@ -1250,7 +1250,7 @@ exports[`The TroveOpenSearch stack > matches the snapshot 1`] = `
         "Tags": [
           {
             "Key": "gu:cdk:version",
-            "Value": "67.0.0"
+            "Value": "66.0.0"
           },
           {
             "Key": "gu:repo",
