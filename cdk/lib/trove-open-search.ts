@@ -87,8 +87,9 @@ export class TroveOpenSearch extends GuStack {
 		collection.addResourceDependency(group);
 		collection.applyRemovalPolicy(RemovalPolicy.RETAIN);
 		// Collection tags can't be updated in place (any change forces a replacement, which fails
-		// on a named resource), so pin the GuCDK version tag to the value it was created with.
-		Tags.of(collection).add('gu:cdk:version', '66.0.0', { priority: 1000 });
+		// on a named resource), so drop the GuCDK version tag as it changes on every upgrade.
+		// See https://github.com/aws-cloudformation/cloudformation-coverage-roadmap/issues/2363
+		Tags.of(collection).remove('gu:cdk:version', { priority: 1000 });
 
 		new CfnAccessPolicy(this, 'EngineerDataAccessPolicy', {
 			name: `trove-engineers-${stage.toLowerCase()}`,
