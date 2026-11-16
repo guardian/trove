@@ -1,16 +1,76 @@
-import {
-	BedrockRuntimeClient,
-	InvokeModelCommand,
-} from '@aws-sdk/client-bedrock-runtime';
-import { createHandler } from './handler.ts';
-import { createMarengoEmbedder } from './marengo.ts';
+import type { SQSBatchResponse, SQSEvent, SQSRecord } from 'aws-lambda';
+import { ArticleV1 } from 'datastore/article';
+import { EmbeddingEvent } from 'shared/embeddingEvent';
+import { embedText } from './marengo.ts';
 
-const bedrock = new BedrockRuntimeClient({
-	region: process.env.AWS_REGION ?? 'eu-west-1',
+const embedded = async (value: string) => ({
+	value,
+	embeddings: { marengo_3_0: await embedText(value) },
 });
 
-export const handler = createHandler({
-	embed: createMarengoEmbedder((input) =>
-		bedrock.send(new InvokeModelCommand(input)),
-	),
-});
+async function processRecord(record: SQSRecord): Promise<void> {
+	const event = EmbeddingEvent.parse(JSON.parse(record.body));
+	const { embeddingEventId, source } = event;
+	const { articleId } = event.payload;
+
+	if (event.eventType === 'delete') {
+		console.log('Skipping delete event, not yet supported', {
+			embeddingEventId,
+			source,
+			articleId,
+		});
+		return;
+	}
+
+	const { headline, standfirst, keywordTagIds, internalRevision } =
+		event.payload;
+
+	const [headlineEmbedded, standfirstEmbedded, combinedEmbedded] = (
+		await Promise.allSettled([
+			embedded(headline),
+			embedded(standfirst),
+			embedded(`${headline}\n${standfirst}`),
+		])
+	).map((result) => {
+		if (result.status === 'rejected') {
+			throw result.reason as unknown;
+		}
+		return result.value;
+	});
+
+	const document = ArticleV1.parse({
+		headline: headlineEmbedded,
+		standfirst: standfirstEmbedded,
+		headlineAndStandfirst: combinedEmbedded,
+		keywordTagIds,
+		internalRevision,
+		storedAt: new Date().toISOString(),
+	});
+
+	// TODO: write `document` to OpenSearch with `_id` = articleId
+	console.log('Embedded article', {
+		embeddingEventId,
+		source,
+		articleId,
+		internalRevision: document.internalRevision,
+	});
+}
+
+/** Processes records concurrently, reporting failed ones so only they are retried. */
+export const handler = async (event: SQSEvent): Promise<SQSBatchResponse> => {
+	const results = await Promise.allSettled(event.Records.map(processRecord));
+
+	const batchItemFailures = event.Records.flatMap((record, i) => {
+		const result = results[i];
+		if (result?.status !== 'rejected') {
+			return [];
+		}
+		console.error('Failed to process message', {
+			messageId: record.messageId,
+			error: result.reason as unknown,
+		});
+		return [{ itemIdentifier: record.messageId }];
+	});
+
+	return { batchItemFailures };
+};
