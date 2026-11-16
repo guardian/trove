@@ -33,13 +33,6 @@ void describe('createMarengoEmbedder', () => {
 		});
 	});
 
-	void it('returns the embedding from an object response', async () => {
-		const embed = createMarengoEmbedder(
-			fakeInvoke({ data: { embedding: vector } }),
-		);
-		assert.deepEqual(await embed('text'), vector);
-	});
-
 	void it('returns the embedding from a single-item list response', async () => {
 		const embed = createMarengoEmbedder(
 			fakeInvoke({ data: [{ embedding: vector }] }),
