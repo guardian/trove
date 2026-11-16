@@ -1249,10 +1249,6 @@ exports[`The TroveOpenSearch stack > matches the snapshot 1`] = `
         "StandbyReplicas": "ENABLED",
         "Tags": [
           {
-            "Key": "gu:cdk:version",
-            "Value": "67.0.0"
-          },
-          {
             "Key": "gu:repo",
             "Value": "guardian/trove"
           },
