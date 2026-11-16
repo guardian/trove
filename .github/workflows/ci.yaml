@@ -8,7 +8,30 @@ on:
       - main
 
 jobs:
+  checks:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .tool-versions
+          cache: 'npm'
+      - run: npm ci
+        name: 'install dependencies'
+      - run: npm run format:check
+        name: 'format check'
+      - run: npm run lint:check
+        name: 'lint check'
+      - run: npm test
+        name: 'run tests'
+      - run: npm run typecheck
+        name: 'typecheck'
+
   backfill-image:
+    # Don't push images to ECR for commits that fail checks
+    needs: checks
     # GuEcsTask runs on ARM64 Fargate, so build natively on an ARM runner rather than via emulation
     runs-on: ubuntu-24.04-arm
     permissions:
@@ -49,14 +72,6 @@ jobs:
           cache: 'npm'
       - run: npm ci
         name: 'install dependencies'
-      - run: npm run format:check
-        name: 'format check'
-      - run: npm run lint:check
-        name: 'lint check'
-      - run: npm test
-        name: 'run tests'
-      - run: npm run typecheck
-        name: 'typecheck'
       - run: npm run package --workspace=trove-listener
         name: '[trove-listener] build and package'
       - run: npm run package --workspace=trove-embedder
