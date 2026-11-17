@@ -568,7 +568,8 @@ exports[`The Trove stack > matches the snapshot 1`] = `
             "Key": "Stage",
             "Value": "TEST"
           }
-        ]
+        ],
+        "VisibilityTimeout": 360
       },
       "UpdateReplacePolicy": "Delete",
       "DeletionPolicy": "Delete"
@@ -628,7 +629,8 @@ exports[`The Trove stack > matches the snapshot 1`] = `
             "Key": "Stage",
             "Value": "TEST"
           }
-        ]
+        ],
+        "VisibilityTimeout": 360
       },
       "UpdateReplacePolicy": "Delete",
       "DeletionPolicy": "Delete"
@@ -777,6 +779,17 @@ exports[`The Trove stack > matches the snapshot 1`] = `
             },
             {
               "Action": [
+                "bedrock:InvokeModel",
+                "bedrock:InvokeModelWithResponseStream"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:bedrock:eu-west-1:308506855511:inference-profile/eu.twelvelabs.marengo-embed-3-0-v1:0",
+                "arn:aws:bedrock:*::foundation-model/twelvelabs.marengo-embed-3-0-v1:0"
+              ]
+            },
+            {
+              "Action": [
                 "sqs:ReceiveMessage",
                 "sqs:ChangeMessageVisibility",
                 "sqs:GetQueueUrl",
@@ -869,7 +882,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
             "Value": "TEST"
           }
         ],
-        "Timeout": 30
+        "Timeout": 60
       },
       "DependsOn": [
         "TroveEmbedderServiceRoleDefaultPolicyD7C1426B",
@@ -888,6 +901,9 @@ exports[`The Trove stack > matches the snapshot 1`] = `
         "FunctionName": {
           "Ref": "TroveEmbedderF7FFE9BF"
         },
+        "FunctionResponseTypes": [
+          "ReportBatchItemFailures"
+        ],
         "Tags": [
           {
             "Key": "App",
@@ -924,6 +940,9 @@ exports[`The Trove stack > matches the snapshot 1`] = `
         "FunctionName": {
           "Ref": "TroveEmbedderF7FFE9BF"
         },
+        "FunctionResponseTypes": [
+          "ReportBatchItemFailures"
+        ],
         "Tags": [
           {
             "Key": "App",
