@@ -1,7 +1,7 @@
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core/index.js';
 import { GuStack } from '@guardian/cdk/lib/constructs/core/index.js';
 import type { App } from 'aws-cdk-lib';
-import { RemovalPolicy, Tags } from 'aws-cdk-lib';
+import { RemovalPolicy } from 'aws-cdk-lib';
 import type { CfnCollectionGroupProps } from 'aws-cdk-lib/aws-opensearchserverless';
 import {
 	CfnAccessPolicy,
@@ -86,10 +86,6 @@ export class TroveOpenSearch extends GuStack {
 		collection.addResourceDependency(networkPolicy);
 		collection.addResourceDependency(group);
 		collection.applyRemovalPolicy(RemovalPolicy.RETAIN);
-		// Collection tags can't be updated in place (any change forces a replacement, which fails
-		// on a named resource), so drop the GuCDK version tag as it changes on every upgrade.
-		// See https://github.com/aws-cloudformation/cloudformation-coverage-roadmap/issues/2363
-		Tags.of(collection).remove('gu:cdk:version', { priority: 1000 });
 
 		new CfnAccessPolicy(this, 'EngineerDataAccessPolicy', {
 			name: `trove-engineers-${stage.toLowerCase()}`,
