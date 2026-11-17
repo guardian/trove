@@ -5,7 +5,7 @@ import type { UpdateEmbeddingEvent } from 'shared/embeddingEvent';
 const queueUrl = process.env.BACKFILL_EMBEDDER_QUEUE_URL;
 if (!queueUrl) {
 	console.log(
-		"No BACKFILL_EMBEDDER_QUEUE_URL set, so logging messages instead of sending them",
+		'No BACKFILL_EMBEDDER_QUEUE_URL set, so logging messages instead of sending them',
 	);
 }
 
