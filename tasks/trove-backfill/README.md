@@ -33,7 +33,13 @@ npm start -w trove-backfill
 This builds and runs the same image that runs in Fargate. Run these from the **repo root**, because the build needs
 the npm workspaces (e.g. `libs/shared`).
 
+The image is built on [Docker Hardened Images](https://docs.docker.com/dhi/), so you need to sign in to their registry
+once with a (free) Docker account.
+
 ```sh
+# Sign in to the Docker Hardened Images registry (only needed once)
+docker login dhi.io
+
 # Build the image and tag (name) it trove-backfill. Re-run this after changing the code.
 docker build -f tasks/trove-backfill/Dockerfile -t trove-backfill .
 
@@ -68,15 +74,9 @@ input is ignored.
 ## Appendix: useful Docker commands
 
 ```sh
-# Get a shell inside the image instead of running the backfill (type `exit` to leave)
-docker run --rm -it trove-backfill sh
-
 # Run it in the background (-d) with a name, then follow its logs (Ctrl+C stops following, not the container)
 docker run -d --name backfill trove-backfill
 docker logs -f backfill
-
-# Get a shell inside a container that is still running
-docker exec -it backfill sh
 
 # List running containers (add -a to include stopped ones), then stop and remove one
 docker ps -a
@@ -88,5 +88,10 @@ docker image ls
 docker image rm trove-backfill
 ```
 
-The backfill currently finishes in a second or two, so `docker exec` only works for a moment. To look around the
-image, use `docker run --rm -it trove-backfill sh` instead.
+The runtime image has no shell, so `docker run ... sh` and `docker exec ... sh` won't work. To look around, get a shell
+in the build stage instead (type `exit` to leave):
+
+```sh
+docker build -f tasks/trove-backfill/Dockerfile --target builder -t trove-backfill-builder .
+docker run --rm -it trove-backfill-builder sh
+```
