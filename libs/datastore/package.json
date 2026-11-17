@@ -5,6 +5,8 @@
 	"type": "module",
 	"exports": {
 		"./article": "./src/article.ts",
+		"./client": "./src/client.ts",
+		"./indices": "./src/indices.ts",
 		"./open-search-embeddings": "./src/open-search-embeddings.ts"
 	},
 	"scripts": {

@@ -2,6 +2,7 @@ import type { SQSBatchResponse, SQSEvent, SQSRecord } from 'aws-lambda';
 import { ArticleV1 } from 'datastore/article';
 import { EmbeddingEvent } from 'shared/embeddingEvent';
 import { embedText } from './marengo.ts';
+import { writeArticle } from './opensearch.ts';
 
 const embedded = async (value: string) => ({
 	value,
@@ -47,8 +48,8 @@ async function processRecord(record: SQSRecord): Promise<void> {
 		storedAt: new Date().toISOString(),
 	});
 
-	// TODO: write `document` to OpenSearch with `_id` = articleId
-	console.log('Embedded article', {
+	await writeArticle(articleId, document, internalRevision);
+	console.log('Stored article', {
 		embeddingEventId,
 		source,
 		articleId,

@@ -11,9 +11,15 @@ import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { StartingPosition } from 'aws-cdk-lib/aws-lambda';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
+import { CfnAccessPolicy } from 'aws-cdk-lib/aws-opensearchserverless';
 import { Topic } from 'aws-cdk-lib/aws-sns';
 import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
+import {
+	collectionName,
+	openSearchParameterNames,
+} from './trove-open-search.ts';
 
 const marengoInvokeStatement = new PolicyStatement({
 	effect: Effect.ALLOW,
@@ -87,6 +93,7 @@ export class Trove extends GuStack {
 		embedder.addEventSource(
 			new SqsEventSource(backfillQueue, { reportBatchItemFailures: true }),
 		);
+		grantOpenSearchWrite(this, embedder);
 
 		// No trigger yet: invoked manually until we decide how backfill runs are driven
 		const backfill = new GuLambdaFunction(this, 'TroveBackfill', {
@@ -102,6 +109,45 @@ export class Trove extends GuStack {
 			backfillQueue.queueUrl,
 		);
 	}
+}
+
+/** Lets the function write documents to the article indices, but not create them: they come from apply-schema. */
+function grantOpenSearchWrite(scope: GuStack, fn: GuLambdaFunction): void {
+	const parameterNames = openSearchParameterNames(scope.stage);
+	fn.addEnvironment(
+		'OPENSEARCH_ENDPOINT',
+		StringParameter.valueForStringParameter(scope, parameterNames.endpoint),
+	);
+	fn.addToRolePolicy(
+		new PolicyStatement({
+			effect: Effect.ALLOW,
+			actions: ['aoss:APICall'],
+			resources: [
+				StringParameter.valueForStringParameter(
+					scope,
+					parameterNames.collectionArn,
+				),
+			],
+		}),
+	);
+
+	const name = collectionName(scope.stage);
+	new CfnAccessPolicy(scope, 'EmbedderDataAccessPolicy', {
+		name: `trove-embedder-${scope.stage.toLowerCase()}`,
+		type: 'data',
+		policy: scope.toJsonString([
+			{
+				Rules: [
+					{
+						ResourceType: 'index',
+						Resource: [`index/${name}/articles-*`],
+						Permission: ['aoss:WriteDocument'],
+					},
+				],
+				Principal: [fn.role?.roleArn],
+			},
+		]),
+	});
 }
 
 function createQueueWithDLQ(scope: GuStack, id: string): Queue {
