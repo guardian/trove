@@ -6,6 +6,14 @@ The article schema, its OpenSearch mapping, and the scripts that set up the indi
 - `src/open-search-embeddings.ts`: the embedding models and their `knn_vector` settings.
 - `src/indices.ts`: the versioned indices.
 
+## How the embedder writes
+
+The embedder lambda writes each article to every index declared in `articleIndices`, with the CAPI id as the document `_id`.
+`internalRevision` is used as an external version, so an older revision never overwrites a newer one; stale writes are logged and skipped.
+
+The embedder can write documents but not create indices: a missing index fails the write, rather than being created with a dynamic mapping.
+On a new stage, deploy the `TroveOpenSearch` stack (it publishes the collection endpoint to SSM), run `apply-schema`, then deploy the `Trove` stack.
+
 ## Versions
 
 Each schema version has its own index (`articles-v1`, ...) declared in `src/indices.ts`.
