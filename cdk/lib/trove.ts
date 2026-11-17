@@ -45,7 +45,7 @@ export class Trove extends GuStack {
 				grantId: 'newsroom-ai-trove-local-run',
 				friendlyName: 'Run Trove locally',
 				withoutPolicyChecks: true,
-				statements: [marengoInvokeStatement],
+				statements: [marengoInvokeStatement, openSearchApiCallStatement(this)],
 			});
 		}
 
@@ -111,6 +111,20 @@ export class Trove extends GuStack {
 	}
 }
 
+/** IAM access to the collection's data plane. What can be done in it is decided by its data access policies. */
+function openSearchApiCallStatement(scope: GuStack): PolicyStatement {
+	return new PolicyStatement({
+		effect: Effect.ALLOW,
+		actions: ['aoss:APICall'],
+		resources: [
+			StringParameter.valueForStringParameter(
+				scope,
+				openSearchParameterNames(scope.stage).collectionArn,
+			),
+		],
+	});
+}
+
 /** Lets the function write documents to the article indices, but not create them: they come from apply-schema. */
 function grantOpenSearchWrite(scope: GuStack, fn: GuLambdaFunction): void {
 	const parameterNames = openSearchParameterNames(scope.stage);
@@ -118,18 +132,7 @@ function grantOpenSearchWrite(scope: GuStack, fn: GuLambdaFunction): void {
 		'OPENSEARCH_ENDPOINT',
 		StringParameter.valueForStringParameter(scope, parameterNames.endpoint),
 	);
-	fn.addToRolePolicy(
-		new PolicyStatement({
-			effect: Effect.ALLOW,
-			actions: ['aoss:APICall'],
-			resources: [
-				StringParameter.valueForStringParameter(
-					scope,
-					parameterNames.collectionArn,
-				),
-			],
-		}),
-	);
+	fn.addToRolePolicy(openSearchApiCallStatement(scope));
 
 	const name = collectionName(scope.stage);
 	new CfnAccessPolicy(scope, 'EmbedderDataAccessPolicy', {

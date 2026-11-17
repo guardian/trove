@@ -11,6 +11,21 @@ exports[`The Trove stack > matches the snapshot 1`] = `
     ],
     "gu:cdk:version": "TEST"
   },
+  "Parameters": {
+    "SsmParameterValueTESTcontentapitroveopensearchcollectionarnC96584B6F00A464EAD1953AFF4B05118Parameter": {
+      "Type": "AWS::SSM::Parameter::Value<String>",
+      "Default": "/TEST/content-api/trove/opensearch/collection-arn"
+    },
+    "DistributionBucketName": {
+      "Type": "AWS::SSM::Parameter::Value<String>",
+      "Default": "/account/services/artifact.bucket",
+      "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts"
+    },
+    "SsmParameterValueTESTcontentapitroveopensearchendpointC96584B6F00A464EAD1953AFF4B05118Parameter": {
+      "Type": "AWS::SSM::Parameter::Value<String>",
+      "Default": "/TEST/content-api/trove/opensearch/endpoint"
+    }
+  },
   "Resources": {
     "TroveLocalRunPolicy8155A46D": {
       "Type": "AWS::IAM::ManagedPolicy",
@@ -29,6 +44,13 @@ exports[`The Trove stack > matches the snapshot 1`] = `
                 "arn:aws:bedrock:eu-west-1:308506855511:inference-profile/eu.twelvelabs.marengo-embed-3-0-v1:0",
                 "arn:aws:bedrock:*::foundation-model/twelvelabs.marengo-embed-3-0-v1:0"
               ]
+            },
+            {
+              "Action": "aoss:APICall",
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "SsmParameterValueTESTcontentapitroveopensearchcollectionarnC96584B6F00A464EAD1953AFF4B05118Parameter"
+              }
             }
           ],
           "Version": "2012-10-17"
@@ -1222,21 +1244,6 @@ exports[`The Trove stack > matches the snapshot 1`] = `
         "TroveBackfillServiceRoleDefaultPolicy349CB304",
         "TroveBackfillServiceRoleF3620C62"
       ]
-    }
-  },
-  "Parameters": {
-    "DistributionBucketName": {
-      "Type": "AWS::SSM::Parameter::Value<String>",
-      "Default": "/account/services/artifact.bucket",
-      "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts"
-    },
-    "SsmParameterValueTESTcontentapitroveopensearchendpointC96584B6F00A464EAD1953AFF4B05118Parameter": {
-      "Type": "AWS::SSM::Parameter::Value<String>",
-      "Default": "/TEST/content-api/trove/opensearch/endpoint"
-    },
-    "SsmParameterValueTESTcontentapitroveopensearchcollectionarnC96584B6F00A464EAD1953AFF4B05118Parameter": {
-      "Type": "AWS::SSM::Parameter::Value<String>",
-      "Default": "/TEST/content-api/trove/opensearch/collection-arn"
     }
   }
 }
