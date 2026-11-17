@@ -1,6 +1,10 @@
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core/index.js';
 import { GuStack } from '@guardian/cdk/lib/constructs/core/index.js';
-import { GuVpc, SubnetType } from '@guardian/cdk/lib/constructs/ec2/index.js';
+import {
+	GuHttpsEgressSecurityGroup,
+	GuVpc,
+	SubnetType,
+} from '@guardian/cdk/lib/constructs/ec2/index.js';
 import { GuRepository } from '@guardian/cdk/lib/constructs/ecr/repository.js';
 import { GuEcsTask } from '@guardian/cdk/lib/constructs/ecs/index.js';
 import { GuDeveloperPolicy } from '@guardian/cdk/lib/constructs/iam/policies/developer-policy.js';
@@ -9,7 +13,6 @@ import { GuKinesisLambdaExperimental } from '@guardian/cdk/lib/experimental/patt
 import { StreamRetry } from '@guardian/cdk/lib/utils/lambda/event-source.js';
 import type { App } from 'aws-cdk-lib';
 import { Duration } from 'aws-cdk-lib';
-import { SecurityGroup } from 'aws-cdk-lib/aws-ec2';
 import { ContainerInsights, Secret as EcsSecret } from 'aws-cdk-lib/aws-ecs';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
@@ -114,11 +117,12 @@ export class Trove extends GuStack {
 				type: SubnetType.PRIVATE,
 				app: backfillApp,
 			}),
+			// Outbound HTTPS only, which covers CAPI, SQS, ECR, SSM and CloudWatch Logs. Same as GuLoadBalancedApp:
+			// https://github.com/guardian/cdk/blob/3781e814e4cc37bfa3c8c317f9d8dc316dc6b734/src/experimental/patterns/gu-load-balanced-app.ts#L770-L773
 			securityGroups: [
-				new SecurityGroup(this, 'TroveBackfillSecurityGroup', {
+				new GuHttpsEgressSecurityGroup(this, 'TroveBackfillSecurityGroup', {
+					app: backfillApp,
 					vpc,
-					description: 'Egress to CAPI and SQS for trove-backfill',
-					allowAllOutbound: true,
 				}),
 			],
 			containerConfiguration: {

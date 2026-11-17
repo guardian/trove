@@ -9,6 +9,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
       "GuLambdaFunction",
       "GuVpcParameter",
       "GuSubnetListParameter",
+      "GuHttpsEgressSecurityGroup",
       "GuRepository",
       "GuArtifactsAccountId",
       "GuEcsTask"
@@ -967,18 +968,24 @@ exports[`The Trove stack > matches the snapshot 1`] = `
         ]
       }
     },
-    "TroveBackfillSecurityGroupECC3D8D7": {
+    "TroveBackfillSecurityGroupTrovebackfill8742FD67": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupDescription": "Egress to CAPI and SQS for trove-backfill",
+        "GroupDescription": "Allow all outbound HTTPS traffic",
         "SecurityGroupEgress": [
           {
             "CidrIp": "0.0.0.0/0",
-            "Description": "Allow all outbound traffic by default",
-            "IpProtocol": "-1"
+            "Description": "Allow all outbound HTTPS traffic",
+            "FromPort": 443,
+            "IpProtocol": "tcp",
+            "ToPort": 443
           }
         ],
         "Tags": [
+          {
+            "Key": "App",
+            "Value": "trove-backfill"
+          },
           {
             "Key": "gu:cdk:version",
             "Value": "67.0.0"
@@ -1674,7 +1681,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
               "\\"],\\"SecurityGroups\\":[\\"",
               {
                 "Fn::GetAtt": [
-                  "TroveBackfillSecurityGroupECC3D8D7",
+                  "TroveBackfillSecurityGroupTrovebackfill8742FD67",
                   "GroupId"
                 ]
               },
