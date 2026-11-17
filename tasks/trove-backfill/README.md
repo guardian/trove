@@ -36,7 +36,7 @@ docker run --rm --read-only trove-backfill
 
 # Send to a real queue, using AWS credentials from ~/.aws (e.g. from Janus)
 docker run --rm --read-only \
-  -v ~/.aws:/home/node/.aws:ro -e AWS_PROFILE=<profile> -e AWS_REGION=eu-west-1 \
+  -v ~/.aws:/home/node/.aws:ro -e AWS_PROFILE=capi -e AWS_REGION=eu-west-1 \
   -e BACKFILL_EMBEDDER_QUEUE_URL=<url> \
   trove-backfill
 ```
