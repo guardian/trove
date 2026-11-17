@@ -39,14 +39,9 @@
 		"typescript": "5.9.3"
 	},
 	"overrideNotes": {
-		"@guardian/eslint-config": "v16 pins typescript-eslint 8.59.3 and eslint-plugin-import-x 4.16.2, which only allow minimatch versions vulnerable to GHSA-g3hv-75wg-m249. Remove once @guardian/eslint-config pins fixed versions.",
 		"@guardian/story-packages-model": "Depends on thrift ^0.15.0, which is vulnerable (GHSA-r67j-r569-jrwp, GHSA-526f-jxpj-jmg2). Pulled in via @guardian/content-api-models. Remove once story-packages-model depends on thrift >=0.23.0."
 	},
 	"overrides": {
-		"@guardian/eslint-config": {
-			"eslint-plugin-import-x": "4.18.1",
-			"typescript-eslint": "8.73.0"
-		},
 		"@guardian/story-packages-model": {
 			"thrift": "0.23.0"
 		}
