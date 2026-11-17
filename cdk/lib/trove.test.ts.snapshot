@@ -67,6 +67,13 @@ exports[`The Trove stack > matches the snapshot 1`] = `
                 "arn:aws:bedrock:eu-west-1:308506855511:inference-profile/eu.twelvelabs.marengo-embed-3-0-v1:0",
                 "arn:aws:bedrock:*::foundation-model/twelvelabs.marengo-embed-3-0-v1:0"
               ]
+            },
+            {
+              "Action": "aoss:APICall",
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "SsmParameterValueTESTcontentapitroveopensearchcollectionarnC96584B6F00A464EAD1953AFF4B05118Parameter"
+              }
             }
           ],
           "Version": "2012-10-17"
@@ -1860,6 +1867,10 @@ exports[`The Trove stack > matches the snapshot 1`] = `
     }
   },
   "Parameters": {
+    "SsmParameterValueTESTcontentapitroveopensearchcollectionarnC96584B6F00A464EAD1953AFF4B05118Parameter": {
+      "Type": "AWS::SSM::Parameter::Value<String>",
+      "Default": "/TEST/content-api/trove/opensearch/collection-arn"
+    },
     "DistributionBucketName": {
       "Type": "AWS::SSM::Parameter::Value<String>",
       "Default": "/account/services/artifact.bucket",
@@ -1868,10 +1879,6 @@ exports[`The Trove stack > matches the snapshot 1`] = `
     "SsmParameterValueTESTcontentapitroveopensearchendpointC96584B6F00A464EAD1953AFF4B05118Parameter": {
       "Type": "AWS::SSM::Parameter::Value<String>",
       "Default": "/TEST/content-api/trove/opensearch/endpoint"
-    },
-    "SsmParameterValueTESTcontentapitroveopensearchcollectionarnC96584B6F00A464EAD1953AFF4B05118Parameter": {
-      "Type": "AWS::SSM::Parameter::Value<String>",
-      "Default": "/TEST/content-api/trove/opensearch/collection-arn"
     },
     "VpcId": {
       "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
