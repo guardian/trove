@@ -42,7 +42,7 @@ const opensearch = mock.method(
 				? 500
 				: 201;
 		const response = {
-			body: {},
+			body: statusCode === 500 ? { error: 'os-error reason' } : {},
 			statusCode,
 			headers: {},
 			warnings: null,
@@ -117,6 +117,22 @@ void describe('handler', () => {
 		assert.deepEqual(await handler(event), {
 			batchItemFailures: [{ itemIdentifier: 'os-error' }],
 		});
+	});
+
+	void it('logs the OpenSearch response body when a write fails', async (context) => {
+		const consoleError = context.mock.method(console, 'error', () => {});
+
+		await handler({
+			Records: [record('os-error', update('os-error headline'))],
+		});
+
+		const [, { error }] = consoleError.mock.calls[0]?.arguments as [
+			string,
+			{ error: Error },
+		];
+		assert.match(error.message, /"statusCode":500/);
+		assert.match(error.message, /"index":"articles-v1"/);
+		assert.match(error.message, /"body":\{"error":"os-error reason"\}/);
 	});
 
 	void it('reports only the messages that failed', async () => {

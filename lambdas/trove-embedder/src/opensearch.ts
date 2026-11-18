@@ -33,11 +33,35 @@ export async function writeArticle(
 					});
 					return;
 				}
+				if (error instanceof errors.ResponseError) {
+					throw describeResponseError(error, name, articleId);
+				}
 				throw error;
 			}
 		}),
 	);
 }
+
+/** Puts the response body in the message, as nested objects are collapsed to [Object] in the logs. */
+const describeResponseError = (
+	error: errors.ResponseError,
+	index: string,
+	articleId: string,
+): Error => {
+	// Not always populated, despite the types
+	const meta = error.meta.meta as Partial<typeof error.meta.meta> | undefined;
+	const params = meta?.request?.params;
+	return new Error(
+		`OpenSearch write failed: ${JSON.stringify({
+			statusCode: error.statusCode,
+			index,
+			articleId,
+			request: params && `${params.method} ${params.path}`,
+			body: error.body,
+		})}`,
+		{ cause: error },
+	);
+};
 
 const isVersionConflict = (error: unknown): boolean =>
 	error instanceof errors.ResponseError && error.statusCode === 409;
