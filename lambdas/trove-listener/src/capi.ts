@@ -36,47 +36,12 @@ export async function fetchCapiContent(
 	return body.response.content;
 }
 
-export function crierContentToEmbeddingEvent(
+export function contentToEmbeddingEvent(
 	content: Content,
 	internalRevisionFallback: number | undefined,
 ): UpdateEmbeddingEvent {
 	const fields = content.fields;
 	const headline = fields?.headline ?? content.webTitle;
-	const standfirst = fields?.standfirst ?? fields?.trailText ?? '';
-	const byline = fields?.byline ?? '';
-	const internalRevision =
-		fields?.internalRevision ?? internalRevisionFallback ?? 0;
-	const webPublicationDate = content.webPublicationDate?.iso8601;
-	if (!webPublicationDate) {
-		throw new Error(`Content ${content.id} has no web publication date`);
-	}
-
-	return {
-		embeddingEventId: randomUUID(),
-		source: 'listener',
-		eventType: 'update',
-		payload: {
-			articleId: content.id,
-			byline,
-			articleType:
-				content.type === ContentType.LIVEBLOG ? 'liveblog' : 'article',
-			headline,
-			standfirst,
-			keywordTagIds: content.tags
-				.filter((tag) => tag.type === TagType.KEYWORD)
-				.map((tag) => tag.id),
-			internalRevision,
-			webPublicationDate,
-		},
-	};
-}
-
-export function capiContentToEmbeddingEvent(
-	content: Content,
-	internalRevisionFallback: number | undefined,
-): UpdateEmbeddingEvent {
-	const fields = content.fields;
-	const headline = fields?.headline ?? '';
 	const standfirst = fields?.standfirst ?? fields?.trailText ?? '';
 	const byline = fields?.byline ?? '';
 	const internalRevision =

@@ -14,11 +14,7 @@ import {
 	EmbeddingEvent,
 	type UpdateEmbeddingEvent,
 } from 'shared/embeddingEvent';
-import {
-	capiContentToEmbeddingEvent,
-	crierContentToEmbeddingEvent,
-	fetchCapiContent,
-} from './capi.ts';
+import { contentToEmbeddingEvent, fetchCapiContent } from './capi.ts';
 import { decodeAndParseCrierEvent } from './decodeAndParseCrierEvent.ts';
 
 const queueUrl = process.env.LIVE_EMBEDDER_QUEUE_URL;
@@ -96,7 +92,7 @@ async function processRecord(
 
 	let event: UpdateEmbeddingEvent;
 	if (crierEvent.payload?.kind === 'content') {
-		event = crierContentToEmbeddingEvent(crierEvent.payload.content, undefined);
+		event = contentToEmbeddingEvent(crierEvent.payload.content, undefined);
 	} else {
 		const retrievable =
 			crierEvent.payload?.kind === 'retrievableContent'
@@ -106,7 +102,7 @@ async function processRecord(
 			retrievable?.capiUrl ?? `https://content.guardianapis.com/${id}`;
 		const capiKey = await dependencies.getCapiKey();
 		const content = await dependencies.fetchCapiContent(capiUrl, capiKey);
-		event = capiContentToEmbeddingEvent(content, retrievable?.internalRevision);
+		event = contentToEmbeddingEvent(content, retrievable?.internalRevision);
 	}
 
 	const parsedEvent = EmbeddingEvent.parse(event);
