@@ -3,6 +3,7 @@ import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { EventType } from '@guardian/content-api-models/crier/event/v1/eventType.js';
 import { ItemType } from '@guardian/content-api-models/crier/event/v1/itemType.js';
+import type { Content } from '@guardian/content-api-models/v1/content.js';
 import type {
 	KinesisStreamBatchResponse,
 	KinesisStreamHandler,
@@ -14,7 +15,6 @@ import {
 	type UpdateEmbeddingEvent,
 } from 'shared/embeddingEvent';
 import {
-	type CapiContent,
 	capiContentToEmbeddingEvent,
 	crierContentToEmbeddingEvent,
 	fetchCapiContent,
@@ -32,11 +32,11 @@ const sqs = new SQSClient({ region: awsRegion, credentials });
 interface ListenerDependencies {
 	queueUrl: string;
 	send: (command: SendMessageCommand) => Promise<unknown>;
-	getCapiApiKey: () => Promise<string | undefined>;
+	getCapiKey: () => Promise<string | undefined>;
 	fetchCapiContent: (
 		capiUrl: string,
-		apiKey: string | undefined,
-	) => Promise<CapiContent>;
+		capiKey: string | undefined,
+	) => Promise<Content>;
 }
 
 export function createListenerHandler(
@@ -131,8 +131,8 @@ async function processRecord(
 				: undefined;
 		const capiUrl =
 			retrievable?.capiUrl ?? `https://content.guardianapis.com/${id}`;
-		const capiApiKey = await dependencies.getCapiApiKey();
-		const content = await dependencies.fetchCapiContent(capiUrl, capiApiKey);
+		const capiKey = await dependencies.getCapiKey();
+		const content = await dependencies.fetchCapiContent(capiUrl, capiKey);
 		event = capiContentToEmbeddingEvent(content, retrievable?.internalRevision);
 	}
 
@@ -145,13 +145,13 @@ async function processRecord(
 	);
 }
 
-function getCapiApiKey(): Promise<string | undefined> {
+function getCapiKey(): Promise<string | undefined> {
 	return Promise.resolve(process.env.CAPI_API_KEY);
 }
 
 export const handler = createListenerHandler({
 	queueUrl: queueUrl ?? '',
 	send: (command) => sqs.send(command),
-	getCapiApiKey,
+	getCapiKey,
 	fetchCapiContent,
 });

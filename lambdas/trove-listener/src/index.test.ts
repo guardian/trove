@@ -5,6 +5,8 @@ import type { Event } from '@guardian/content-api-models/crier/event/v1/event.js
 import { EventSerde } from '@guardian/content-api-models/crier/event/v1/event.js';
 import { EventType } from '@guardian/content-api-models/crier/event/v1/eventType.js';
 import { ItemType } from '@guardian/content-api-models/crier/event/v1/itemType.js';
+import type { Content } from '@guardian/content-api-models/v1/content.js';
+import { TagType } from '@guardian/content-api-models/v1/tagType.js';
 import type {
 	Context,
 	KinesisStreamEvent,
@@ -69,7 +71,7 @@ void describe('listener handler', () => {
 				sent.push(command);
 				return Promise.resolve(undefined);
 			},
-			getCapiApiKey: () => Promise.resolve('test-key'),
+			getCapiKey: () => Promise.resolve('test-key'),
 			fetchCapiContent: () =>
 				Promise.reject(new Error('CAPI should not be fetched')),
 		});
@@ -110,7 +112,7 @@ void describe('listener handler', () => {
 				sent.push(command);
 				return Promise.resolve(undefined);
 			},
-			getCapiApiKey: () => Promise.resolve('test-key'),
+			getCapiKey: () => Promise.resolve('test-key'),
 			fetchCapiContent: (url) => {
 				fetchedUrl = url;
 				return Promise.resolve({
@@ -123,8 +125,13 @@ void describe('listener handler', () => {
 						byline: 'A Reporter',
 						internalRevision: 42,
 					},
-					tags: [{ id: 'world/world', type: 'keyword' }],
-				});
+					tags: [{ id: 'world/world', type: TagType.KEYWORD }],
+					webTitle: 'Latest headline',
+					webUrl: 'https://www.theguardian.com/world/2026/oct/30/example',
+					apiUrl: 'https://content.guardianapis.com/world/2026/oct/30/example',
+					references: [],
+					isHosted: false,
+				} as unknown as Content);
 			},
 		});
 
@@ -175,7 +182,7 @@ void describe('listener handler', () => {
 		const handler = createListenerHandler({
 			queueUrl: 'test-queue',
 			send: () => Promise.resolve(undefined),
-			getCapiApiKey: () => Promise.resolve(undefined),
+			getCapiKey: () => Promise.resolve(undefined),
 			fetchCapiContent: () =>
 				Promise.reject(new Error('CAPI should not be fetched')),
 		});

@@ -60,10 +60,10 @@ export class Trove extends GuStack {
 			});
 		}
 
-		const capiApiKeyParameter =
+		const capiKeyParameter =
 			StringParameter.fromSecureStringParameterAttributes(
 				this,
-				'TroveBackfillCapiApiKey',
+				'TroveBackfillCapiKey',
 				{
 					parameterName: `/${this.stage}/${this.stack}/trove-backfill/capi-api-key`,
 				},
@@ -92,7 +92,7 @@ export class Trove extends GuStack {
 				reportBatchItemFailures: true,
 			},
 		});
-		listener.addEnvironment('CAPI_API_KEY', capiApiKeyParameter.stringValue);
+		listener.addEnvironment('CAPI_API_KEY', capiKeyParameter.stringValue);
 
 		const liveQueue = createQueueWithDLQ(this, 'EmbedderLive');
 		const backfillQueue = createQueueWithDLQ(this, 'EmbedderBackfill');
@@ -159,7 +159,7 @@ export class Trove extends GuStack {
 		);
 		backfill.containerDefinition.addSecret(
 			'CAPI_API_KEY',
-			EcsSecret.fromSsmParameter(capiApiKeyParameter),
+			EcsSecret.fromSsmParameter(capiKeyParameter),
 		);
 	}
 }

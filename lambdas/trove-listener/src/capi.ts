@@ -1,42 +1,27 @@
 import { randomUUID } from 'node:crypto';
+import type { CapiDateTime } from '@guardian/content-api-models/v1/capiDateTime.js';
 import type { Content } from '@guardian/content-api-models/v1/content.js';
 import { ContentType } from '@guardian/content-api-models/v1/contentType.js';
+import type { ItemResponse } from '@guardian/content-api-models/v1/itemResponse.js';
 import { TagType } from '@guardian/content-api-models/v1/tagType.js';
 import type { UpdateEmbeddingEvent } from 'shared/embeddingEvent';
 
 interface CapiResponse {
-	response?: {
-		content?: CapiContent;
-	};
-}
-
-export interface CapiContent {
-	id: string;
-	type: 'article' | 'liveblog';
-	webPublicationDate?: string;
-	fields?: {
-		headline?: string;
-		standfirst?: string;
-		trailText?: string;
-		byline?: string;
-		internalRevision?: number;
-		liveBloggingNow?: boolean;
-	};
-	tags?: Array<{ id: string; type: string }>;
+	response?: ItemResponse;
 }
 
 export async function fetchCapiContent(
 	capiUrl: string,
-	apiKey: string | undefined,
-): Promise<CapiContent> {
+	capiKey: string | undefined,
+): Promise<Content> {
 	const url = new URL(capiUrl);
 	url.searchParams.set(
 		'show-fields',
 		'headline,standfirst,trailText,byline,internalRevision,liveBloggingNow',
 	);
 	url.searchParams.set('show-tags', 'keyword');
-	if (apiKey) {
-		url.searchParams.set('api-key', apiKey);
+	if (capiKey) {
+		url.searchParams.set('api-key', capiKey);
 	}
 
 	const response = await fetch(url);
@@ -87,7 +72,7 @@ export function crierContentToEmbeddingEvent(
 }
 
 export function capiContentToEmbeddingEvent(
-	content: CapiContent,
+	content: Content,
 	internalRevisionFallback: number | undefined,
 ): UpdateEmbeddingEvent {
 	const fields = content.fields;
@@ -96,7 +81,8 @@ export function capiContentToEmbeddingEvent(
 	const byline = fields?.byline ?? '';
 	const internalRevision =
 		fields?.internalRevision ?? internalRevisionFallback ?? 0;
-	if (!content.webPublicationDate) {
+	const webPublicationDate = getWebPublicationDate(content.webPublicationDate);
+	if (!webPublicationDate) {
 		throw new Error(`Content ${content.id} has no web publication date`);
 	}
 
@@ -108,16 +94,25 @@ export function capiContentToEmbeddingEvent(
 			articleId: content.id,
 			byline,
 			articleType:
-				content.type === 'liveblog' || fields?.liveBloggingNow
+				content.type === ContentType.LIVEBLOG || fields?.liveBloggingNow
 					? 'liveblog'
 					: 'article',
 			headline,
 			standfirst,
-			keywordTagIds: (content.tags ?? [])
-				.filter((tag) => tag.type === 'keyword')
+			keywordTagIds: content.tags
+				.filter((tag) => tag.type === TagType.KEYWORD)
 				.map((tag) => tag.id),
 			internalRevision,
-			webPublicationDate: content.webPublicationDate,
+			webPublicationDate,
 		},
 	};
+}
+
+function getWebPublicationDate(
+	value: CapiDateTime | string | undefined,
+): string | undefined {
+	if (typeof value === 'string') {
+		return value;
+	}
+	return value?.iso8601;
 }
