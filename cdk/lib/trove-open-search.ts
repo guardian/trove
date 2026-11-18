@@ -99,10 +99,12 @@ export class TroveOpenSearch extends GuStack {
 		const parameterNames = openSearchParameterNames(stage);
 		new StringParameter(this, 'EndpointParameter', {
 			parameterName: parameterNames.endpoint,
+			description: 'Endpoint of the Trove OpenSearch Serverless collection',
 			stringValue: collection.attrCollectionEndpoint,
 		});
 		new StringParameter(this, 'CollectionArnParameter', {
 			parameterName: parameterNames.collectionArn,
+			description: 'ARN of the Trove OpenSearch Serverless collection',
 			stringValue: collection.attrArn,
 		});
 
