@@ -1,4 +1,5 @@
 import { errors } from '@opensearch-project/opensearch';
+import type { ArticleV1 } from 'datastore/article';
 import { createClient } from 'datastore/client';
 import { articleIndices } from 'datastore/indices';
 
@@ -11,18 +12,18 @@ const client = createClient();
  */
 export async function writeArticle(
 	articleId: string,
-	document: unknown,
+	document: ArticleV1,
 	internalRevision: number,
 ): Promise<void> {
 	await Promise.all(
-		Object.values(articleIndices).map(async ({ name, schema }) => {
+		Object.values(articleIndices).map(async ({ name }) => {
 			try {
 				await client.index({
 					index: name,
 					id: articleId,
 					version: internalRevision,
 					version_type: 'external',
-					body: schema.parse(document),
+					body: document,
 				});
 			} catch (error) {
 				if (isVersionConflict(error)) {

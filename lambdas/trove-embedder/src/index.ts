@@ -39,7 +39,7 @@ async function processRecord(record: SQSRecord): Promise<void> {
 		return result.value;
 	});
 
-	const document = ArticleV1.parse({
+	const document: ArticleV1 = ArticleV1.parse({
 		headline: headlineEmbedded,
 		standfirst: standfirstEmbedded,
 		headlineAndStandfirst: combinedEmbedded,
