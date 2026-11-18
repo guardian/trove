@@ -29,7 +29,7 @@
 		"format:check": "prettier --check ."
 	},
 	"devDependencies": {
-		"@guardian/eslint-config": "14.0.1",
+		"@guardian/eslint-config": "16.0.0",
 		"@guardian/prettier": "5.0.0",
 		"@guardian/tsconfig": "2.0.0",
 		"@types/node": "26.6.4",
@@ -37,6 +37,14 @@
 		"globals": "17.4.0",
 		"prettier": "3.8.3",
 		"typescript": "5.9.3"
+	},
+	"overrideNotes": {
+		"@guardian/story-packages-model": "Depends on thrift ^0.15.0, which is vulnerable (GHSA-r67j-r569-jrwp, GHSA-526f-jxpj-jmg2). Pulled in via @guardian/content-api-models. Remove once story-packages-model depends on thrift >=0.23.0."
+	},
+	"overrides": {
+		"@guardian/story-packages-model": {
+			"thrift": "0.23.0"
+		}
 	},
 	"prettier": "@guardian/prettier"
 }
