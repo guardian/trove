@@ -2001,6 +2001,7 @@ exports[`The TroveOpenSearch stack > matches the snapshot 1`] = `
     "EndpointParameter617F6D67": {
       "Type": "AWS::SSM::Parameter",
       "Properties": {
+        "Description": "Endpoint of the Trove OpenSearch Serverless collection",
         "Name": "/CODE/content-api/trove/opensearch/endpoint",
         "Tags": {
           "gu:cdk:version": "TEST",
@@ -2020,6 +2021,7 @@ exports[`The TroveOpenSearch stack > matches the snapshot 1`] = `
     "CollectionArnParameterA98CFB16": {
       "Type": "AWS::SSM::Parameter",
       "Properties": {
+        "Description": "ARN of the Trove OpenSearch Serverless collection",
         "Name": "/CODE/content-api/trove/opensearch/collection-arn",
         "Tags": {
           "gu:cdk:version": "TEST",
