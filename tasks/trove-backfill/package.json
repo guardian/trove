@@ -4,14 +4,17 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"build": "esbuild src/index.ts --bundle --platform=node --external:@aws-sdk/* --outfile=dist/index.js",
-		"package": "npm run build && cd dist && rm -f trove-backfill.zip && zip trove-backfill.zip index.js",
+		"build": "esbuild src/index.ts --bundle --platform=node --target=node26 --outfile=dist/index.cjs",
+		"start": "node src/index.ts",
 		"test": "node --test 'src/**/*.test.ts'",
 		"typecheck": "tsc --noEmit",
 		"lint": "eslint ."
 	},
+	"dependencies": {
+		"@aws-sdk/client-sqs": "3.1166.0",
+		"shared": "*"
+	},
 	"devDependencies": {
-		"@types/aws-lambda": "8.10.164",
 		"esbuild": "0.28.2"
 	}
 }

@@ -19,7 +19,11 @@ snapshot.setDefaultSnapshotSerializers([
 void describe('The Trove stack', () => {
 	void it('matches the snapshot', (context) => {
 		const app = new App();
-		const stack = new Trove(app, 'Trove', { stack: 'capi', stage: 'TEST' });
+		const stack = new Trove(app, 'Trove', {
+			stack: 'capi',
+			stage: 'TEST',
+			backfillImageDigest: 'sha256:test',
+		});
 		const template = Template.fromStack(stack);
 
 		context.assert.snapshot(template.toJSON());

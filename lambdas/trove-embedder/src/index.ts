@@ -58,6 +58,13 @@ async function processRecord(record: SQSRecord): Promise<void> {
 
 /** Processes records concurrently, reporting failed ones so only they are retried. */
 export const handler = async (event: SQSEvent): Promise<SQSBatchResponse> => {
+	console.log(`Received ${event.Records.length} messages`);
+	for (const record of event.Records) {
+		console.log(
+			`Message ${record.messageId} from ${record.eventSourceARN}: ${record.body}`,
+		);
+	}
+
 	const results = await Promise.allSettled(event.Records.map(processRecord));
 
 	const batchItemFailures = event.Records.flatMap((record, i) => {
