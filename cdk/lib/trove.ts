@@ -171,7 +171,7 @@ export class Trove extends GuStack {
 function openSearchApiCallStatement(scope: GuStack): PolicyStatement {
 	return new PolicyStatement({
 		effect: Effect.ALLOW,
-		actions: ['aoss:APICall'],
+		actions: ['aoss:APIAccessAll'],
 		resources: [
 			StringParameter.valueForStringParameter(
 				scope,
