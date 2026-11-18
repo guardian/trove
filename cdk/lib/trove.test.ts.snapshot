@@ -283,6 +283,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
             "STACK": "capi",
             "STAGE": "TEST",
             "APP": "trove-listener",
+            "CAPI_API_KEY": "{{resolve:ssm-secure:/TEST/capi/trove-backfill/capi-api-key}}",
             "LIVE_EMBEDDER_QUEUE_URL": {
               "Ref": "EmbedderLiveQueueB402F2F7"
             }
@@ -354,6 +355,9 @@ exports[`The Trove stack > matches the snapshot 1`] = `
         "FunctionName": {
           "Ref": "TroveListenerE1C10E26"
         },
+        "FunctionResponseTypes": [
+          "ReportBatchItemFailures"
+        ],
         "MaximumBatchingWindowInSeconds": 10,
         "MaximumRetryAttempts": 3,
         "StartingPosition": "LATEST",

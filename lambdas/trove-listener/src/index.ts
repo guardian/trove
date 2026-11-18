@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto';
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
-import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { EventType } from '@guardian/content-api-models/crier/event/v1/eventType.js';
 import { ItemType } from '@guardian/content-api-models/crier/event/v1/itemType.js';
@@ -29,7 +28,6 @@ const credentials = process.env.STAGE
 	? defaultProvider()
 	: defaultProvider({ profile: 'capi' });
 const sqs = new SQSClient({ region: awsRegion, credentials });
-const ssm = new SSMClient({ region: awsRegion, credentials });
 
 interface ListenerDependencies {
 	queueUrl: string;
@@ -147,32 +145,13 @@ async function processRecord(
 	);
 }
 
-async function getCapiApiKey(): Promise<string | undefined> {
-	if (process.env.CAPI_API_KEY) {
-		return process.env.CAPI_API_KEY;
-	}
-	const parameterName = process.env.CAPI_API_KEY_PARAMETER_NAME;
-	if (!parameterName) {
-		return undefined;
-	}
-	const result = await ssm.send(
-		new GetParameterCommand({
-			Name: parameterName,
-			WithDecryption: true,
-		}),
-	);
-	return result.Parameter?.Value;
-}
-
-let cachedCapiApiKey: Promise<string | undefined> | undefined;
-function getCachedCapiApiKey(): Promise<string | undefined> {
-	cachedCapiApiKey ??= getCapiApiKey();
-	return cachedCapiApiKey;
+function getCapiApiKey(): Promise<string | undefined> {
+	return Promise.resolve(process.env.CAPI_API_KEY);
 }
 
 export const handler = createListenerHandler({
 	queueUrl: queueUrl ?? '',
 	send: (command) => sqs.send(command),
-	getCapiApiKey: getCachedCapiApiKey,
+	getCapiApiKey,
 	fetchCapiContent,
 });

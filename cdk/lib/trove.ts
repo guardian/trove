@@ -89,13 +89,10 @@ export class Trove extends GuStack {
 				startingPosition: StartingPosition.LATEST,
 				batchSize: 1,
 				maxBatchingWindow: Duration.seconds(10),
+				reportBatchItemFailures: true,
 			},
 		});
-		capiApiKeyParameter.grantRead(listener);
-		listener.addEnvironment(
-			'CAPI_API_KEY_PARAMETER_NAME',
-			capiApiKeyParameter.parameterName,
-		);
+		listener.addEnvironment('CAPI_API_KEY', capiApiKeyParameter.stringValue);
 
 		const liveQueue = createQueueWithDLQ(this, 'EmbedderLive');
 		const backfillQueue = createQueueWithDLQ(this, 'EmbedderBackfill');
