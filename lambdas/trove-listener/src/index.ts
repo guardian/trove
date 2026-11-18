@@ -1,17 +1,18 @@
 import { randomUUID } from 'node:crypto';
-import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
+import {
+	SendMessageBatchCommand,
+	type SendMessageBatchCommandOutput,
+	SQSClient,
+} from '@aws-sdk/client-sqs';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { EventType } from '@guardian/content-api-models/crier/event/v1/eventType.js';
 import { ItemType } from '@guardian/content-api-models/crier/event/v1/itemType.js';
 import type { Content } from '@guardian/content-api-models/v1/content.js';
-import type {
-	KinesisStreamBatchResponse,
-	KinesisStreamHandler,
-	KinesisStreamRecord,
-} from 'aws-lambda';
+import type { KinesisStreamHandler, KinesisStreamRecord } from 'aws-lambda';
 import {
 	type DeleteEmbeddingEvent,
 	EmbeddingEvent,
+	type EmbeddingEvent as EmbeddingEventType,
 	type UpdateEmbeddingEvent,
 } from 'shared/embeddingEvent';
 import { contentToEmbeddingEvent, fetchCapiContent } from './capi.ts';
@@ -27,7 +28,9 @@ const sqs = new SQSClient({ region: awsRegion, credentials });
 
 interface ListenerDependencies {
 	queueUrl: string;
-	send: (command: SendMessageCommand) => Promise<unknown>;
+	sendBatch: (
+		command: SendMessageBatchCommand,
+	) => Promise<SendMessageBatchCommandOutput>;
 	getCapiKey: () => Promise<string | undefined>;
 	fetchCapiContent: (
 		capiUrl: string,
@@ -39,35 +42,66 @@ export function createListenerHandler(
 	dependencies: ListenerDependencies,
 ): KinesisStreamHandler {
 	return async (event) => {
-		const results = await Promise.all(
-			event.Records.map(async (record) =>
-				processRecord(record, dependencies).then(
-					() => undefined,
-					(error: unknown) => {
-						console.error('Failed to process listener record', {
-							sequenceNumber: record.kinesis.sequenceNumber,
-							error,
-						});
-						return record.kinesis.sequenceNumber;
-					},
-				),
-			),
-		);
+		const messages: Array<{ sequenceNumber: string; body: string }> = [];
 
-		const batchItemFailures = results
-			.filter((sequenceNumber): sequenceNumber is string => !!sequenceNumber)
-			.map((itemIdentifier) => ({ itemIdentifier }));
-		return { batchItemFailures } satisfies KinesisStreamBatchResponse;
+		for (const record of event.Records) {
+			try {
+				const embeddingEvent = await processRecord(record, dependencies);
+				if (embeddingEvent) {
+					messages.push({
+						sequenceNumber: record.kinesis.sequenceNumber,
+						body: JSON.stringify(embeddingEvent),
+					});
+				}
+			} catch (error) {
+				console.error('Failed to process listener record', {
+					sequenceNumber: record.kinesis.sequenceNumber,
+					error,
+				});
+				throw error;
+			}
+		}
+
+		if (messages.length === 0) {
+			return;
+		}
+
+		try {
+			const response = await dependencies.sendBatch(
+				new SendMessageBatchCommand({
+					QueueUrl: dependencies.queueUrl,
+					Entries: messages.map((message, index) => ({
+						Id: String(index),
+						MessageBody: message.body,
+					})),
+				}),
+			);
+			if (response.Failed && response.Failed.length > 0) {
+				for (const failure of response.Failed) {
+					const message = messages[Number(failure.Id)];
+					console.error('Failed to push listener message to SQS', {
+						sequenceNumber: message?.sequenceNumber,
+						sqsEntryId: failure.Id,
+						sqsCode: failure.Code,
+						sqsMessage: failure.Message,
+					});
+				}
+				throw new Error('One or more SQS messages failed to send');
+			}
+		} catch (error) {
+			console.error('Failed to push SQS batch', { error });
+			throw error;
+		}
 	};
 }
 
 async function processRecord(
 	record: KinesisStreamRecord,
 	dependencies: ListenerDependencies,
-): Promise<void> {
+): Promise<EmbeddingEventType | undefined> {
 	const crierEvent = decodeAndParseCrierEvent(record.kinesis.data);
 	if (crierEvent.itemType !== ItemType.CONTENT) {
-		return;
+		return undefined;
 	}
 	const id =
 		crierEvent.payload?.kind === 'retrievableContent'
@@ -81,13 +115,14 @@ async function processRecord(
 			eventType: 'delete',
 			payload: { articleId: id },
 		};
-		await dependencies.send(
-			new SendMessageCommand({
-				QueueUrl: dependencies.queueUrl,
-				MessageBody: JSON.stringify(event),
-			}),
-		);
-		return;
+		return event;
+	}
+	const updateEventTypes: number[] = [
+		EventType.UPDATE,
+		EventType.RETRIEVABLEUPDATE,
+	];
+	if (!updateEventTypes.includes(crierEvent.eventType)) {
+		return undefined;
 	}
 
 	let event: UpdateEmbeddingEvent;
@@ -106,12 +141,7 @@ async function processRecord(
 	}
 
 	const parsedEvent = EmbeddingEvent.parse(event);
-	await dependencies.send(
-		new SendMessageCommand({
-			QueueUrl: dependencies.queueUrl,
-			MessageBody: JSON.stringify(parsedEvent),
-		}),
-	);
+	return parsedEvent;
 }
 
 function getCapiKey(): Promise<string | undefined> {
@@ -120,7 +150,7 @@ function getCapiKey(): Promise<string | undefined> {
 
 export const handler = createListenerHandler({
 	queueUrl: queueUrl ?? '',
-	send: (command) => sqs.send(command),
+	sendBatch: (command) => sqs.send(command),
 	getCapiKey,
 	fetchCapiContent,
 });

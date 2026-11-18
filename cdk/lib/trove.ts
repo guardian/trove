@@ -87,9 +87,8 @@ export class Trove extends GuStack {
 			},
 			processingProps: {
 				startingPosition: StartingPosition.LATEST,
-				batchSize: 1,
+				batchSize: 10,
 				maxBatchingWindow: Duration.seconds(10),
-				reportBatchItemFailures: true,
 			},
 		});
 		listener.addEnvironment('CAPI_API_KEY', capiKeyParameter.stringValue);

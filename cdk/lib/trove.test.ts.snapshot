@@ -334,7 +334,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
     "TroveListenerKinesisEventSourceTrovecontentapifirehosev2TESTD86CD8EC365A4604": {
       "Type": "AWS::Lambda::EventSourceMapping",
       "Properties": {
-        "BatchSize": 1,
+        "BatchSize": 10,
         "BisectBatchOnFunctionError": true,
         "EventSourceArn": {
           "Fn::Join": [
@@ -355,9 +355,6 @@ exports[`The Trove stack > matches the snapshot 1`] = `
         "FunctionName": {
           "Ref": "TroveListenerE1C10E26"
         },
-        "FunctionResponseTypes": [
-          "ReportBatchItemFailures"
-        ],
         "MaximumBatchingWindowInSeconds": 10,
         "MaximumRetryAttempts": 3,
         "StartingPosition": "LATEST",
