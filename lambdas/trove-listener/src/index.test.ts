@@ -103,7 +103,7 @@ void describe('listener handler', () => {
 		});
 	});
 
-	void it('fetches retrievable updates and ignores stale updates', async () => {
+	void it('fetches retrievable updates', async () => {
 		const sent: SendMessageCommand[] = [];
 		let fetchedUrl: string | undefined;
 		const handler = createListenerHandler({
@@ -166,8 +166,8 @@ void describe('listener handler', () => {
 			fetchedUrl,
 			'https://content.guardianapis.com/world/2026/oct/30/example',
 		);
-		assert.equal(sent.length, 1);
-		const sentUpdate = sent[0];
+		assert.equal(sent.length, 2);
+		const sentUpdate = sent[1];
 		assert.ok(sentUpdate);
 		const body = EmbeddingEvent.parse(
 			JSON.parse(sentUpdate.input.MessageBody ?? '{}'),

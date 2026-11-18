@@ -43,46 +43,16 @@ export function createListenerHandler(
 	dependencies: ListenerDependencies,
 ): KinesisStreamHandler {
 	return async (event) => {
-		const latestRecords = new Map<
-			string,
-			{ record: KinesisStreamRecord; time: number }
-		>();
-		const decodeFailures = new Set<string>();
-
-		for (const record of event.Records) {
-			try {
-				const crierEvent = decodeAndParseCrierEvent(record.kinesis.data);
-				if (crierEvent.itemType !== ItemType.CONTENT) {
-					continue;
-				}
-				const id =
-					crierEvent.payload?.kind === 'retrievableContent'
-						? crierEvent.payload.retrievableContent.id
-						: crierEvent.payloadId;
-				const time = crierEvent.dateTime.toNumber();
-				const latest = latestRecords.get(id);
-				if (!latest || time >= latest.time) {
-					latestRecords.set(id, { record, time });
-				}
-			} catch (error) {
-				decodeFailures.add(record.kinesis.sequenceNumber);
-				console.error('Failed to decode Kinesis record', {
-					sequenceNumber: record.kinesis.sequenceNumber,
-					error,
-				});
-			}
-		}
-
 		const results = await Promise.all(
-			Array.from(latestRecords.entries()).map(async ([id, latest]) =>
-				processRecord(latest.record, id, dependencies).then(
+			event.Records.map(async (record) =>
+				processRecord(record, dependencies).then(
 					() => undefined,
 					(error: unknown) => {
 						console.error('Failed to process listener record', {
-							sequenceNumber: latest.record.kinesis.sequenceNumber,
+							sequenceNumber: record.kinesis.sequenceNumber,
 							error,
 						});
-						return latest.record.kinesis.sequenceNumber;
+						return record.kinesis.sequenceNumber;
 					},
 				),
 			),
@@ -91,19 +61,22 @@ export function createListenerHandler(
 		const batchItemFailures = results
 			.filter((sequenceNumber): sequenceNumber is string => !!sequenceNumber)
 			.map((itemIdentifier) => ({ itemIdentifier }));
-		for (const itemIdentifier of decodeFailures) {
-			batchItemFailures.push({ itemIdentifier });
-		}
 		return { batchItemFailures } satisfies KinesisStreamBatchResponse;
 	};
 }
 
 async function processRecord(
 	record: KinesisStreamRecord,
-	id: string,
 	dependencies: ListenerDependencies,
 ): Promise<void> {
 	const crierEvent = decodeAndParseCrierEvent(record.kinesis.data);
+	if (crierEvent.itemType !== ItemType.CONTENT) {
+		return;
+	}
+	const id =
+		crierEvent.payload?.kind === 'retrievableContent'
+			? crierEvent.payload.retrievableContent.id
+			: crierEvent.payloadId;
 
 	if (crierEvent.eventType === EventType.DELETE) {
 		const event: DeleteEmbeddingEvent = {
