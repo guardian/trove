@@ -15,6 +15,10 @@
 		"esbuild": "0.28.2"
 	},
 	"dependencies": {
-		"@guardian/content-api-models": "53.0.0"
+		"@aws-sdk/client-sqs": "3.1166.0",
+		"@aws-sdk/client-ssm": "3.1166.0",
+		"@aws-sdk/credential-provider-node": "3.972.92",
+		"@guardian/content-api-models": "53.0.0",
+		"shared": "0.0.0"
 	}
 }

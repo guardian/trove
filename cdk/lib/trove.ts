@@ -60,6 +60,15 @@ export class Trove extends GuStack {
 			});
 		}
 
+		const capiApiKeyParameter =
+			StringParameter.fromSecureStringParameterAttributes(
+				this,
+				'TroveBackfillCapiApiKey',
+				{
+					parameterName: `/${this.stage}/${this.stack}/trove-backfill/capi-api-key`,
+				},
+			);
+
 		const listener = new GuKinesisLambdaExperimental(this, 'TroveListener', {
 			app: 'trove-listener',
 			fileName: 'trove-listener.zip',
@@ -82,6 +91,11 @@ export class Trove extends GuStack {
 				maxBatchingWindow: Duration.seconds(10),
 			},
 		});
+		capiApiKeyParameter.grantRead(listener);
+		listener.addEnvironment(
+			'CAPI_API_KEY_PARAMETER_NAME',
+			capiApiKeyParameter.parameterName,
+		);
 
 		const liveQueue = createQueueWithDLQ(this, 'EmbedderLive');
 		const backfillQueue = createQueueWithDLQ(this, 'EmbedderBackfill');
@@ -148,15 +162,7 @@ export class Trove extends GuStack {
 		);
 		backfill.containerDefinition.addSecret(
 			'CAPI_API_KEY',
-			EcsSecret.fromSsmParameter(
-				StringParameter.fromSecureStringParameterAttributes(
-					this,
-					'TroveBackfillCapiApiKey',
-					{
-						parameterName: `/${this.stage}/${this.stack}/${backfillApp}/capi-api-key`,
-					},
-				),
-			),
+			EcsSecret.fromSsmParameter(capiApiKeyParameter),
 		);
 	}
 }
