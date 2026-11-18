@@ -69,7 +69,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
               ]
             },
             {
-              "Action": "aoss:APICall",
+              "Action": "aoss:APIAccessAll",
               "Effect": "Allow",
               "Resource": {
                 "Ref": "SsmParameterValueTESTcontentapitroveopensearchcollectionarnC96584B6F00A464EAD1953AFF4B05118Parameter"
@@ -829,7 +829,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
               }
             },
             {
-              "Action": "aoss:APICall",
+              "Action": "aoss:APIAccessAll",
               "Effect": "Allow",
               "Resource": {
                 "Ref": "SsmParameterValueTESTcontentapitroveopensearchcollectionarnC96584B6F00A464EAD1953AFF4B05118Parameter"
