@@ -1,5 +1,8 @@
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core/index.js';
-import { GuStack } from '@guardian/cdk/lib/constructs/core/index.js';
+import {
+	GuParameter,
+	GuStack,
+} from '@guardian/cdk/lib/constructs/core/index.js';
 import {
 	GuHttpsEgressSecurityGroup,
 	GuVpc,
@@ -78,10 +81,22 @@ export class Trove extends GuStack {
 			},
 			processingProps: {
 				startingPosition: StartingPosition.LATEST,
-				batchSize: 1,
+				// Matches the SQS SendMessageBatch limit, so each Kinesis batch is a single SQS request
+				batchSize: 10,
 				maxBatchingWindow: Duration.seconds(10),
 			},
 		});
+
+		const listenerCapiApiKey = new GuParameter(
+			this,
+			'TroveListenerCapiApiKey',
+			{
+				description: 'CAPI API key used by the listener to fetch content',
+				default: `/${this.stage}/${this.stack}/trove-listener/capi-api-key`,
+				type: 'AWS::SSM::Parameter::Value<String>',
+			},
+		);
+		listener.addEnvironment('CAPI_API_KEY', listenerCapiApiKey.valueAsString);
 
 		const liveQueue = createQueueWithDLQ(this, 'EmbedderLive');
 		const backfillQueue = createQueueWithDLQ(this, 'EmbedderBackfill');

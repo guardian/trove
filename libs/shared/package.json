@@ -4,7 +4,11 @@
 	"private": true,
 	"type": "module",
 	"exports": {
-		"./embeddingEvent": "./src/embeddingEvent.ts"
+		"./capi": "./src/capi.ts",
+		"./contentToPayload": "./src/contentToPayload.ts",
+		"./embeddingEvent": "./src/embeddingEvent.ts",
+		"./fixtures": "./src/fixtures.ts",
+		"./thrift": "./src/thrift.ts"
 	},
 	"scripts": {
 		"test": "node --test 'src/**/*.test.ts'",
@@ -12,6 +16,8 @@
 		"lint": "eslint ."
 	},
 	"dependencies": {
+		"@guardian/content-api-models": "53.0.0",
+		"thrift": "0.23.0",
 		"zod": "4.6.7"
 	}
 }
