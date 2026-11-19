@@ -10,7 +10,7 @@ import type { KinesisStreamEvent, KinesisStreamRecord } from 'aws-lambda';
 import { sampleContent } from 'shared/testing/fixtures';
 import { encodeThrift } from 'shared/thrift';
 import { Int64 } from 'thrift';
-import { processBatch } from './index.ts';
+import { processBatch } from './processBatch.ts';
 
 const kinesisRecord = (event: Event): KinesisStreamRecord =>
 	({
