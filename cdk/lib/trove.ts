@@ -16,7 +16,7 @@ import { GuKinesisLambdaExperimental } from '@guardian/cdk/lib/experimental/patt
 import { StreamRetry } from '@guardian/cdk/lib/utils/lambda/event-source.js';
 import type { App } from 'aws-cdk-lib';
 import { Duration } from 'aws-cdk-lib';
-import { ContainerInsights, Secret as EcsSecret } from 'aws-cdk-lib/aws-ecs';
+import { ContainerInsights } from 'aws-cdk-lib/aws-ecs';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { StartingPosition } from 'aws-cdk-lib/aws-lambda';
@@ -24,7 +24,6 @@ import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { Topic } from 'aws-cdk-lib/aws-sns';
 import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
-import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 
 export interface TroveProps extends GuStackProps {
 	/**
@@ -63,6 +62,13 @@ export class Trove extends GuStack {
 			});
 		}
 
+		// Not a secret, so it can be injected as a plain environment variable into both the listener and backfill
+		const capiApiKey = new GuParameter(this, 'TroveCapiApiKey', {
+			description: 'CAPI API key used by the listener and backfill',
+			default: `/${this.stage}/${this.stack}/trove/capi-key`,
+			type: 'AWS::SSM::Parameter::Value<String>',
+		});
+
 		const listener = new GuKinesisLambdaExperimental(this, 'TroveListener', {
 			app: 'trove-listener',
 			fileName: 'trove-listener.zip',
@@ -87,16 +93,7 @@ export class Trove extends GuStack {
 			},
 		});
 
-		const listenerCapiApiKey = new GuParameter(
-			this,
-			'TroveListenerCapiApiKey',
-			{
-				description: 'CAPI API key used by the listener to fetch content',
-				default: `/${this.stage}/${this.stack}/trove-listener/capi-api-key`,
-				type: 'AWS::SSM::Parameter::Value<String>',
-			},
-		);
-		listener.addEnvironment('CAPI_API_KEY', listenerCapiApiKey.valueAsString);
+		listener.addEnvironment('CAPI_API_KEY', capiApiKey.valueAsString);
 
 		const liveQueue = createQueueWithDLQ(this, 'EmbedderLive');
 		const backfillQueue = createQueueWithDLQ(this, 'EmbedderBackfill');
@@ -161,17 +158,9 @@ export class Trove extends GuStack {
 			'BACKFILL_EMBEDDER_QUEUE_URL',
 			backfillQueue.queueUrl,
 		);
-		backfill.containerDefinition.addSecret(
+		backfill.containerDefinition.addEnvironment(
 			'CAPI_API_KEY',
-			EcsSecret.fromSsmParameter(
-				StringParameter.fromSecureStringParameterAttributes(
-					this,
-					'TroveBackfillCapiApiKey',
-					{
-						parameterName: `/${this.stage}/${this.stack}/${backfillApp}/capi-api-key`,
-					},
-				),
-			),
+			capiApiKey.valueAsString,
 		);
 	}
 }
