@@ -1,18 +1,27 @@
+import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm';
 import type { KinesisStreamEvent } from 'aws-lambda';
-import { getParameter } from 'shared/ssm';
+import { fetchContent } from 'shared/capi';
 import { processBatch } from './processBatch.ts';
-import { capiFetcher } from './toEmbeddingEvent.ts';
 
 const capiKeyParameter = process.env.CAPI_KEY_PARAMETER;
 if (!capiKeyParameter) {
 	throw new Error('CAPI_KEY_PARAMETER is not set');
 }
 // Resolved once per cold start rather than on every invocation
-const capiKey = getParameter(capiKeyParameter);
+const capiKey = new SSMClient({})
+	.send(new GetParameterCommand({ Name: capiKeyParameter }))
+	.then(({ Parameter }) => {
+		if (!Parameter?.Value) {
+			throw new Error(`SSM parameter ${capiKeyParameter} has no value`);
+		}
+		return Parameter.Value;
+	});
 
-export const handler = async (event: KinesisStreamEvent): Promise<void> =>
-	processBatch(
+export const handler = async (event: KinesisStreamEvent): Promise<void> => {
+	const key = await capiKey;
+	return processBatch(
 		event,
-		capiFetcher(await capiKey),
+		(capiUrl) => fetchContent(capiUrl, key),
 		process.env.LIVE_EMBEDDER_QUEUE_URL,
 	);
+};
