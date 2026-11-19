@@ -319,7 +319,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
             "STACK": "capi",
             "STAGE": "TEST",
             "APP": "trove-listener",
-            "CAPI_API_KEY_PARAMETER": "/TEST/capi/trove/capi-key",
+            "CAPI_KEY_PARAMETER": "/TEST/capi/trove/capi-key",
             "LIVE_EMBEDDER_QUEUE_URL": {
               "Ref": "EmbedderLiveQueueB402F2F7"
             }
@@ -1236,7 +1236,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
                 }
               },
               {
-                "Name": "CAPI_API_KEY_PARAMETER",
+                "Name": "CAPI_KEY_PARAMETER",
                 "Value": "/TEST/capi/trove/capi-key"
               }
             ],

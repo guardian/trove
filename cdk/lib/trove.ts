@@ -65,9 +65,9 @@ export class Trove extends GuStack {
 		}
 
 		// Resolved at runtime by the apps rather than baked into the template
-		const capiApiKey = StringParameter.fromStringParameterName(
+		const capiKey = StringParameter.fromStringParameterName(
 			this,
-			'TroveCapiApiKey',
+			'TroveCapiKey',
 			`/${this.stage}/${this.stack}/trove/capi-key`,
 		);
 
@@ -95,8 +95,8 @@ export class Trove extends GuStack {
 			},
 		});
 
-		capiApiKey.grantRead(listener);
-		listener.addEnvironment('CAPI_API_KEY_PARAMETER', capiApiKey.parameterName);
+		capiKey.grantRead(listener);
+		listener.addEnvironment('CAPI_KEY_PARAMETER', capiKey.parameterName);
 
 		const liveQueue = createQueueWithDLQ(this, 'EmbedderLive');
 		const backfillQueue = createQueueWithDLQ(this, 'EmbedderBackfill');
@@ -162,10 +162,10 @@ export class Trove extends GuStack {
 			'BACKFILL_EMBEDDER_QUEUE_URL',
 			backfillQueue.queueUrl,
 		);
-		capiApiKey.grantRead(backfill.taskDefinition.taskRole);
+		capiKey.grantRead(backfill.taskDefinition.taskRole);
 		backfill.containerDefinition.addEnvironment(
-			'CAPI_API_KEY_PARAMETER',
-			capiApiKey.parameterName,
+			'CAPI_KEY_PARAMETER',
+			capiKey.parameterName,
 		);
 	}
 }
