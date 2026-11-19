@@ -1,18 +1,27 @@
-import type { KinesisStreamHandler } from 'aws-lambda';
-import { decodeAndParseCrierEvent } from './decodeAndParseCrierEvent.ts';
-import { readableCrierEvent } from './readableCrierEvent.ts';
+import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm';
+import type { KinesisStreamEvent } from 'aws-lambda';
+import { fetchContent } from 'shared/capi';
+import { processBatch } from './processBatch.ts';
 
-export const handler: KinesisStreamHandler = async (event) => {
-	const crierEvents = event.Records.map((r) => {
-		return decodeAndParseCrierEvent(r.kinesis.data);
+const capiKeyParameter = process.env.CAPI_KEY_PARAMETER;
+if (!capiKeyParameter) {
+	throw new Error('CAPI_KEY_PARAMETER is not set');
+}
+// Resolved once per cold start rather than on every invocation
+const capiKey = new SSMClient({})
+	.send(new GetParameterCommand({ Name: capiKeyParameter }))
+	.then(({ Parameter }) => {
+		if (!Parameter?.Value) {
+			throw new Error(`SSM parameter ${capiKeyParameter} has no value`);
+		}
+		return Parameter.Value;
 	});
-	crierEvents.forEach((event) => {
-		const readableEvent = readableCrierEvent(event);
-		console.log(
-			readableEvent.payloadId,
-			readableEvent.eventType,
-			readableEvent.itemType,
-		);
-	});
-	await Promise.resolve();
+
+export const handler = async (event: KinesisStreamEvent): Promise<void> => {
+	const key = await capiKey;
+	return processBatch(
+		event,
+		(capiUrl) => fetchContent(capiUrl, key),
+		process.env.LIVE_EMBEDDER_QUEUE_URL,
+	);
 };

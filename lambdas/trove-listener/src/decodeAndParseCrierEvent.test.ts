@@ -4,23 +4,12 @@ import type { Event } from '@guardian/content-api-models/crier/event/v1/event.js
 import { EventSerde } from '@guardian/content-api-models/crier/event/v1/event.js';
 import { EventType } from '@guardian/content-api-models/crier/event/v1/eventType.js';
 import { ItemType } from '@guardian/content-api-models/crier/event/v1/itemType.js';
-import { Int64, TCompactProtocol, TFramedTransport } from 'thrift';
+import { encodeThrift } from 'shared/thrift';
+import { Int64 } from 'thrift';
 import { decodeAndParseCrierEvent } from './decodeAndParseCrierEvent.ts';
 import { readableCrierEvent } from './readableCrierEvent.ts';
 
-/** Encodes an Event the way Crier does: compact protocol, no frame-length prefix. */
-const encode = (event: Event): Uint8Array => {
-	let framed: Buffer = Buffer.alloc(0);
-	const transport = new TFramedTransport(undefined, (buffer?: Buffer) => {
-		if (buffer) {
-			framed = buffer;
-		}
-	});
-	EventSerde.write(new TCompactProtocol(transport), event);
-	transport.flush();
-	// TFramedTransport.flush prepends a 4-byte length, which Crier records don't have.
-	return framed.subarray(4);
-};
+const encode = (event: Event): Uint8Array => encodeThrift(event, EventSerde);
 
 const b64 = (bytes: Uint8Array): string =>
 	Buffer.from(bytes).toString('base64');
