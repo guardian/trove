@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { ItemResponseSerde } from '@guardian/content-api-models/v1/itemResponse.js';
 import { fetchContent } from './capi.ts';
-import { sampleContent } from './fixtures.ts';
+import { sampleContent } from './testing/fixtures.ts';
 import { encodeThrift } from './thrift.ts';
 
 void describe('fetchContent', () => {

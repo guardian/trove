@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { ContentType } from '@guardian/content-api-models/v1/contentType.js';
 import { contentToPayload } from './contentToPayload.ts';
-import { sampleContent } from './fixtures.ts';
+import { sampleContent } from './testing/fixtures.ts';
 
 void describe('contentToPayload', () => {
 	void it('maps an article, keeping only keyword tags', () => {
