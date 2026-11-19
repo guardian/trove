@@ -1,8 +1,5 @@
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core/index.js';
-import {
-	GuParameter,
-	GuStack,
-} from '@guardian/cdk/lib/constructs/core/index.js';
+import { GuStack } from '@guardian/cdk/lib/constructs/core/index.js';
 import {
 	GuHttpsEgressSecurityGroup,
 	GuVpc,
@@ -24,6 +21,7 @@ import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { Topic } from 'aws-cdk-lib/aws-sns';
 import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import {
 	grantOpenSearchWrite,
 	openSearchApiCallStatement,
@@ -66,12 +64,12 @@ export class Trove extends GuStack {
 			});
 		}
 
-		// Not a secret, so it can be injected as a plain environment variable into both the listener and backfill
-		const capiApiKey = new GuParameter(this, 'TroveCapiApiKey', {
-			description: 'CAPI API key used by the listener and backfill',
-			default: `/${this.stage}/${this.stack}/trove/capi-key`,
-			type: 'AWS::SSM::Parameter::Value<String>',
-		});
+		// Resolved at runtime by the apps rather than baked into the template
+		const capiApiKey = StringParameter.fromStringParameterName(
+			this,
+			'TroveCapiApiKey',
+			`/${this.stage}/${this.stack}/trove/capi-key`,
+		);
 
 		const listener = new GuKinesisLambdaExperimental(this, 'TroveListener', {
 			app: 'trove-listener',
@@ -97,7 +95,8 @@ export class Trove extends GuStack {
 			},
 		});
 
-		listener.addEnvironment('CAPI_API_KEY', capiApiKey.valueAsString);
+		capiApiKey.grantRead(listener);
+		listener.addEnvironment('CAPI_API_KEY_PARAMETER', capiApiKey.parameterName);
 
 		const liveQueue = createQueueWithDLQ(this, 'EmbedderLive');
 		const backfillQueue = createQueueWithDLQ(this, 'EmbedderBackfill');
@@ -163,9 +162,10 @@ export class Trove extends GuStack {
 			'BACKFILL_EMBEDDER_QUEUE_URL',
 			backfillQueue.queueUrl,
 		);
+		capiApiKey.grantRead(backfill.taskDefinition.taskRole);
 		backfill.containerDefinition.addEnvironment(
-			'CAPI_API_KEY',
-			capiApiKey.valueAsString,
+			'CAPI_API_KEY_PARAMETER',
+			capiApiKey.parameterName,
 		);
 	}
 }

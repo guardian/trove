@@ -3,7 +3,6 @@ exports[`The Trove stack > matches the snapshot 1`] = `
   "Metadata": {
     "gu:cdk:constructs": [
       "GuDeveloperPolicy",
-      "GuParameter",
       "GuDistributionBucketParameter",
       "GuKinesisLambdaExperimental",
       "GuLambdaErrorPercentageAlarm",
@@ -254,6 +253,35 @@ exports[`The Trove stack > matches the snapshot 1`] = `
             },
             {
               "Action": [
+                "ssm:DescribeParameters",
+                "ssm:GetParameters",
+                "ssm:GetParameter",
+                "ssm:GetParameterHistory"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":ssm:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":parameter/TEST/capi/trove/capi-key"
+                  ]
+                ]
+              }
+            },
+            {
+              "Action": [
                 "sqs:SendMessage",
                 "sqs:GetQueueAttributes",
                 "sqs:GetQueueUrl"
@@ -291,9 +319,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
             "STACK": "capi",
             "STAGE": "TEST",
             "APP": "trove-listener",
-            "CAPI_API_KEY": {
-              "Ref": "TroveCapiApiKey"
-            },
+            "CAPI_API_KEY_PARAMETER": "/TEST/capi/trove/capi-key",
             "LIVE_EMBEDDER_QUEUE_URL": {
               "Ref": "EmbedderLiveQueueB402F2F7"
             }
@@ -1155,6 +1181,35 @@ exports[`The Trove stack > matches the snapshot 1`] = `
                   "Arn"
                 ]
               }
+            },
+            {
+              "Action": [
+                "ssm:DescribeParameters",
+                "ssm:GetParameters",
+                "ssm:GetParameter",
+                "ssm:GetParameterHistory"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":ssm:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":parameter/TEST/capi/trove/capi-key"
+                  ]
+                ]
+              }
             }
           ],
           "Version": "2012-10-17"
@@ -1181,10 +1236,8 @@ exports[`The Trove stack > matches the snapshot 1`] = `
                 }
               },
               {
-                "Name": "CAPI_API_KEY",
-                "Value": {
-                  "Ref": "TroveCapiApiKey"
-                }
+                "Name": "CAPI_API_KEY_PARAMETER",
+                "Value": "/TEST/capi/trove/capi-key"
               }
             ],
             "Essential": true,
@@ -1855,11 +1908,6 @@ exports[`The Trove stack > matches the snapshot 1`] = `
     "SsmParameterValueTESTcontentapitroveopensearchcollectionarnC96584B6F00A464EAD1953AFF4B05118Parameter": {
       "Type": "AWS::SSM::Parameter::Value<String>",
       "Default": "/TEST/content-api/trove/opensearch/collection-arn"
-    },
-    "TroveCapiApiKey": {
-      "Type": "AWS::SSM::Parameter::Value<String>",
-      "Default": "/TEST/capi/trove/capi-key",
-      "Description": "CAPI API key used by the listener and backfill"
     },
     "DistributionBucketName": {
       "Type": "AWS::SSM::Parameter::Value<String>",

@@ -17,14 +17,11 @@ export async function toEmbeddingEvent(
 	if (event.itemType !== ItemType.CONTENT) {
 		return undefined;
 	}
-	const base = {
-		embeddingEventId: randomUUID(),
-		source: 'listener',
-	} as const;
 
 	if (event.eventType === EventType.DELETE) {
 		return {
-			...base,
+			embeddingEventId: randomUUID(),
+			source: 'listener',
 			eventType: 'delete',
 			payload: { articleId: event.payloadId },
 		};
@@ -32,7 +29,14 @@ export async function toEmbeddingEvent(
 
 	const content = await resolveContent(event, fetchContent);
 	const payload = content && contentToPayload(content);
-	return payload && { ...base, eventType: 'update', payload };
+	return (
+		payload && {
+			embeddingEventId: randomUUID(),
+			source: 'listener',
+			eventType: 'update',
+			payload,
+		}
+	);
 }
 
 async function resolveContent(

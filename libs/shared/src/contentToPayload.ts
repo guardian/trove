@@ -25,10 +25,9 @@ export function contentToPayload(
 	const { fields, webPublicationDate } = content;
 	const result = UpdateEmbeddingPayload.safeParse({
 		articleId: content.id,
-		byline: fields?.byline,
+		byline: fields?.byline ?? '',
 		articleType: articleTypes[content.type],
 		headline: fields?.headline,
-		// Some articles legitimately have no standfirst; we still want to embed their headline
 		standfirst: fields?.standfirst ?? '',
 		keywordTagIds: content.tags
 			.filter((tag) => tag.type === TagType.KEYWORD)

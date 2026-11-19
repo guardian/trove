@@ -35,17 +35,20 @@ void describe('contentToPayload', () => {
 		assert.equal(warn.mock.callCount(), 0);
 	});
 
-	void it('defaults a missing standfirst to an empty string', () => {
-		const fields = { ...sampleContent.fields, standfirst: undefined };
-		assert.equal(
-			contentToPayload({ ...sampleContent, fields })?.standfirst,
-			'',
-		);
+	void it('defaults a missing standfirst and byline to empty strings', () => {
+		const fields = {
+			...sampleContent.fields,
+			standfirst: undefined,
+			byline: undefined,
+		};
+		const payload = contentToPayload({ ...sampleContent, fields });
+		assert.equal(payload?.standfirst, '');
+		assert.equal(payload.byline, '');
 	});
 
 	void it('warns and skips content missing a required property', (t) => {
 		const warn = t.mock.method(console, 'warn', () => undefined);
-		const fields = { ...sampleContent.fields, byline: undefined };
+		const fields = { ...sampleContent.fields, headline: undefined };
 		assert.equal(contentToPayload({ ...sampleContent, fields }), undefined);
 		assert.equal(warn.mock.callCount(), 1);
 	});
