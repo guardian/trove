@@ -4,7 +4,7 @@ Runs the historical backfill as a long-running ECS Fargate task.
 
 For now it just sends 10 dummy `UpdateEmbeddingEvent`s to the backfill queue, so we can see them come out of the
 embedder logs. Paging through CAPI (using `/content/{lastSeenId}/next`, see
-[content-api#2812](https://github.com/guardian/content-api/pull/2812)) comes next. The `CAPI_API_KEY_PARAMETER`
+[content-api#2812](https://github.com/guardian/content-api/pull/2812)) comes next. The `CAPI_KEY_PARAMETER`
 environment variable (the SSM parameter name, to be resolved at runtime) is already wired up in CDK for that.
 
 ## Running locally
