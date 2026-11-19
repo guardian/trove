@@ -1,19 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import type { Event } from '@guardian/content-api-models/crier/event/v1/event.js';
 import { EventType } from '@guardian/content-api-models/crier/event/v1/eventType.js';
 import { ItemType } from '@guardian/content-api-models/crier/event/v1/itemType.js';
-import { sampleContent } from 'shared/testing/fixtures';
-import { Int64 } from 'thrift';
+import { crierEvent, sampleContent } from 'shared/testing/fixtures';
 import { toEmbeddingEvent } from './toEmbeddingEvent.ts';
-
-const crierEvent = (overrides: Partial<Event>): Event => ({
-	payloadId: sampleContent.id,
-	eventType: EventType.UPDATE,
-	itemType: ItemType.CONTENT,
-	dateTime: new Int64(1_700_000_000_000),
-	...overrides,
-});
 
 const noFetch = () => Promise.reject(new Error('Unexpected CAPI fetch'));
 

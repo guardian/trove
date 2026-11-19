@@ -1,3 +1,6 @@
+import type { Event } from '@guardian/content-api-models/crier/event/v1/event.js';
+import { EventType } from '@guardian/content-api-models/crier/event/v1/eventType.js';
+import { ItemType } from '@guardian/content-api-models/crier/event/v1/itemType.js';
 import type { Content } from '@guardian/content-api-models/v1/content.js';
 import { ContentType } from '@guardian/content-api-models/v1/contentType.js';
 import type { Tag } from '@guardian/content-api-models/v1/tag.js';
@@ -37,3 +40,12 @@ export const sampleContent: Content = {
 	references: [],
 	isHosted: false,
 };
+
+/** A Crier content update for `sampleContent`, without payload unless overridden. */
+export const crierEvent = (overrides: Partial<Event> = {}): Event => ({
+	payloadId: sampleContent.id,
+	eventType: EventType.UPDATE,
+	itemType: ItemType.CONTENT,
+	dateTime: new Int64(1_700_000_000_000),
+	...overrides,
+});

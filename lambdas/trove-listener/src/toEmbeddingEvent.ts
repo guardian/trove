@@ -3,7 +3,6 @@ import type { Event } from '@guardian/content-api-models/crier/event/v1/event.js
 import { EventType } from '@guardian/content-api-models/crier/event/v1/eventType.js';
 import { ItemType } from '@guardian/content-api-models/crier/event/v1/itemType.js';
 import type { Content } from '@guardian/content-api-models/v1/content.js';
-import { fetchContent as defaultFetchContent } from 'shared/capi';
 import { contentToPayload } from 'shared/contentToPayload';
 import type { EmbeddingEvent } from 'shared/embeddingEvent';
 
@@ -52,8 +51,3 @@ async function resolveContent(
 			return undefined;
 	}
 }
-
-export const capiFetcher =
-	(apiKey: string): FetchContent =>
-	(capiUrl) =>
-		defaultFetchContent(capiUrl, apiKey);
