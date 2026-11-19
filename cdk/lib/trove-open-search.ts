@@ -9,6 +9,15 @@ import {
 	CfnCollectionGroup,
 	CfnSecurityPolicy,
 } from 'aws-cdk-lib/aws-opensearchserverless';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
+
+export const collectionName = (stage: string) => `trove-${stage.toLowerCase()}`;
+
+/** SSM parameters through which the Trove stack finds the collection, as its endpoint has a random id. */
+export const openSearchParameterNames = (stage: string) => ({
+	endpoint: `/${stage}/content-api/trove/opensearch/endpoint`,
+	collectionArn: `/${stage}/content-api/trove/opensearch/collection-arn`,
+});
 
 type CapacityLimits = NonNullable<CfnCollectionGroupProps['capacityLimits']>;
 
@@ -38,7 +47,7 @@ export class TroveOpenSearch extends GuStack {
 
 		const stage = props.stage;
 
-		const name = `trove-${stage.toLowerCase()}`;
+		const name = collectionName(stage);
 		const collectionResource = `collection/${name}`;
 
 		const encryptionPolicy = new CfnSecurityPolicy(this, 'EncryptionPolicy', {
@@ -86,6 +95,18 @@ export class TroveOpenSearch extends GuStack {
 		collection.addResourceDependency(networkPolicy);
 		collection.addResourceDependency(group);
 		collection.applyRemovalPolicy(RemovalPolicy.RETAIN);
+
+		const parameterNames = openSearchParameterNames(stage);
+		new StringParameter(this, 'EndpointParameter', {
+			parameterName: parameterNames.endpoint,
+			description: 'Endpoint of the Trove OpenSearch Serverless collection',
+			stringValue: collection.attrCollectionEndpoint,
+		});
+		new StringParameter(this, 'CollectionArnParameter', {
+			parameterName: parameterNames.collectionArn,
+			description: 'ARN of the Trove OpenSearch Serverless collection',
+			stringValue: collection.attrArn,
+		});
 
 		new CfnAccessPolicy(this, 'EngineerDataAccessPolicy', {
 			name: `trove-engineers-${stage.toLowerCase()}`,
