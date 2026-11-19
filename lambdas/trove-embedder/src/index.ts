@@ -2,7 +2,7 @@ import type { SQSBatchResponse, SQSEvent, SQSRecord } from 'aws-lambda';
 import { ArticleV1 } from 'datastore/article';
 import { EmbeddingEvent } from 'shared/embeddingEvent';
 import { embedText } from './marengo.ts';
-import { writeArticle } from './opensearch.ts';
+import { deleteArticle, writeArticle } from './opensearch.ts';
 
 const embedded = async (value: string) => ({
 	value,
@@ -15,7 +15,8 @@ async function processRecord(record: SQSRecord): Promise<void> {
 	const { articleId } = event.payload;
 
 	if (event.eventType === 'delete') {
-		console.log('Skipping delete event, not yet supported', {
+		await deleteArticle(articleId);
+		console.log('Deleted article', {
 			embeddingEventId,
 			source,
 			articleId,
