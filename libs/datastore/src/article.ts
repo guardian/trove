@@ -18,7 +18,9 @@ export const ArticleV1 = z.object({
 		.string()
 		.register(openSearchProperty, { type: 'keyword' })
 		.optional(),
-	articleType: z.enum(['article', 'liveblog']),
+	articleType: z
+		.enum(['article', 'liveblog'])
+		.register(openSearchProperty, { type: 'keyword' }),
 	sectionId: z.string().register(openSearchProperty, { type: 'keyword' }),
 	pillarId: z.string().register(openSearchProperty, { type: 'keyword' }),
 	standfirst: embeddedText.optional(),

@@ -22,10 +22,16 @@ async function main() {
 				byline: 'Test Author',
 				articleType: 'article',
 				headline: `Test headline ${i}`,
+				sectionId: 'test',
+				pillarId: 'news',
 				standfirst: `Test standfirst ${i}`,
+				bodyTextPreview: `Test body preview ${i}`,
+				toneTagIds: ['tone/news'],
 				keywordTagIds: [],
 				internalRevision: 1,
+				wordCount: 4,
 				webPublicationDate: new Date().toISOString(),
+				firstPublicationDate: new Date().toISOString(),
 			},
 		};
 		const messageBody = JSON.stringify(event);

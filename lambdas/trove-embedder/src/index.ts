@@ -22,14 +22,25 @@ async function processRecord(record: SQSRecord): Promise<void> {
 		return;
 	}
 
-	const { headline, standfirst, keywordTagIds, internalRevision } =
-		event.payload;
+	const payload = event.payload;
 
-	const [headlineEmbedded, standfirstEmbedded, combinedEmbedded] = (
+	const [
+		headlineEmbedded,
+		standfirstEmbedded,
+		combinedEmbedded,
+		bodyTextPreviewEmbedded,
+	] = (
 		await Promise.allSettled([
-			embedded(headline),
-			embedded(standfirst),
-			embedded(`${headline}\n${standfirst}`),
+			embedded(payload.headline),
+			payload.standfirst === undefined
+				? undefined
+				: embedded(payload.standfirst),
+			embedded(
+				payload.standfirst === undefined
+					? payload.headline
+					: `${payload.headline}\n${payload.standfirst}`,
+			),
+			embedded(payload.bodyTextPreview),
 		])
 	).map((result) => {
 		if (result.status === 'rejected') {
@@ -41,10 +52,19 @@ async function processRecord(record: SQSRecord): Promise<void> {
 	const document = ArticleV1.parse({
 		headline: headlineEmbedded,
 		standfirst: standfirstEmbedded,
+		byline: payload.byline,
+		articleType: payload.articleType,
+		sectionId: payload.sectionId,
+		pillarId: payload.pillarId,
 		headlineAndStandfirst: combinedEmbedded,
-		keywordTagIds,
-		internalRevision,
+		bodyTextPreview: bodyTextPreviewEmbedded,
+		toneTagIds: payload.toneTagIds,
+		keywordTagIds: payload.keywordTagIds,
+		internalRevision: payload.internalRevision,
+		wordCount: payload.wordCount,
 		storedAt: new Date().toISOString(),
+		webPublicationDate: payload.webPublicationDate,
+		firstPublicationDate: payload.firstPublicationDate,
 	});
 
 	// TODO: write `document` to OpenSearch with `_id` = articleId
