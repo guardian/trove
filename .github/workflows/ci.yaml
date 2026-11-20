@@ -54,9 +54,37 @@ jobs:
           roleArn: ${{ secrets.GU_ARTIFACTS_ROLE_ARN }}
           githubToken: ${{ secrets.GITHUB_TOKEN }}
 
+  qwen-embedding-image:
+    # Don't push images to ECR for commits that fail checks
+    needs: checks
+    # The service runs on a g6 (x86) GPU instance, so build natively on an x86 runner
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Allow GitHub to request an OIDC JWT ID token, for exchange with AWS STS
+      id-token: write
+      # Required by guardian/actions-ecr to comment on pull requests
+      pull-requests: write
+    outputs:
+      imageDigest: ${{ steps.publish-image.outputs.imageDigest }}
+    steps:
+      - uses: actions/checkout@v4
+      # The vLLM base image is tens of GB uncompressed, more than the runner has free by default
+      - run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL && df -h /
+        name: '[trove-qwen-embedding] free up disk space'
+      - run: docker build --platform linux/amd64 -t trove-qwen-embedding services/trove-qwen-embedding
+        name: '[trove-qwen-embedding] build image'
+      - uses: guardian/actions-ecr/push@1b5a5070838c494e90a4492f15f69c3f83247ef4 # v1.1.0
+        name: '[trove-qwen-embedding] push image to ECR'
+        id: publish-image
+        with:
+          app: trove-qwen-embedding
+          roleArn: ${{ secrets.GU_ARTIFACTS_ROLE_ARN }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+
   ci:
     runs-on: ubuntu-latest
-    needs: backfill-image
+    needs: [backfill-image, qwen-embedding-image]
     permissions:
       # Allow GitHub to request an OIDC JWT ID token, for exchange with AWS STS
       id-token: write
@@ -79,8 +107,9 @@ jobs:
       - run: npm run synth --workspace=cdk
         name: '[CDK] synth'
         env:
-          # Baked into the CloudFormation template, so Riff-Raff's cloud-formation deploy rolls out the new image
-          IMAGE_DIGEST: ${{ needs.backfill-image.outputs.imageDigest }}
+          # Baked into the CloudFormation templates, so Riff-Raff's cloud-formation deploy rolls out the new images
+          BACKFILL_IMAGE_DIGEST: ${{ needs.backfill-image.outputs.imageDigest }}
+          QWEN_EMBEDDING_IMAGE_DIGEST: ${{ needs.qwen-embedding-image.outputs.imageDigest }}
       - uses: guardian/actions-riff-raff@eecac3ac4f7a446dd59aaa636163c9ae88baf4a4 # v4.3.6
         name: 'upload to Riff-Raff'
         with:

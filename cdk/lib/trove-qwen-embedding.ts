@@ -5,6 +5,7 @@ import {
 	GuVpc,
 	SubnetType,
 } from '@guardian/cdk/lib/constructs/ec2/index.js';
+import { GuRepository } from '@guardian/cdk/lib/constructs/ecr/repository.js';
 import type { App } from 'aws-cdk-lib';
 import { Duration, RemovalPolicy, Tags } from 'aws-cdk-lib';
 import { AutoScalingGroup } from 'aws-cdk-lib/aws-autoscaling';
@@ -21,7 +22,6 @@ import {
 	AmiHardwareType,
 	AsgCapacityProvider,
 	Cluster,
-	ContainerImage,
 	ContainerInsights,
 	Ec2Service,
 	Ec2TaskDefinition,
@@ -34,20 +34,25 @@ import { ManagedPolicy, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 
 const app = 'trove-qwen-embedding';
-const model = 'Qwen/Qwen3-VL-Embedding-8B';
+// Must match the port in services/trove-qwen-embedding/Dockerfile
 const port = 8000;
-// Qwen3-VL-Embedding needs vLLM >= 0.14. Pinned by digest so deploys are reproducible.
-const vllmImage =
-	'vllm/vllm-openai:v0.34.0@sha256:20fdb089454afbb324efa4110a2c025ff7b27cc1a086e07aa580b18df8ad1ce1';
 // Persists downloaded weights on the instance, so task restarts don't re-download about 16 GB
 const hfCacheHostPath = '/var/lib/huggingface';
+
+export interface TroveQwenEmbeddingProps extends GuStackProps {
+	/**
+	 * Digest (e.g. `sha256:abc…`) of the trove-qwen-embedding image in the central ECR repository.
+	 * Baked into the template, so a Riff-Raff CloudFormation deploy is all that's needed to roll out a new image.
+	 */
+	imageDigest: string;
+}
 
 /**
  * Proof of concept: self-hosts Qwen3-VL-Embedding-8B with vLLM on a single GPU instance, as a possible replacement
  * for Marengo. There's no load balancer, so reach it with SSM port forwarding (see docs/qwen-embedding-poc.md).
  */
 export class TroveQwenEmbedding extends GuStack {
-	constructor(scope: App, id: string, props: GuStackProps) {
+	constructor(scope: App, id: string, props: TroveQwenEmbeddingProps) {
 		super(scope, id, props);
 		Tags.of(this).add('App', app);
 
@@ -120,20 +125,10 @@ export class TroveQwenEmbedding extends GuStack {
 		});
 
 		const container = taskDefinition.addContainer('vllm', {
-			image: ContainerImage.fromRegistry(vllmImage),
-			// The image's entrypoint is `vllm serve`
-			command: [
-				model,
-				'--runner',
-				'pooling',
-				'--dtype',
-				'bfloat16',
-				// Our inputs are headlines and standfirsts, so a short context leaves more GPU memory for batching
-				'--max-model-len',
-				'8192',
-				'--port',
-				String(port),
-			],
+			// The vLLM args are in the image's CMD, so they're the same locally
+			image: new GuRepository(this, 'Repository', {
+				name: `guardian/trove/${app}`,
+			}).getImage(props.imageDigest),
 			gpuCount: 1,
 			// g6.xlarge has 16 GiB. Leave some for the ECS agent and OS.
 			memoryReservationMiB: 12 * 1024,

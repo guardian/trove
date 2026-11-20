@@ -64,7 +64,7 @@ In the AWS console: Step Functions → `trove-backfill-<STAGE>`, then click into
 
 1. CI (`backfill-image` job) builds the ARM64 image and pushes it to the central ECR repository
    `guardian/trove/trove-backfill` with [`guardian/actions-ecr`](https://github.com/guardian/actions-ecr).
-2. The image digest is passed to `cdk synth` as `IMAGE_DIGEST`, which pins it in the task definition.
+2. The image digest is passed to `cdk synth` as `BACKFILL_IMAGE_DIGEST`, which pins it in the task definition.
 3. Riff-Raff's normal `cloud-formation` deployment updates the task definition. There's no separate artifact
    upload step.
 

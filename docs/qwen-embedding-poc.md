@@ -11,8 +11,9 @@ Defined in [`cdk/lib/trove-qwen-embedding.ts`](../cdk/lib/trove-qwen-embedding.t
 - One `g6.xlarge` (1x NVIDIA L4, 24 GB) in an ASG on the
   [ECS GPU-optimised AMI](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-gpu.html), attached to an ECS
   cluster as a capacity provider. Fargate has no GPUs.
-- The task runs the upstream [`vllm/vllm-openai`](https://hub.docker.com/r/vllm/vllm-openai) image, pinned by digest,
-  in pooling mode. It downloads the weights from Hugging Face on first start and caches them on the instance.
+- The task runs our [`trove-qwen-embedding` image](../services/trove-qwen-embedding/Dockerfile). It is the upstream
+  [`vllm/vllm-openai`](https://hub.docker.com/r/vllm/vllm-openai) image, pinned by digest, with the args to serve the
+  model in pooling mode. It downloads the weights from Hugging Face on first start and caches them on the instance.
 - It serves vLLM's OpenAI-compatible API on port 8000 of the instance. There's no load balancer and no ingress, so use
   SSM port forwarding.
 - Embeddings are the full 4096 dimensions.
@@ -20,7 +21,28 @@ Defined in [`cdk/lib/trove-qwen-embedding.ts`](../cdk/lib/trove-qwen-embedding.t
 The first start is slow (about 10 minutes or more) because of the image pull (about 10 GB) and the weight download
 (about 16 GB). Watch the CloudWatch logs for the task.
 
-## Trying it out
+## How does CI/CD work?
+
+The same as [trove-backfill](../tasks/trove-backfill/README.md#how-does-cicd-work):
+
+1. CI (`qwen-embedding-image` job) builds the x86 image and pushes it to the central ECR repository
+   `guardian/trove/trove-qwen-embedding` with [`guardian/actions-ecr`](https://github.com/guardian/actions-ecr).
+2. The image digest is passed to `cdk synth` as `QWEN_EMBEDDING_IMAGE_DIGEST`, which pins it in the task definition.
+3. Riff-Raff's normal `cloud-formation` deployment updates the task definition.
+
+## Running locally
+
+You need an NVIDIA GPU with at least 24 GB of memory and the
+[NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html),
+so this won't work on a Mac. From the repo root:
+
+```sh
+docker build --platform linux/amd64 -t trove-qwen-embedding services/trove-qwen-embedding
+docker run --rm --gpus all --ipc=host -p 8000:8000 \
+  -v ~/.cache/huggingface:/root/.cache/huggingface trove-qwen-embedding
+```
+
+## Trying it out in AWS
 
 With Janus credentials for the account:
 
@@ -48,6 +70,7 @@ back to 1 to bring it up again. A redeploy also resets it to 1.
 
 ## Known limitations
 
-- The image comes from Docker Hub, so it is subject to anonymous pull rate limits.
+- Every CI run pulls the vLLM base image (about 10 GB) from Docker Hub. ECR already has the layers after the first push,
+  so later pushes are quick.
 - We use a plain ASG rather than `GuAutoScalingGroup`, because the latter requires an AMIgo image.
 - The account may need a G-instance vCPU quota increase in eu-west-1.

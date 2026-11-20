@@ -2013,7 +2013,9 @@ exports[`The TroveQwenEmbedding stack > matches the snapshot 1`] = `
     "gu:cdk:constructs": [
       "GuVpcParameter",
       "GuHttpsEgressSecurityGroup",
-      "GuSubnetListParameter"
+      "GuSubnetListParameter",
+      "GuRepository",
+      "GuArtifactsAccountId"
     ],
     "gu:cdk:version": "TEST"
   },
@@ -2031,6 +2033,11 @@ exports[`The TroveQwenEmbedding stack > matches the snapshot 1`] = `
       "Type": "AWS::SSM::Parameter::Value<List<AWS::EC2::Subnet::Id>>",
       "Default": "/account/vpc/primary/subnets/private",
       "Description": "A list of private subnets"
+    },
+    "ArtifactsAccountId": {
+      "Type": "AWS::SSM::Parameter::Value<String>",
+      "Default": "/organisation/accounts/artifacts",
+      "Description": "Account ID of the Artifacts account. Useful as some shared resources live here."
     }
   },
   "Resources": {
@@ -2938,17 +2945,6 @@ exports[`The TroveQwenEmbedding stack > matches the snapshot 1`] = `
       "Properties": {
         "ContainerDefinitions": [
           {
-            "Command": [
-              "Qwen/Qwen3-VL-Embedding-8B",
-              "--runner",
-              "pooling",
-              "--dtype",
-              "bfloat16",
-              "--max-model-len",
-              "8192",
-              "--port",
-              "8000"
-            ],
             "Essential": true,
             "HealthCheck": {
               "Command": [
@@ -2960,7 +2956,21 @@ exports[`The TroveQwenEmbedding stack > matches the snapshot 1`] = `
               "StartPeriod": 300,
               "Timeout": 5
             },
-            "Image": "vllm/vllm-openai:v0.34.0@sha256:20fdb089454afbb324efa4110a2c025ff7b27cc1a086e07aa580b18df8ad1ce1",
+            "Image": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "ArtifactsAccountId"
+                  },
+                  ".dkr.ecr.eu-west-1.",
+                  {
+                    "Ref": "AWS::URLSuffix"
+                  },
+                  "/guardian/trove/trove-qwen-embedding@sha256:test"
+                ]
+              ]
+            },
             "LogConfiguration": {
               "LogDriver": "awslogs",
               "Options": {
@@ -3090,6 +3100,35 @@ exports[`The TroveQwenEmbedding stack > matches the snapshot 1`] = `
       "Properties": {
         "PolicyDocument": {
           "Statement": [
+            {
+              "Action": [
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:BatchGetImage"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":ecr:eu-west-1:",
+                    {
+                      "Ref": "ArtifactsAccountId"
+                    },
+                    ":repository/guardian/trove/trove-qwen-embedding"
+                  ]
+                ]
+              }
+            },
+            {
+              "Action": "ecr:GetAuthorizationToken",
+              "Effect": "Allow",
+              "Resource": "*"
+            },
             {
               "Action": [
                 "logs:CreateLogStream",

@@ -50,6 +50,7 @@ void describe('The TroveQwenEmbedding stack', () => {
 		const stack = new TroveQwenEmbedding(app, 'TroveQwenEmbedding', {
 			stack: 'capi',
 			stage: 'CODE',
+			imageDigest: 'sha256:test',
 		});
 		const template = Template.fromStack(stack);
 
