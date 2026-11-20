@@ -29,7 +29,10 @@ const record = (messageId: string, body: unknown): SQSRecord =>
 		body: typeof body === 'string' ? body : JSON.stringify(body),
 	}) as SQSRecord;
 
-const update = (headline: string): EmbeddingEvent => ({
+const update = (
+	headline: string,
+	standfirst: string | undefined,
+): EmbeddingEvent => ({
 	embeddingEventId: 'event-update',
 	source: 'listener',
 	eventType: 'update',
@@ -38,10 +41,16 @@ const update = (headline: string): EmbeddingEvent => ({
 		byline: 'A Reporter',
 		articleType: 'article',
 		headline,
-		standfirst: 'A standfirst',
+		sectionId: 'world',
+		pillarId: 'news',
+		standfirst,
+		bodyTextPreview: 'The opening of the article body.',
+		toneTagIds: ['tone/news'],
 		keywordTagIds: [],
 		internalRevision: 1,
+		wordCount: 8,
 		webPublicationDate: '2026-10-26T10:00:00Z',
+		firstPublicationDate: '2026-10-26T09:00:00Z',
 	},
 });
 
@@ -56,11 +65,12 @@ void describe('handler', () => {
 	void it('reports only the messages that failed', async () => {
 		const event: SQSEvent = {
 			Records: [
-				record('update', update('A headline')),
+				record('update', update('A headline', 'A standfirst')),
+				record('update-without-standfirst', update('A headline', undefined)),
 				record('delete', remove),
 				record('bad-json', '{not json'),
 				record('bad-schema', { eventType: 'update', payload: {} }),
-				record('embed-fails', update('this will fail')),
+				record('embed-fails', update('this will fail', 'A standfirst')),
 			],
 		};
 
