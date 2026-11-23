@@ -25,17 +25,28 @@ export function contentToPayload(
 	const { fields, webPublicationDate } = content;
 	const result = UpdateEmbeddingPayload.safeParse({
 		articleId: content.id,
-		byline: fields?.byline ?? '',
-		articleType: articleTypes[content.type],
 		headline: fields?.headline,
-		standfirst: fields?.standfirst ?? '',
+		byline: fields?.byline,
+		articleType: articleTypes[content.type],
+		sectionId: content.sectionId,
+		pillarId: content.pillarId,
+		standfirst: fields?.standfirst,
+		// Pending data-science methodology for the 500-token limit.
+		bodyTextPreview: fields?.bodyText?.slice(0, 500),
+		toneTagIds: content.tags
+			.filter((tag) => tag.type === TagType.TONE)
+			.map((tag) => tag.id),
 		keywordTagIds: content.tags
 			.filter((tag) => tag.type === TagType.KEYWORD)
 			.map((tag) => tag.id),
 		internalRevision: fields?.internalRevision,
+		wordCount: fields?.wordcount,
 		webPublicationDate:
 			webPublicationDate &&
 			new Date(webPublicationDate.dateTime.toNumber()).toISOString(),
+		firstPublicationDate:
+			fields?.firstPublicationDate &&
+			new Date(fields.firstPublicationDate.dateTime.toNumber()).toISOString(),
 	});
 
 	if (!result.success) {

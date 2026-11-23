@@ -20,6 +20,8 @@ const tag = (id: string, type: TagType): Tag => ({
 export const sampleContent: Content = {
 	id: 'world/2026/oct/30/example',
 	type: ContentType.ARTICLE,
+	sectionId: 'world',
+	pillarId: 'news',
 	webTitle: 'A headline',
 	webUrl: 'https://www.theguardian.com/world/2026/oct/30/example',
 	apiUrl: 'https://content.guardianapis.com/world/2026/oct/30/example',
@@ -31,10 +33,17 @@ export const sampleContent: Content = {
 		headline: 'A headline',
 		standfirst: 'A standfirst',
 		byline: 'A Reporter',
+		bodyText: 'The opening of the article body.',
+		wordcount: 6,
 		internalRevision: 42,
+		firstPublicationDate: {
+			dateTime: new Int64(Date.parse('2026-10-30T09:00:00Z')),
+			iso8601: '2026-10-30T09:00:00Z',
+		},
 	},
 	tags: [
 		tag('world/world', TagType.KEYWORD),
+		tag('tone/news', TagType.TONE),
 		tag('profile/a-reporter', TagType.CONTRIBUTOR),
 	],
 	references: [],

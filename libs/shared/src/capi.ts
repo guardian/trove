@@ -12,9 +12,9 @@ export async function fetchContent(
 	url.searchParams.set('format', 'thrift');
 	url.searchParams.set(
 		'show-fields',
-		'headline,standfirst,byline,internalRevision',
+		'headline,standfirst,byline,bodyText,internalRevision,wordcount,firstPublicationDate',
 	);
-	url.searchParams.set('show-tags', 'keyword');
+	url.searchParams.set('show-tags', 'keyword,tone');
 
 	const response = await fetch(url, {
 		headers: { Accept: 'application/x-thrift' },

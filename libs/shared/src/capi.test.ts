@@ -22,6 +22,11 @@ void describe('fetchContent', () => {
 		const url = fetchMock.mock.calls[0]?.arguments[0] as URL;
 		assert.equal(url.searchParams.get('format'), 'thrift');
 		assert.equal(url.searchParams.get('api-key'), 'my-key');
+		assert.equal(
+			url.searchParams.get('show-fields'),
+			'headline,standfirst,byline,bodyText,internalRevision,wordcount,firstPublicationDate',
+		);
+		assert.equal(url.searchParams.get('show-tags'), 'keyword,tone');
 	});
 
 	void it('throws on a non-2xx response', async (t) => {

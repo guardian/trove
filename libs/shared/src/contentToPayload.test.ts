@@ -5,16 +5,22 @@ import { contentToPayload } from './contentToPayload.ts';
 import { sampleContent } from './testing/fixtures.ts';
 
 void describe('contentToPayload', () => {
-	void it('maps an article, keeping only keyword tags', () => {
+	void it('maps an article, keeping keyword and tone tags', () => {
 		assert.deepStrictEqual(contentToPayload(sampleContent), {
 			articleId: 'world/2026/oct/30/example',
+			headline: 'A headline',
 			byline: 'A Reporter',
 			articleType: 'article',
-			headline: 'A headline',
+			sectionId: 'world',
+			pillarId: 'news',
 			standfirst: 'A standfirst',
+			bodyTextPreview: 'The opening of the article body.',
+			toneTagIds: ['tone/news'],
 			keywordTagIds: ['world/world'],
 			internalRevision: 42,
+			wordCount: 6,
 			webPublicationDate: '2026-10-30T10:00:00.000Z',
+			firstPublicationDate: '2026-10-30T09:00:00.000Z',
 		});
 	});
 
@@ -35,15 +41,24 @@ void describe('contentToPayload', () => {
 		assert.equal(warn.mock.callCount(), 0);
 	});
 
-	void it('defaults a missing standfirst and byline to empty strings', () => {
+	void it('omits a missing standfirst and byline', () => {
 		const fields = {
 			...sampleContent.fields,
 			standfirst: undefined,
 			byline: undefined,
 		};
 		const payload = contentToPayload({ ...sampleContent, fields });
-		assert.equal(payload?.standfirst, '');
-		assert.equal(payload.byline, '');
+		assert.equal(payload?.standfirst, undefined);
+		assert.equal(payload?.byline, undefined);
+	});
+
+	void it('limits the body text preview to 500 characters', () => {
+		const fields = {
+			...sampleContent.fields,
+			bodyText: 'a'.repeat(501),
+		};
+		const payload = contentToPayload({ ...sampleContent, fields });
+		assert.equal(payload?.bodyTextPreview.length, 500);
 	});
 
 	void it('warns and skips content missing a required property', (t) => {
