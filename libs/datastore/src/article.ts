@@ -25,7 +25,7 @@ export const ArticleV1 = z.object({
 	pillarId: z.string().register(openSearchProperty, { type: 'keyword' }),
 	standfirst: embeddedText.optional(),
 	headlineAndStandfirst: embeddedText,
-	bodyTextPreview: embeddedText,
+	bodyTextPreview: embeddedText.optional(),
 	toneTagIds: z.array(
 		z.string().register(openSearchProperty, { type: 'keyword' }),
 	),

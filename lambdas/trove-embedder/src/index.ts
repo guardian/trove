@@ -29,25 +29,24 @@ async function processRecord(record: SQSRecord): Promise<void> {
 		standfirstEmbedded,
 		combinedEmbedded,
 		bodyTextPreviewEmbedded,
-	] = (
-		await Promise.allSettled([
-			embedded(payload.headline),
+	] = await Promise.all([
+		embedded(payload.headline),
+		payload.standfirst === undefined ? undefined : embedded(payload.standfirst),
+		embedded(
 			payload.standfirst === undefined
-				? undefined
-				: embedded(payload.standfirst),
-			embedded(
-				payload.standfirst === undefined
-					? payload.headline
-					: `${payload.headline}\n${payload.standfirst}`,
-			),
-			embedded(payload.bodyTextPreview),
-		])
-	).map((result) => {
-		if (result.status === 'rejected') {
-			throw result.reason as unknown;
-		}
-		return result.value;
-	});
+				? payload.headline
+				: `${payload.headline}\n${payload.standfirst}`,
+		),
+		embedded(payload.bodyTextPreview).catch((error: unknown) => {
+			console.error('Failed to embed body text preview; omitting it', {
+				embeddingEventId,
+				source,
+				articleId,
+				error,
+			});
+			return undefined;
+		}),
+	]);
 
 	const document = ArticleV1.parse({
 		headline: headlineEmbedded,

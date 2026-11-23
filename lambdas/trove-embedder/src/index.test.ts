@@ -32,6 +32,7 @@ const record = (messageId: string, body: unknown): SQSRecord =>
 const update = (
 	headline: string,
 	standfirst: string | undefined,
+	bodyTextPreview = 'The opening of the article body.',
 ): EmbeddingEvent => ({
 	embeddingEventId: 'event-update',
 	source: 'listener',
@@ -44,7 +45,7 @@ const update = (
 		sectionId: 'world',
 		pillarId: 'news',
 		standfirst,
-		bodyTextPreview: 'The opening of the article body.',
+		bodyTextPreview,
 		toneTagIds: ['tone/news'],
 		keywordTagIds: [],
 		internalRevision: 1,
@@ -67,6 +68,10 @@ void describe('handler', () => {
 			Records: [
 				record('update', update('A headline', 'A standfirst')),
 				record('update-without-standfirst', update('A headline', undefined)),
+				record(
+					'body-preview-embed-fails',
+					update('A headline', 'A standfirst', 'this preview will fail'),
+				),
 				record('delete', remove),
 				record('bad-json', '{not json'),
 				record('bad-schema', { eventType: 'update', payload: {} }),
