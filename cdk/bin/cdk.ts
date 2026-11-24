@@ -12,24 +12,24 @@ if (!backfillImageDigest) {
 
 const app = new GuRoot();
 new Trove(app, 'Trove-euwest-1-CODE', {
-	stack: 'content-api',
+	stack: 'content-api-trove',
 	stage: 'CODE',
 	env: { region: 'eu-west-1' },
 	backfillImageDigest,
 });
 new Trove(app, 'Trove-euwest-1-PROD', {
-	stack: 'content-api',
+	stack: 'content-api-trove',
 	stage: 'PROD',
 	env: { region: 'eu-west-1' },
 	backfillImageDigest,
 });
 new TroveOpenSearch(app, 'TroveOpenSearch-euwest-1-CODE', {
-	stack: 'content-api',
+	stack: 'content-api-trove',
 	stage: 'CODE',
 	env: { region: 'eu-west-1' },
 });
 new TroveOpenSearch(app, 'TroveOpenSearch-euwest-1-PROD', {
-	stack: 'content-api',
+	stack: 'content-api-trove',
 	stage: 'PROD',
 	env: { region: 'eu-west-1' },
 });

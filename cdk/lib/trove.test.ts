@@ -20,7 +20,7 @@ void describe('The Trove stack', () => {
 	void it('matches the snapshot', (context) => {
 		const app = new App();
 		const stack = new Trove(app, 'Trove', {
-			stack: 'capi',
+			stack: 'content-api-trove',
 			stage: 'TEST',
 			backfillImageDigest: 'sha256:test',
 		});
@@ -34,7 +34,7 @@ void describe('The TroveOpenSearch stack', () => {
 	void it('matches the snapshot', (context) => {
 		const app = new App();
 		const stack = new TroveOpenSearch(app, 'TroveOpenSearch', {
-			stack: 'capi',
+			stack: 'content-api-trove',
 			stage: 'CODE',
 		});
 		const template = Template.fromStack(stack);
