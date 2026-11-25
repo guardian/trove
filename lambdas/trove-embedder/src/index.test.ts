@@ -91,7 +91,7 @@ const remove = (articleId: string): EmbeddingEvent => ({
 void describe('handler', () => {
 	beforeEach(() => opensearch.mock.resetCalls());
 
-	void it('writes to every index, versioned by the internal revision', async () => {
+	void it('writes to the v1 index, versioned by the internal revision', async () => {
 		await handler({ Records: [record('update', update('A headline'))] });
 
 		assert.deepEqual(
@@ -102,11 +102,13 @@ void describe('handler', () => {
 					querystring,
 				}),
 			),
-			Object.values(articleIndices).map(({ name }) => ({
-				method: 'PUT',
-				path: `/${name}/_doc/world%2F2026%2Foct%2F26%2Fexample`,
-				querystring: { version: 1, version_type: 'external' },
-			})),
+			[
+				{
+					method: 'PUT',
+					path: `/${articleIndices.v1.name}/_doc/world%2F2026%2Foct%2F26%2Fexample`,
+					querystring: { version: 1, version_type: 'external' },
+				},
+			],
 		);
 	});
 
@@ -139,7 +141,7 @@ void describe('handler', () => {
 		assert.match(error.message, /"body":\{"error":"os-error reason"\}/);
 	});
 
-	void it('deletes from every index', async () => {
+	void it('deletes from the v1 index', async () => {
 		await handler({
 			Records: [record('delete', remove('world/2026/oct/26/example'))],
 		});
@@ -149,10 +151,12 @@ void describe('handler', () => {
 				method,
 				path,
 			})),
-			Object.values(articleIndices).map(({ name }) => ({
-				method: 'DELETE',
-				path: `/${name}/_doc/world%2F2026%2Foct%2F26%2Fexample`,
-			})),
+			[
+				{
+					method: 'DELETE',
+					path: `/${articleIndices.v1.name}/_doc/world%2F2026%2Foct%2F26%2Fexample`,
+				},
+			],
 		);
 	});
 

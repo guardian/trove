@@ -6,8 +6,11 @@ import { articleIndices } from 'datastore/indices';
 // Created once so connections are reused across invocations
 const client = createClient();
 
+// Only v1 is written to for now; writing to several versions needs a document per schema version
+const index = articleIndices.v1.name;
+
 /**
- * Writes the document to every declared index version, keyed by the article id.
+ * Writes the document to the v1 index, keyed by the article id.
  * The internalRevision is used as an external version, so an older revision never overwrites a newer one.
  */
 export async function writeArticle(
@@ -15,59 +18,48 @@ export async function writeArticle(
 	document: ArticleV1,
 	internalRevision: number,
 ): Promise<void> {
-	await Promise.all(
-		Object.values(articleIndices).map(async ({ name }) => {
-			try {
-				await client.index({
-					index: name,
-					id: articleId,
-					version: internalRevision,
-					version_type: 'external',
-					body: document,
-				});
-			} catch (error) {
-				if (isVersionConflict(error)) {
-					console.log('Skipping stale write, a newer revision is stored', {
-						index: name,
-						articleId,
-						internalRevision,
-					});
-					return;
-				}
-				if (error instanceof errors.ResponseError) {
-					throw describeResponseError('write', error, name, articleId);
-				}
-				throw error;
-			}
-		}),
-	);
+	try {
+		await client.index({
+			index,
+			id: articleId,
+			version: internalRevision,
+			version_type: 'external',
+			body: document,
+		});
+	} catch (error) {
+		if (isVersionConflict(error)) {
+			console.log('Skipping stale write, a newer revision is stored', {
+				index,
+				articleId,
+				internalRevision,
+			});
+			return;
+		}
+		if (error instanceof errors.ResponseError) {
+			throw describeResponseError('write', error, index, articleId);
+		}
+		throw error;
+	}
 }
 
 /**
- * Deletes the document from every declared index version.
+ * Deletes the document from the v1 index.
  * Delete events carry no internalRevision, so this is an unversioned delete: if an older update
  * is processed afterwards (e.g. a retry, DLQ redrive or backfill), it will re-add the article.
  */
 export async function deleteArticle(articleId: string): Promise<void> {
-	await Promise.all(
-		Object.values(articleIndices).map(async ({ name }) => {
-			try {
-				await client.delete({ index: name, id: articleId });
-			} catch (error) {
-				if (isNotFound(error)) {
-					console.log('Skipping delete, article not stored', {
-						index: name,
-						articleId,
-					});
-					return;
-				}
-				if (error instanceof errors.ResponseError) {
-					throw describeResponseError('delete', error, name, articleId);
-				}
-				throw error;
-			}
-		}),
-	);
+	try {
+		await client.delete({ index, id: articleId });
+	} catch (error) {
+		if (isNotFound(error)) {
+			console.log('Skipping delete, article not stored', { index, articleId });
+			return;
+		}
+		if (error instanceof errors.ResponseError) {
+			throw describeResponseError('delete', error, index, articleId);
+		}
+		throw error;
+	}
 }
 
 /** Puts the response body in the message, as nested objects are collapsed to [Object] in the logs. */
