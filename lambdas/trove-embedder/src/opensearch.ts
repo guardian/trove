@@ -11,13 +11,13 @@ const index = articleIndices.v1.name;
 
 /**
  * Writes the document to the v1 index, keyed by the article id.
- * The internalRevision is used as an external version, so an older revision never overwrites a newer one.
+ * Its internalRevision is used as an external version, so an older revision never overwrites a newer one.
  */
 export async function writeArticle(
 	articleId: string,
 	document: ArticleV1,
-	internalRevision: number,
 ): Promise<void> {
+	const { internalRevision } = document;
 	try {
 		await client.index({
 			index,

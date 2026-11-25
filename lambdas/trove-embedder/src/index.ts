@@ -49,7 +49,7 @@ async function processRecord(record: SQSRecord): Promise<void> {
 		storedAt: new Date().toISOString(),
 	});
 
-	await writeArticle(articleId, document, internalRevision);
+	await writeArticle(articleId, document);
 	console.log('Stored article', {
 		embeddingEventId,
 		source,
