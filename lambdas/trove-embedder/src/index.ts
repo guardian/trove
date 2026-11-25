@@ -23,21 +23,15 @@ async function processRecord(record: SQSRecord): Promise<void> {
 	}
 
 	const payload = event.payload;
+	const { headline, standfirst, bodyTextPreview } = payload;
+	const headlineAndStandfirst = [headline, standfirst]
+		.filter((value): value is string => value !== undefined)
+		.join('\n');
 
-	const [
-		headlineEmbedded,
-		standfirstEmbedded,
-		combinedEmbedded,
-		bodyTextPreviewEmbedded,
-	] = await Promise.all([
-		embedded(payload.headline),
-		payload.standfirst === undefined ? undefined : embedded(payload.standfirst),
-		embedded(
-			payload.standfirst === undefined
-				? payload.headline
-				: `${payload.headline}\n${payload.standfirst}`,
-		),
-		embedded(payload.bodyTextPreview).catch((error: unknown) => {
+	const embeddedIfPresent = (value: string | undefined) =>
+		value === undefined ? undefined : embedded(value);
+	const embeddedBodyTextPreview = (value: string) =>
+		embedded(value).catch((error: unknown) => {
 			console.error('Failed to embed body text preview; omitting it', {
 				embeddingEventId,
 				source,
@@ -45,8 +39,26 @@ async function processRecord(record: SQSRecord): Promise<void> {
 				error,
 			});
 			return undefined;
-		}),
-	]);
+		});
+
+	const [
+		headlineEmbedded,
+		standfirstEmbedded,
+		combinedEmbedded,
+		bodyTextPreviewEmbedded,
+	] = (
+		await Promise.allSettled([
+			embedded(headline),
+			embeddedIfPresent(standfirst),
+			embedded(headlineAndStandfirst),
+			embeddedBodyTextPreview(bodyTextPreview),
+		])
+	).map((result) => {
+		if (result.status === 'rejected') {
+			throw result.reason as unknown;
+		}
+		return result.value;
+	});
 
 	const document = ArticleV1.parse({
 		headline: headlineEmbedded,

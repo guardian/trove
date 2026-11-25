@@ -20,7 +20,8 @@ exports[`articleV1Mapping > matches the snapshot 1`] = `
       }
     },
     "byline": {
-      "type": "keyword"
+      "type": "text",
+      "analyzer": "english"
     },
     "articleType": {
       "type": "keyword"
@@ -89,10 +90,10 @@ exports[`articleV1Mapping > matches the snapshot 1`] = `
       "type": "keyword"
     },
     "internalRevision": {
-      "type": "long"
+      "type": "integer"
     },
     "wordCount": {
-      "type": "long"
+      "type": "integer"
     },
     "storedAt": {
       "type": "date"

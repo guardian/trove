@@ -16,7 +16,7 @@ export const ArticleV1 = z.object({
 	headline: embeddedText,
 	byline: z
 		.string()
-		.register(openSearchProperty, { type: 'keyword' })
+		.register(openSearchProperty, { type: 'text', analyzer: 'english' })
 		.optional(),
 	articleType: z
 		.enum(['article', 'liveblog'])
@@ -36,12 +36,12 @@ export const ArticleV1 = z.object({
 		.number()
 		.int()
 		.nonnegative()
-		.register(openSearchProperty, { type: 'long' }),
+		.register(openSearchProperty, { type: 'integer' }),
 	wordCount: z
 		.number()
 		.int()
 		.nonnegative()
-		.register(openSearchProperty, { type: 'long' }),
+		.register(openSearchProperty, { type: 'integer' }),
 	storedAt: z.iso.datetime(),
 	webPublicationDate: z.iso.datetime(),
 	firstPublicationDate: z.iso.datetime(),
