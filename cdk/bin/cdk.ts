@@ -11,25 +11,19 @@ if (!backfillImageDigest) {
 }
 
 const app = new GuRoot();
-new Trove(app, 'Trove-euwest-1-CODE', {
-	stack: 'content-api',
-	stage: 'CODE',
-	env: { region: 'eu-west-1' },
-	backfillImageDigest,
-});
-new Trove(app, 'Trove-euwest-1-PROD', {
-	stack: 'content-api',
-	stage: 'PROD',
-	env: { region: 'eu-west-1' },
-	backfillImageDigest,
-});
-new TroveOpenSearch(app, 'TroveOpenSearch-euwest-1-CODE', {
-	stack: 'content-api',
-	stage: 'CODE',
-	env: { region: 'eu-west-1' },
-});
-new TroveOpenSearch(app, 'TroveOpenSearch-euwest-1-PROD', {
-	stack: 'content-api',
-	stage: 'PROD',
-	env: { region: 'eu-west-1' },
-});
+
+for (const stage of ['CODE', 'PROD'] as const) {
+	const openSearch = new TroveOpenSearch(
+		app,
+		`TroveOpenSearch-euwest-1-${stage}`,
+		{ stack: 'content-api', stage, env: { region: 'eu-west-1' } },
+	);
+	const trove = new Trove(app, `Trove-euwest-1-${stage}`, {
+		stack: 'content-api',
+		stage,
+		env: { region: 'eu-west-1' },
+		backfillImageDigest,
+	});
+	// Trove reads the collection's SSM parameters at deploy time, so Riff-Raff must deploy TroveOpenSearch first
+	trove.addStackDependency(openSearch);
+}

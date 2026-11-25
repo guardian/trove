@@ -22,6 +22,10 @@ import { Topic } from 'aws-cdk-lib/aws-sns';
 import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
+import {
+	grantOpenSearchWrite,
+	openSearchApiCallStatement,
+} from './trove-open-search-access.ts';
 
 export interface TroveProps extends GuStackProps {
 	/**
@@ -56,7 +60,7 @@ export class Trove extends GuStack {
 				grantId: 'newsroom-ai-trove-local-run',
 				friendlyName: 'Run Trove locally',
 				withoutPolicyChecks: true,
-				statements: [marengoInvokeStatement],
+				statements: [marengoInvokeStatement, openSearchApiCallStatement(this)],
 			});
 		}
 
@@ -106,6 +110,7 @@ export class Trove extends GuStack {
 		embedder.addEventSource(
 			new SqsEventSource(backfillQueue, { reportBatchItemFailures: true }),
 		);
+		grantOpenSearchWrite(this, embedder);
 
 		// Backfill is a long-running Fargate task, wrapped by GuEcsTask in a Step Function.
 		const backfillApp = 'trove-backfill';

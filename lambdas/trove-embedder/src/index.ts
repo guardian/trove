@@ -2,6 +2,7 @@ import type { SQSBatchResponse, SQSEvent, SQSRecord } from 'aws-lambda';
 import { ArticleV1 } from 'datastore/article';
 import { EmbeddingEvent } from 'shared/embeddingEvent';
 import { embedText } from './marengo.ts';
+import { deleteArticle, writeArticle } from './opensearch.ts';
 
 const embedded = async (value: string) => ({
 	value,
@@ -14,7 +15,8 @@ async function processRecord(record: SQSRecord): Promise<void> {
 	const { articleId } = event.payload;
 
 	if (event.eventType === 'delete') {
-		console.log('Skipping delete event, not yet supported', {
+		await deleteArticle(articleId);
+		console.log('Deleted article', {
 			embeddingEventId,
 			source,
 			articleId,
@@ -38,7 +40,7 @@ async function processRecord(record: SQSRecord): Promise<void> {
 		return result.value;
 	});
 
-	const document = ArticleV1.parse({
+	const document: ArticleV1 = ArticleV1.parse({
 		headline: headlineEmbedded,
 		standfirst: standfirstEmbedded,
 		headlineAndStandfirst: combinedEmbedded,
@@ -47,8 +49,8 @@ async function processRecord(record: SQSRecord): Promise<void> {
 		storedAt: new Date().toISOString(),
 	});
 
-	// TODO: write `document` to OpenSearch with `_id` = articleId
-	console.log('Embedded article', {
+	await writeArticle(articleId, document);
+	console.log('Stored article', {
 		embeddingEventId,
 		source,
 		articleId,

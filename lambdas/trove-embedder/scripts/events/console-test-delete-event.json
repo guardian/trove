@@ -1,0 +1,8 @@
+{
+	"Records": [
+		{
+			"messageId": "delete",
+			"body": "{\"embeddingEventId\":\"event-delete\",\"source\":\"listener\",\"eventType\":\"delete\",\"payload\":{\"articleId\":\"world/2026/oct/26/example\"}}"
+		}
+	]
+}
