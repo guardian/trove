@@ -18,7 +18,8 @@
 		"libs/shared",
 		"lambdas/trove-embedder",
 		"lambdas/trove-listener",
-		"tasks/trove-backfill"
+		"tasks/trove-backfill",
+		"trove-api"
 	],
 	"scripts": {
 		"test": "npm test --workspaces",
