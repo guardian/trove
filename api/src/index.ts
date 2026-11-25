@@ -1,6 +1,6 @@
+import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import express, { type Express, type Request, type Response } from 'express';
 import serverless from 'serverless-http';
-import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 
 const PORT = 3000;
 
