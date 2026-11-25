@@ -19,7 +19,7 @@
 		"lambdas/trove-embedder",
 		"lambdas/trove-listener",
 		"tasks/trove-backfill",
-		"trove-api"
+		"api"
 	],
 	"scripts": {
 		"test": "npm test --workspaces",
