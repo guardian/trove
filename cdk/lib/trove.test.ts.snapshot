@@ -67,6 +67,13 @@ exports[`The Trove stack > matches the snapshot 1`] = `
                 "arn:aws:bedrock:eu-west-1:308506855511:inference-profile/eu.twelvelabs.marengo-embed-3-0-v1:0",
                 "arn:aws:bedrock:*::foundation-model/twelvelabs.marengo-embed-3-0-v1:0"
               ]
+            },
+            {
+              "Action": "aoss:APIAccessAll",
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "SsmParameterValueTESTcontentapitroveopensearchcollectionarnC96584B6F00A464EAD1953AFF4B05118Parameter"
+              }
             }
           ],
           "Version": "2012-10-17"
@@ -820,6 +827,13 @@ exports[`The Trove stack > matches the snapshot 1`] = `
                   "Arn"
                 ]
               }
+            },
+            {
+              "Action": "aoss:APIAccessAll",
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "SsmParameterValueTESTcontentapitroveopensearchcollectionarnC96584B6F00A464EAD1953AFF4B05118Parameter"
+              }
             }
           ],
           "Version": "2012-10-17"
@@ -845,7 +859,10 @@ exports[`The Trove stack > matches the snapshot 1`] = `
           "Variables": {
             "STACK": "capi",
             "STAGE": "TEST",
-            "APP": "trove-embedder"
+            "APP": "trove-embedder",
+            "OPENSEARCH_ENDPOINT": {
+              "Ref": "SsmParameterValueTESTcontentapitroveopensearchendpointC96584B6F00A464EAD1953AFF4B05118Parameter"
+            }
           }
         },
         "FunctionName": "trove-embedder-TEST",
@@ -966,6 +983,28 @@ exports[`The Trove stack > matches the snapshot 1`] = `
             "Value": "TEST"
           }
         ]
+      }
+    },
+    "EmbedderDataAccessPolicy": {
+      "Type": "AWS::OpenSearchServerless::AccessPolicy",
+      "Properties": {
+        "Name": "trove-embedder-test",
+        "Policy": {
+          "Fn::Join": [
+            "",
+            [
+              "[{\\"Rules\\":[{\\"ResourceType\\":\\"index\\",\\"Resource\\":[\\"index/trove-test/articles-*\\"],\\"Permission\\":[\\"aoss:WriteDocument\\"]}],\\"Principal\\":[\\"",
+              {
+                "Fn::GetAtt": [
+                  "TroveEmbedderServiceRoleDFE0C694",
+                  "Arn"
+                ]
+              },
+              "\\"]}]"
+            ]
+          ]
+        },
+        "Type": "data"
       }
     },
     "TroveBackfillSecurityGroupTrovebackfill8742FD67": {
@@ -1857,10 +1896,18 @@ exports[`The Trove stack > matches the snapshot 1`] = `
     }
   },
   "Parameters": {
+    "SsmParameterValueTESTcontentapitroveopensearchcollectionarnC96584B6F00A464EAD1953AFF4B05118Parameter": {
+      "Type": "AWS::SSM::Parameter::Value<String>",
+      "Default": "/TEST/content-api/trove/opensearch/collection-arn"
+    },
     "DistributionBucketName": {
       "Type": "AWS::SSM::Parameter::Value<String>",
       "Default": "/account/services/artifact.bucket",
       "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts"
+    },
+    "SsmParameterValueTESTcontentapitroveopensearchendpointC96584B6F00A464EAD1953AFF4B05118Parameter": {
+      "Type": "AWS::SSM::Parameter::Value<String>",
+      "Default": "/TEST/content-api/trove/opensearch/endpoint"
     },
     "VpcId": {
       "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
@@ -1979,6 +2026,46 @@ exports[`The TroveOpenSearch stack > matches the snapshot 1`] = `
       ],
       "UpdateReplacePolicy": "Retain",
       "DeletionPolicy": "Retain"
+    },
+    "EndpointParameter617F6D67": {
+      "Type": "AWS::SSM::Parameter",
+      "Properties": {
+        "Description": "Endpoint of the Trove OpenSearch Serverless collection",
+        "Name": "/CODE/content-api/trove/opensearch/endpoint",
+        "Tags": {
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/trove",
+          "Stack": "capi",
+          "Stage": "CODE"
+        },
+        "Type": "String",
+        "Value": {
+          "Fn::GetAtt": [
+            "Collection",
+            "CollectionEndpoint"
+          ]
+        }
+      }
+    },
+    "CollectionArnParameterA98CFB16": {
+      "Type": "AWS::SSM::Parameter",
+      "Properties": {
+        "Description": "ARN of the Trove OpenSearch Serverless collection",
+        "Name": "/CODE/content-api/trove/opensearch/collection-arn",
+        "Tags": {
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/trove",
+          "Stack": "capi",
+          "Stage": "CODE"
+        },
+        "Type": "String",
+        "Value": {
+          "Fn::GetAtt": [
+            "Collection",
+            "Arn"
+          ]
+        }
+      }
     },
     "EngineerDataAccessPolicy": {
       "Type": "AWS::OpenSearchServerless::AccessPolicy",
