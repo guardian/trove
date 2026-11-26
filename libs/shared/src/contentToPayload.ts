@@ -55,7 +55,7 @@ export function contentToPayload(
 	const bodyText = nonBlank(fields?.bodyText);
 	const result = UpdateEmbeddingPayload.safeParse({
 		articleId: content.id,
-		headline: nonBlank(fields?.headline),
+		headline: fields?.headline,
 		byline: nonBlank(fields?.byline),
 		articleType: articleTypes[content.type],
 		sectionId: content.sectionId,
