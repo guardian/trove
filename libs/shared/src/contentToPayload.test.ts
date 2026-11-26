@@ -58,5 +58,6 @@ void describe('contentToPayload', () => {
 		const fields = { ...sampleContent.fields, headline: undefined };
 		assert.equal(contentToPayload({ ...sampleContent, fields }), undefined);
 		assert.equal(warn.mock.callCount(), 1);
+		assert.match(String(warn.mock.calls[0]?.arguments[0]), /headline/);
 	});
 });

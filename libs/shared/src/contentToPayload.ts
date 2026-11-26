@@ -2,6 +2,7 @@ import type { CapiDateTime } from '@guardian/content-api-models/v1/capiDateTime.
 import type { Content } from '@guardian/content-api-models/v1/content.js';
 import { ContentType } from '@guardian/content-api-models/v1/contentType.js';
 import { TagType } from '@guardian/content-api-models/v1/tagType.js';
+import { z } from 'zod';
 import { UpdateEmbeddingPayload } from './embeddingEvent.ts';
 
 const articleTypes = {
@@ -68,10 +69,9 @@ export function contentToPayload(
 	});
 
 	if (!result.success) {
-		console.warn('Skipping content with missing or invalid properties', {
-			articleId: content.id,
-			issues: result.error.issues,
-		});
+		console.warn(
+			`Skipping ${content.id} with missing or invalid properties:\n${z.prettifyError(result.error)}`,
+		);
 		return undefined;
 	}
 	return result.data;
