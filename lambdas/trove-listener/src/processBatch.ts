@@ -29,7 +29,10 @@ export async function processBatch(
 	if (failure) {
 		throw failure.reason;
 	}
-	const embeddingEvents = results.flatMap((result) => {
+	const successfulResults = results as Array<
+		PromiseFulfilledResult<Awaited<ReturnType<typeof toEmbeddingEvent>>>
+	>;
+	const embeddingEvents = successfulResults.flatMap((result) => {
 		if (result.value === undefined) {
 			return [];
 		}
