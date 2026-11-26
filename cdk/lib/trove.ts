@@ -88,10 +88,14 @@ export class Trove extends GuStack {
 			},
 			processingProps: {
 				startingPosition: StartingPosition.LATEST,
-				batchSize: 1,
+				// Matches the SQS SendMessageBatch limit, so each Kinesis batch is a single SQS request
+				batchSize: 10,
 				maxBatchingWindow: Duration.seconds(10),
 			},
 		});
+
+		capiKey.grantRead(listener);
+		listener.addEnvironment('CAPI_KEY_PARAMETER', capiKey.parameterName);
 
 		const liveQueue = createQueueWithDLQ(this, 'EmbedderLive');
 		const backfillQueue = createQueueWithDLQ(this, 'EmbedderBackfill');

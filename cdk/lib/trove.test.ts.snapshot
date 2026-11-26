@@ -253,6 +253,35 @@ exports[`The Trove stack > matches the snapshot 1`] = `
             },
             {
               "Action": [
+                "ssm:DescribeParameters",
+                "ssm:GetParameters",
+                "ssm:GetParameter",
+                "ssm:GetParameterHistory"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":ssm:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":parameter/TEST/capi/trove/capi-key"
+                  ]
+                ]
+              }
+            },
+            {
+              "Action": [
                 "sqs:SendMessage",
                 "sqs:GetQueueAttributes",
                 "sqs:GetQueueUrl"
@@ -290,6 +319,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
             "STACK": "capi",
             "STAGE": "TEST",
             "APP": "trove-listener",
+            "CAPI_KEY_PARAMETER": "/TEST/capi/trove/capi-key",
             "LIVE_EMBEDDER_QUEUE_URL": {
               "Ref": "EmbedderLiveQueueB402F2F7"
             }
@@ -340,7 +370,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
     "TroveListenerKinesisEventSourceTrovecontentapifirehosev2TESTD86CD8EC365A4604": {
       "Type": "AWS::Lambda::EventSourceMapping",
       "Properties": {
-        "BatchSize": 1,
+        "BatchSize": 10,
         "BisectBatchOnFunctionError": true,
         "EventSourceArn": {
           "Fn::Join": [
