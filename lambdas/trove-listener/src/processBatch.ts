@@ -30,7 +30,7 @@ export async function processBatch(
 		throw failure.reason;
 	}
 	const embeddingEvents = results.flatMap((result) => {
-		if (result.status === 'rejected' || result.value === undefined) {
+		if (result.value === undefined) {
 			return [];
 		}
 		return [result.value];

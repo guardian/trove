@@ -8,7 +8,7 @@ import type { EmbeddingEvent } from 'shared/embeddingEvent';
 
 export type FetchContent = (capiUrl: string) => Promise<Content | undefined>;
 
-/** Returns undefined for any Crier event that doesn't result in an embedding change. */
+/** Returns undefined for any Crier event that we should ignore. Anything else will be processed by the embedder. */
 export async function toEmbeddingEvent(
 	event: Event,
 	fetchContent: FetchContent,
