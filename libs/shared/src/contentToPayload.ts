@@ -21,6 +21,11 @@ function nonBlank(value: string | undefined): string | undefined {
 
 const maxPreviewWords = 300;
 
+/**
+ * Returns a preview of the body text, limited to 300 words and ending at the last complete sentence.
+ * To achieve this we slice the string twice, once at the hard limit of 300 words
+ * and then again at the last sentence-ending punctuation before that limit.
+ */
 export function bodyTextPreview(text: string): string {
 	const words = [...text.matchAll(/\S+/g)];
 	if (words.length <= maxPreviewWords) {

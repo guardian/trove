@@ -29,6 +29,9 @@ export async function fetchContent(
 	const response = await fetch(url);
 	// The content may have been taken down since the Crier event
 	if (response.status === 404) {
+		console.warn('CAPI returned 404, content not found', {
+			capiUrl,
+		});
 		return undefined;
 	}
 	if (!response.ok) {
