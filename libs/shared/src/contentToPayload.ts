@@ -14,6 +14,11 @@ function toIsoDate(value: CapiDateTime | undefined): string | undefined {
 	return value && new Date(value.dateTime.toNumber()).toISOString();
 }
 
+// Marengo rejects empty text, and CAPI sends "" for fields that were cleared
+function nonBlank(value: string | undefined): string | undefined {
+	return value?.trim() ? value : undefined;
+}
+
 const maxPreviewWords = 300;
 
 export function bodyTextPreview(text: string): string {
@@ -47,15 +52,16 @@ export function contentToPayload(
 	}
 
 	const { fields, webPublicationDate } = content;
+	const bodyText = nonBlank(fields?.bodyText);
 	const result = UpdateEmbeddingPayload.safeParse({
 		articleId: content.id,
-		headline: fields?.headline,
-		byline: fields?.byline,
+		headline: nonBlank(fields?.headline),
+		byline: nonBlank(fields?.byline),
 		articleType: articleTypes[content.type],
 		sectionId: content.sectionId,
 		pillarId: content.pillarId,
-		standfirst: fields?.standfirst,
-		bodyTextPreview: fields?.bodyText && bodyTextPreview(fields.bodyText),
+		standfirst: nonBlank(fields?.standfirst),
+		bodyTextPreview: bodyText && bodyTextPreview(bodyText),
 		toneTagIds: content.tags
 			.filter((tag) => tag.type === TagType.TONE)
 			.map((tag) => tag.id),

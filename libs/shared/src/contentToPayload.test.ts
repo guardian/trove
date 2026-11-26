@@ -53,6 +53,14 @@ void describe('contentToPayload', () => {
 		);
 	});
 
+	void it('omits a blank standfirst and byline', () => {
+		const fields = { ...sampleContent.fields, standfirst: '', byline: ' ' };
+		const payload = contentToPayload({ ...sampleContent, fields });
+		assert.ok(payload);
+		assert.equal(payload.standfirst, undefined);
+		assert.equal(payload.byline, undefined);
+	});
+
 	void it('warns and skips content missing a required property', (t) => {
 		const warn = t.mock.method(console, 'warn', () => undefined);
 		const fields = { ...sampleContent.fields, headline: undefined };
