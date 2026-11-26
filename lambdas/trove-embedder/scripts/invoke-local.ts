@@ -1,6 +1,8 @@
 /**
  * Runs the embedder handler locally against real Bedrock, with each message in a
  * JSON file sent as one SQS record. Needs Janus credentials for the `capi` profile.
+ * Documents are written to local docker-compose OpenSearch, or to Serverless when
+ * OPENSEARCH_ENDPOINT is set to the collection endpoint.
  *
  *   npm run invoke-local -w trove-embedder                       # scripts/events/sample.json
  *   npm run invoke-local -w trove-embedder -- path/to/events.json

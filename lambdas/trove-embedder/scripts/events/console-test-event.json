@@ -1,0 +1,8 @@
+{
+	"Records": [
+		{
+			"messageId": "update",
+			"body": "{\"embeddingEventId\":\"event-update\",\"source\":\"listener\",\"eventType\":\"update\",\"payload\":{\"articleId\":\"world/2026/oct/26/example\",\"byline\":\"A Reporter\",\"articleType\":\"article\",\"headline\":\"A headline\",\"standfirst\":\"A standfirst\",\"keywordTagIds\":[],\"internalRevision\":1,\"webPublicationDate\":\"2026-10-26T10:00:00Z\"}}"
+		}
+	]
+}
