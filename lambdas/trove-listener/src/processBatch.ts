@@ -1,7 +1,8 @@
 import { SendMessageBatchCommand, SQSClient } from '@aws-sdk/client-sqs';
+import { EventSerde } from '@guardian/content-api-models/crier/event/v1/event.js';
 import type { KinesisStreamEvent } from 'aws-lambda';
 import { awsClientConfig } from 'shared/aws';
-import { decodeAndParseCrierEvent } from './decodeAndParseCrierEvent.ts';
+import { decodeThrift } from 'shared/thrift';
 import type { FetchContent } from './toEmbeddingEvent.ts';
 import { toEmbeddingEvent } from './toEmbeddingEvent.ts';
 
@@ -19,7 +20,7 @@ export async function processBatch(
 	const results = await Promise.allSettled(
 		event.Records.map(async (record) =>
 			toEmbeddingEvent(
-				decodeAndParseCrierEvent(record.kinesis.data),
+				decodeThrift(Buffer.from(record.kinesis.data, 'base64'), EventSerde),
 				fetchContent,
 			),
 		),

@@ -161,6 +161,8 @@ export class Trove extends GuStack {
 			'BACKFILL_EMBEDDER_QUEUE_URL',
 			backfillQueue.queueUrl,
 		);
+		// Lambdas get STAGE from GuCDK, and awsClientConfig relies on it to pick the runtime credentials
+		backfill.containerDefinition.addEnvironment('STAGE', this.stage);
 		capiKey.grantRead(backfill.taskDefinition.taskRole);
 		backfill.containerDefinition.addEnvironment(
 			'CAPI_KEY_PARAMETER',

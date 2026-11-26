@@ -10,6 +10,7 @@
 		"./embeddingEvent": "./src/embeddingEvent.ts",
 		"./ssm": "./src/ssm.ts",
 		"./testing/fixtures": "./src/testing/fixtures.ts",
+		"./testing/thrift": "./src/testing/thrift.ts",
 		"./thrift": "./src/thrift.ts"
 	},
 	"scripts": {

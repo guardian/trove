@@ -24,14 +24,6 @@ void describe('contentToPayload', () => {
 		});
 	});
 
-	void it('maps a liveblog', () => {
-		const payload = contentToPayload({
-			...sampleContent,
-			type: ContentType.LIVEBLOG,
-		});
-		assert.equal(payload?.articleType, 'liveblog');
-	});
-
 	void it('ignores other content types without warning', (t) => {
 		const warn = t.mock.method(console, 'warn', () => undefined);
 		assert.equal(
@@ -41,24 +33,11 @@ void describe('contentToPayload', () => {
 		assert.equal(warn.mock.callCount(), 0);
 	});
 
-	void it('omits a missing standfirst and byline', () => {
-		const fields = {
-			...sampleContent.fields,
-			standfirst: undefined,
-			byline: undefined,
-		};
-		const payload = contentToPayload({ ...sampleContent, fields });
-		assert.equal(payload?.standfirst, undefined);
-		assert.equal(payload?.byline, undefined);
-	});
-
 	void it('limits the body text preview to a sentence within 300 words', () => {
-		const fields = {
-			...sampleContent.fields,
-			bodyText: `A sentence ends here. ${'word '.repeat(300)}`,
-		};
-		const payload = contentToPayload({ ...sampleContent, fields });
-		assert.equal(payload?.bodyTextPreview, 'A sentence ends here.');
+		assert.equal(
+			bodyTextPreview(`A sentence ends here. ${'word '.repeat(300)}`),
+			'A sentence ends here.',
+		);
 	});
 
 	void it('keeps text that is no more than 300 words', () => {

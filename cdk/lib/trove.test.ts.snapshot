@@ -1236,6 +1236,10 @@ exports[`The Trove stack > matches the snapshot 1`] = `
                 }
               },
               {
+                "Name": "STAGE",
+                "Value": "TEST"
+              },
+              {
                 "Name": "CAPI_KEY_PARAMETER",
                 "Value": "/TEST/capi/trove/capi-key"
               }

@@ -11,7 +11,7 @@ export const createClient = (): Client => {
 
 	return new Client({
 		...AwsSigv4Signer({
-			region: process.env.AWS_REGION ?? 'eu-west-1',
+			region: awsClientConfig.region,
 			service: 'aoss',
 			getCredentials: awsClientConfig.credentials,
 		}),

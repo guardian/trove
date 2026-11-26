@@ -18,14 +18,19 @@ export async function fetchContent(
 	apiKey: string,
 ): Promise<Content | undefined> {
 	const url = new URL(capiUrl);
-	url.searchParams.set('api-key', apiKey);
-	url.searchParams.set('format', 'thrift');
-	url.searchParams.set('show-fields', fields);
-	url.searchParams.set('show-tags', 'keyword,tone');
+	// Crier's capiUrl asks for everything (blocks, elements...), which we don't need
+	url.search = new URLSearchParams({
+		'api-key': apiKey,
+		format: 'thrift',
+		'show-fields': fields,
+		'show-tags': 'keyword,tone',
+	}).toString();
 
-	const response = await fetch(url, {
-		headers: { Accept: 'application/x-thrift' },
-	});
+	const response = await fetch(url);
+	// The content may have been taken down since the Crier event
+	if (response.status === 404) {
+		return undefined;
+	}
 	if (!response.ok) {
 		throw new Error(
 			`CAPI request for ${capiUrl} failed with status ${response.status}`,

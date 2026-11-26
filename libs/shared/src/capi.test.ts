@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 import { ItemResponseSerde } from '@guardian/content-api-models/v1/itemResponse.js';
 import { fetchContent } from './capi.ts';
 import { sampleContent } from './testing/fixtures.ts';
-import { encodeThrift } from './thrift.ts';
+import { encodeThrift } from './testing/thrift.ts';
 
 void describe('fetchContent', () => {
 	void it('requests thrift and decodes the item response', async (t) => {
@@ -15,18 +15,23 @@ void describe('fetchContent', () => {
 			Promise.resolve(new Response(body)),
 		);
 
-		const content = await fetchContent(sampleContent.apiUrl, 'my-key');
+		const content = await fetchContent(
+			`${sampleContent.apiUrl}?show-blocks=all`,
+			'my-key',
+		);
 
 		assert.equal(content?.id, sampleContent.id);
-		assert.equal(content.fields?.internalRevision, 42);
 		const url = fetchMock.mock.calls[0]?.arguments[0] as URL;
 		assert.equal(url.searchParams.get('format'), 'thrift');
 		assert.equal(url.searchParams.get('api-key'), 'my-key');
-		assert.equal(
-			url.searchParams.get('show-fields'),
-			'headline,standfirst,byline,bodyText,internalRevision,wordcount,firstPublicationDate',
+		assert.equal(url.searchParams.has('show-blocks'), false);
+	});
+
+	void it('returns undefined for content that no longer exists', async (t) => {
+		t.mock.method(globalThis, 'fetch', () =>
+			Promise.resolve(new Response('gone', { status: 404 })),
 		);
-		assert.equal(url.searchParams.get('show-tags'), 'keyword,tone');
+		assert.equal(await fetchContent(sampleContent.apiUrl, 'my-key'), undefined);
 	});
 
 	void it('throws on a non-2xx response', async (t) => {

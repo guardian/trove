@@ -13,15 +13,17 @@ function toIsoDate(value: CapiDateTime | undefined): string | undefined {
 	return value && new Date(value.dateTime.toNumber()).toISOString();
 }
 
+const maxPreviewWords = 300;
+
 export function bodyTextPreview(text: string): string {
 	const words = [...text.matchAll(/\S+/g)];
-	if (words.length <= 300) {
+	if (words.length <= maxPreviewWords) {
 		return text;
 	}
-	const lastWord = words[299]!;
+	const lastWord = words[maxPreviewWords - 1]!;
 	const wordLimit = lastWord.index + lastWord[0].length;
 	const limited = text.slice(0, wordLimit);
-	const sentenceEnds = [...limited.matchAll(/[.!?](?:["')\]]+)?(?=\s|$)/g)];
+	const sentenceEnds = [...limited.matchAll(/[.!?]["')\]]*(?=\s|$)/g)];
 	const lastSentenceEnd = sentenceEnds.at(-1);
 	if (!lastSentenceEnd) {
 		return limited;

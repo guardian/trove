@@ -6,7 +6,7 @@ import { EventSerde } from '@guardian/content-api-models/crier/event/v1/event.js
 import { EventType } from '@guardian/content-api-models/crier/event/v1/eventType.js';
 import type { KinesisStreamEvent, KinesisStreamRecord } from 'aws-lambda';
 import { crierEvent, sampleContent } from 'shared/testing/fixtures';
-import { encodeThrift } from 'shared/thrift';
+import { encodeThrift } from 'shared/testing/thrift';
 import { processBatch } from './processBatch.ts';
 
 const batch: KinesisStreamEvent = {
