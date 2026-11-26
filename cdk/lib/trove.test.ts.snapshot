@@ -12,7 +12,9 @@ exports[`The Trove stack > matches the snapshot 1`] = `
       "GuHttpsEgressSecurityGroup",
       "GuRepository",
       "GuArtifactsAccountId",
-      "GuEcsTask"
+      "GuEcsTask",
+      "GuApiLambda",
+      "GuApiGateway5xxPercentageAlarm"
     ],
     "gu:cdk:version": "TEST"
   },
@@ -1893,6 +1895,781 @@ exports[`The Trove stack > matches the snapshot 1`] = `
         "Threshold": 1,
         "TreatMissingData": "notBreaching"
       }
+    },
+    "TroveAPIAccessLogsFDB01E6E": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "RetentionInDays": 14,
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "67.1.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST"
+          }
+        ]
+      },
+      "UpdateReplacePolicy": "Retain",
+      "DeletionPolicy": "Retain"
+    },
+    "TroveAPILambdaServiceRole743EBF95": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+              ]
+            ]
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "trove-api"
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "67.1.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST"
+          }
+        ]
+      }
+    },
+    "TroveAPILambdaServiceRoleDefaultPolicyAFAD3CB9": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":s3:::",
+                      {
+                        "Ref": "DistributionBucketName"
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":s3:::",
+                      {
+                        "Ref": "DistributionBucketName"
+                      },
+                      "/capi/TEST/trove-api/trove-api.zip"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Action": "ssm:GetParametersByPath",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:ssm:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":parameter/TEST/capi/trove-api"
+                  ]
+                ]
+              }
+            },
+            {
+              "Action": [
+                "ssm:GetParameters",
+                "ssm:GetParameter"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:ssm:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":parameter/TEST/capi/trove-api/*"
+                  ]
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "PolicyName": "TroveAPILambdaServiceRoleDefaultPolicyAFAD3CB9",
+        "Roles": [
+          {
+            "Ref": "TroveAPILambdaServiceRole743EBF95"
+          }
+        ]
+      }
+    },
+    "TroveAPILambda96047646": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "DistributionBucketName"
+          },
+          "S3Key": "capi/TEST/trove-api/trove-api.zip"
+        },
+        "Environment": {
+          "Variables": {
+            "STACK": "capi",
+            "STAGE": "TEST",
+            "APP": "trove-api"
+          }
+        },
+        "Handler": "index.handler",
+        "LoggingConfig": {
+          "LogFormat": "JSON"
+        },
+        "MemorySize": 512,
+        "Role": {
+          "Fn::GetAtt": [
+            "TroveAPILambdaServiceRole743EBF95",
+            "Arn"
+          ]
+        },
+        "Runtime": "nodejs24.x",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "trove-api"
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "67.1.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST"
+          }
+        ],
+        "Timeout": 300
+      },
+      "DependsOn": [
+        "TroveAPILambdaServiceRoleDefaultPolicyAFAD3CB9",
+        "TroveAPILambdaServiceRole743EBF95"
+      ]
+    },
+    "TroveAPILambdatroveapiTESTEE97D34B": {
+      "Type": "AWS::ApiGateway::RestApi",
+      "Properties": {
+        "Description": "Trove API.",
+        "Name": "capi-TEST-trove-api-TEST",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "trove-api"
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "67.1.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST"
+          }
+        ]
+      }
+    },
+    "TroveAPILambdatroveapiTESTCloudWatchRoleCE590A16": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "apigateway.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+              ]
+            ]
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "trove-api"
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "67.1.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST"
+          }
+        ]
+      },
+      "UpdateReplacePolicy": "Retain",
+      "DeletionPolicy": "Retain"
+    },
+    "TroveAPILambdatroveapiTESTAccount94874CF6": {
+      "Type": "AWS::ApiGateway::Account",
+      "Properties": {
+        "CloudWatchRoleArn": {
+          "Fn::GetAtt": [
+            "TroveAPILambdatroveapiTESTCloudWatchRoleCE590A16",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "TroveAPILambdatroveapiTESTEE97D34B"
+      ],
+      "UpdateReplacePolicy": "Retain",
+      "DeletionPolicy": "Retain"
+    },
+    "TroveAPILambdatroveapiTESTDeployment0AA00595f30d50057686ed8fe40064fcb6d5dc93": {
+      "Type": "AWS::ApiGateway::Deployment",
+      "Properties": {
+        "Description": "Trove API.",
+        "RestApiId": {
+          "Ref": "TroveAPILambdatroveapiTESTEE97D34B"
+        }
+      },
+      "DependsOn": [
+        "TroveAPILambdatroveapiTESTproxyANY6AC22953",
+        "TroveAPILambdatroveapiTESTproxyFDFDFF00",
+        "TroveAPILambdatroveapiTESTANYDA666700"
+      ],
+      "Metadata": {
+        "aws:cdk:do-not-refactor": true
+      }
+    },
+    "TroveAPILambdatroveapiTESTDeploymentStageprod7EE221E1": {
+      "Type": "AWS::ApiGateway::Stage",
+      "Properties": {
+        "AccessLogSetting": {
+          "DestinationArn": {
+            "Fn::GetAtt": [
+              "TroveAPIAccessLogsFDB01E6E",
+              "Arn"
+            ]
+          },
+          "Format": "{\\"requestId\\":\\"$context.requestId\\",\\"ip\\":\\"$context.identity.sourceIp\\",\\"requestTime\\":\\"$context.requestTime\\",\\"httpMethod\\":\\"$context.httpMethod\\",\\"resourcePath\\":\\"$context.resourcePath\\",\\"path\\":\\"$context.path\\",\\"status\\":\\"$context.status\\",\\"protocol\\":\\"$context.protocol\\",\\"responseLength\\":\\"$context.responseLength\\"}"
+        },
+        "DeploymentId": {
+          "Ref": "TroveAPILambdatroveapiTESTDeployment0AA00595f30d50057686ed8fe40064fcb6d5dc93"
+        },
+        "RestApiId": {
+          "Ref": "TroveAPILambdatroveapiTESTEE97D34B"
+        },
+        "StageName": "prod",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "trove-api"
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "67.1.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST"
+          }
+        ]
+      },
+      "DependsOn": [
+        "TroveAPILambdatroveapiTESTAccount94874CF6"
+      ]
+    },
+    "TroveAPILambdatroveapiTESTproxyFDFDFF00": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "TroveAPILambdatroveapiTESTEE97D34B",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "{proxy+}",
+        "RestApiId": {
+          "Ref": "TroveAPILambdatroveapiTESTEE97D34B"
+        }
+      }
+    },
+    "TroveAPILambdatroveapiTESTproxyANYApiPermissionTroveTroveAPILambdatroveapiTESTE5391664ANYproxy2C7AF1FB": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "TroveAPILambda96047646",
+            "Arn"
+          ]
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "TroveAPILambdatroveapiTESTEE97D34B"
+              },
+              "/",
+              {
+                "Ref": "TroveAPILambdatroveapiTESTDeploymentStageprod7EE221E1"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "TroveAPILambdatroveapiTESTproxyANYApiPermissionTestTroveTroveAPILambdatroveapiTESTE5391664ANYproxy4A10886C": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "TroveAPILambda96047646",
+            "Arn"
+          ]
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "TroveAPILambdatroveapiTESTEE97D34B"
+              },
+              "/test-invoke-stage/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "TroveAPILambdatroveapiTESTproxyANY6AC22953": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "ANY",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "TroveAPILambda96047646",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "ResourceId": {
+          "Ref": "TroveAPILambdatroveapiTESTproxyFDFDFF00"
+        },
+        "RestApiId": {
+          "Ref": "TroveAPILambdatroveapiTESTEE97D34B"
+        }
+      }
+    },
+    "TroveAPILambdatroveapiTESTANYApiPermissionTroveTroveAPILambdatroveapiTESTE5391664ANY1723AFA7": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "TroveAPILambda96047646",
+            "Arn"
+          ]
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "TroveAPILambdatroveapiTESTEE97D34B"
+              },
+              "/",
+              {
+                "Ref": "TroveAPILambdatroveapiTESTDeploymentStageprod7EE221E1"
+              },
+              "/*/"
+            ]
+          ]
+        }
+      }
+    },
+    "TroveAPILambdatroveapiTESTANYApiPermissionTestTroveTroveAPILambdatroveapiTESTE5391664ANY7F3E1A58": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "TroveAPILambda96047646",
+            "Arn"
+          ]
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "TroveAPILambdatroveapiTESTEE97D34B"
+              },
+              "/test-invoke-stage/*/"
+            ]
+          ]
+        }
+      }
+    },
+    "TroveAPILambdatroveapiTESTANYDA666700": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "ANY",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "TroveAPILambda96047646",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "ResourceId": {
+          "Fn::GetAtt": [
+            "TroveAPILambdatroveapiTESTEE97D34B",
+            "RootResourceId"
+          ]
+        },
+        "RestApiId": {
+          "Ref": "TroveAPILambdatroveapiTESTEE97D34B"
+        }
+      }
+    },
+    "ApiGatewayHigh5xxPercentageAlarmTroveapiA66DF991": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "ActionsEnabled": true,
+        "AlarmActions": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:aws:sns:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId"
+                },
+                ":",
+                {
+                  "Fn::GetAtt": [
+                    "troveemailalarmtopic69531040",
+                    "TopicName"
+                  ]
+                }
+              ]
+            ]
+          }
+        ],
+        "AlarmDescription": "trove-api exceeded 0% error rate",
+        "AlarmName": "High 5XX error percentage from trove-api (ApiGateway) in TEST",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": [
+          {
+            "Expression": "100*m1/m2",
+            "Id": "expr_1",
+            "Label": "% of 5XX responses served for trove-api",
+            "ReturnData": true
+          },
+          {
+            "Id": "m1",
+            "MetricStat": {
+              "Metric": {
+                "Dimensions": [
+                  {
+                    "Name": "ApiName",
+                    "Value": "capi-TEST-trove-api-TEST"
+                  }
+                ],
+                "MetricName": "5XXError",
+                "Namespace": "AWS/ApiGateway"
+              },
+              "Period": 60,
+              "Stat": "Sum"
+            },
+            "ReturnData": false
+          },
+          {
+            "Id": "m2",
+            "MetricStat": {
+              "Metric": {
+                "Dimensions": [
+                  {
+                    "Name": "ApiName",
+                    "Value": "capi-TEST-trove-api-TEST"
+                  }
+                ],
+                "MetricName": "Count",
+                "Namespace": "AWS/ApiGateway"
+              },
+              "Period": 60,
+              "Stat": "SampleCount"
+            },
+            "ReturnData": false
+          }
+        ],
+        "OKActions": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:aws:sns:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId"
+                },
+                ":",
+                {
+                  "Fn::GetAtt": [
+                    "troveemailalarmtopic69531040",
+                    "TopicName"
+                  ]
+                }
+              ]
+            ]
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "67.1.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST"
+          }
+        ],
+        "Threshold": 0,
+        "TreatMissingData": "notBreaching"
+      }
     }
   },
   "Parameters": {
@@ -1929,6 +2706,32 @@ exports[`The Trove stack > matches the snapshot 1`] = `
     "TroveBackfillStateMachineArnOutput": {
       "Value": {
         "Ref": "TroveBackfillStateMachineF8FB32F2"
+      }
+    },
+    "TroveAPILambdatroveapiTESTEndpoint05398F83": {
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "https://",
+            {
+              "Ref": "TroveAPILambdatroveapiTESTEE97D34B"
+            },
+            ".execute-api.",
+            {
+              "Ref": "AWS::Region"
+            },
+            ".",
+            {
+              "Ref": "AWS::URLSuffix"
+            },
+            "/",
+            {
+              "Ref": "TroveAPILambdatroveapiTESTDeploymentStageprod7EE221E1"
+            },
+            "/"
+          ]
+        ]
       }
     }
   }

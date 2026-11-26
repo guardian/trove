@@ -10,14 +10,21 @@ import { GuEcsTask } from '@guardian/cdk/lib/constructs/ecs/index.js';
 import { GuDeveloperPolicy } from '@guardian/cdk/lib/constructs/iam/policies/developer-policy.js';
 import { GuLambdaFunction } from '@guardian/cdk/lib/constructs/lambda/index.js';
 import { GuKinesisLambdaExperimental } from '@guardian/cdk/lib/experimental/patterns/kinesis-lambda.js';
+import { GuApiLambda } from '@guardian/cdk/lib/patterns/api-lambda.js';
 import { StreamRetry } from '@guardian/cdk/lib/utils/lambda/event-source.js';
 import type { App } from 'aws-cdk-lib';
 import { Duration } from 'aws-cdk-lib';
+import {
+	AccessLogField,
+	AccessLogFormat,
+	LogGroupLogDestination,
+} from 'aws-cdk-lib/aws-apigateway';
 import { ContainerInsights, Secret as EcsSecret } from 'aws-cdk-lib/aws-ecs';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { StartingPosition } from 'aws-cdk-lib/aws-lambda';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
+import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { Topic } from 'aws-cdk-lib/aws-sns';
 import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
@@ -163,6 +170,49 @@ export class Trove extends GuStack {
 				),
 			),
 		);
+
+		const accessLogGroup = new LogGroup(this, 'TroveAPIAccessLogs', {
+			retention: RetentionDays.TWO_WEEKS,
+		});
+
+		new GuApiLambda(this, 'TroveAPILambda', {
+			fileName: 'trove-api.zip',
+			handler: 'index.handler',
+			runtime: Runtime.NODEJS_24_X,
+			timeout: Duration.minutes(5),
+			monitoringConfiguration: alarmTopic
+				? {
+						snsTopicName: alarmTopic.topicName,
+						http5xxAlarm: {
+							tolerated5xxPercentage: 0,
+							numberOfMinutesAboveThresholdBeforeAlarm: 1,
+							okAction: true,
+						},
+					}
+				: { noMonitoring: true },
+			app: 'trove-api',
+			api: {
+				id: `trove-api-${this.stage}`,
+				description: 'Trove API.',
+				deployOptions: {
+					accessLogDestination: new LogGroupLogDestination(accessLogGroup),
+					accessLogFormat: AccessLogFormat.custom(
+						JSON.stringify({
+							requestId: AccessLogField.contextRequestId(),
+							ip: AccessLogField.contextIdentitySourceIp(),
+							requestTime: AccessLogField.contextRequestTime(),
+							httpMethod: AccessLogField.contextHttpMethod(),
+							resourcePath: AccessLogField.contextResourcePath(),
+							path: AccessLogField.contextPath(),
+							status: AccessLogField.contextStatus(),
+							protocol: AccessLogField.contextProtocol(),
+							responseLength: AccessLogField.contextResponseLength(),
+						}),
+					),
+				},
+			},
+			// reservedConcurrentExecutions: 50,
+		});
 	}
 }
 

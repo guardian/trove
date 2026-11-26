@@ -76,6 +76,8 @@ jobs:
         name: '[trove-listener] build and package'
       - run: npm run package --workspace=trove-embedder
         name: '[trove-embedder] build and package'
+      - run: npm run package --workspace=trove-api
+        name: '[trove-api] build and package'
       - run: npm run synth --workspace=cdk
         name: '[CDK] synth'
         env:
@@ -96,3 +98,5 @@ jobs:
               - lambdas/trove-listener/dist/trove-listener.zip
             trove-embedder:
               - lambdas/trove-embedder/dist/trove-embedder.zip
+            trove-api:
+              - api/dist/trove-api.zip
