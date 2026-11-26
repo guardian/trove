@@ -1,8 +1,12 @@
 import type { SQSBatchResponse, SQSEvent, SQSRecord } from 'aws-lambda';
 import { ArticleV1 } from 'datastore/article';
 import { EmbeddingEvent } from 'shared/embeddingEvent';
+import { logRuntimeVersions } from 'shared/runtimeVersions';
 import { embedText } from './marengo.ts';
 import { deleteArticle, writeArticle } from './opensearch.ts';
+
+// Module scope, so this runs once per cold start
+logRuntimeVersions();
 
 const embedded = async (value: string) => ({
 	value,

@@ -1,6 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import type { UpdateEmbeddingEvent } from 'shared/embeddingEvent';
+import { logRuntimeVersions } from 'shared/runtimeVersions';
+
+logRuntimeVersions();
 
 const queueUrl = process.env.BACKFILL_EMBEDDER_QUEUE_URL;
 if (!queueUrl) {

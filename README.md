@@ -56,6 +56,26 @@ Example package `tsconfig.json`:
 }
 ```
 
+## Checking runtime versions
+
+When responding to a vulnerability, `.tool-versions` (e.g. `nodejs 26`) isn't precise enough. To see exact versions, including components bundled in Node such as OpenSSL:
+
+- **Local:** run `./scripts/report-runtime-versions.sh`.
+- **CI:** the same script runs after `actions/setup-node` in the job that builds the Lambda artifacts; see the "Runtime versions" table in the job summary, or search the run log for `runtime_versions`.
+- **Prod (`trove-listener` and `trove-embedder` Lambdas, `trove-backfill` task):** each cold start (or task start) writes a JSON line with a message like `Runtime versions: node 24.22.2, openssl 3.5.9, arch arm64`, `runtimeVersions.node` / `runtimeVersions.openssl` fields, and the rest of Node's bundled component versions as a single `runtimeVersionsDetail` string. In Central ELK, search for `message:"Runtime versions"`. In CloudWatch Logs Insights:
+
+  ```
+  filter ispresent(runtimeVersions.node)
+  | stats latest(@timestamp) by runtimeVersions.node, runtimeVersions.openssl, arch
+  ```
+
+  AWS's own runtime build label (e.g. `nodejs:24.v12`), which changes when AWS patches the managed runtime, is in the Lambda platform `INIT_START` event. GuCDK Lambdas use the JSON log format, so it's not logged as plain `INIT_START` text:
+
+  ```
+  filter type = "platform.initStart"
+  | stats latest(@timestamp) by record.runtimeVersion
+  ```
+
 ## VSCode setup: autolint & autoformat on save
 
 `.vscode/extensions.json` should tell VSCode to prompt you to install our recommended extensions for linting & formatting.

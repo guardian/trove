@@ -4,7 +4,8 @@
 	"private": true,
 	"type": "module",
 	"exports": {
-		"./embeddingEvent": "./src/embeddingEvent.ts"
+		"./embeddingEvent": "./src/embeddingEvent.ts",
+		"./runtimeVersions": "./src/runtimeVersions.ts"
 	},
 	"scripts": {
 		"test": "node --test 'src/**/*.test.ts'",
