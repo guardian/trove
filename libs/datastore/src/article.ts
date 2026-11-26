@@ -22,7 +22,10 @@ export const ArticleV1 = z.object({
 		.enum(['article', 'liveblog'])
 		.register(openSearchProperty, { type: 'keyword' }),
 	sectionId: z.string().register(openSearchProperty, { type: 'keyword' }),
-	pillarId: z.string().register(openSearchProperty, { type: 'keyword' }),
+	pillarId: z
+		.string()
+		.register(openSearchProperty, { type: 'keyword' })
+		.optional(),
 	standfirst: embeddedText.optional(),
 	headlineAndStandfirst: embeddedText,
 	bodyTextPreview: embeddedText.optional(),
