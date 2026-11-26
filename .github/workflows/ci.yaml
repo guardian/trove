@@ -70,6 +70,10 @@ jobs:
         with:
           node-version-file: .tool-versions
           cache: 'npm'
+      # Records the exact versions resolved above (e.g. `nodejs 26` -> 26.x.y)
+      # in the log and job summary, for checking exposure to vulnerabilities.
+      - run: ./scripts/report-runtime-versions.sh
+        name: 'report runtime versions'
       - run: npm ci
         name: 'install dependencies'
       - run: npm run package --workspace=trove-listener
