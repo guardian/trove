@@ -19,6 +19,19 @@ exports[`articleV1Mapping > matches the snapshot 1`] = `
         }
       }
     },
+    "byline": {
+      "type": "text",
+      "analyzer": "english"
+    },
+    "articleType": {
+      "type": "keyword"
+    },
+    "sectionId": {
+      "type": "keyword"
+    },
+    "pillarId": {
+      "type": "keyword"
+    },
     "standfirst": {
       "properties": {
         "value": {
@@ -53,13 +66,42 @@ exports[`articleV1Mapping > matches the snapshot 1`] = `
         }
       }
     },
+    "bodyTextPreview": {
+      "properties": {
+        "value": {
+          "type": "text",
+          "analyzer": "english"
+        },
+        "embeddings": {
+          "properties": {
+            "marengo_3_0": {
+              "type": "knn_vector",
+              "dimension": 512,
+              "space_type": "cosinesimil"
+            }
+          }
+        }
+      }
+    },
+    "toneTagIds": {
+      "type": "keyword"
+    },
     "keywordTagIds": {
       "type": "keyword"
     },
     "internalRevision": {
-      "type": "long"
+      "type": "integer"
+    },
+    "wordCount": {
+      "type": "integer"
     },
     "storedAt": {
+      "type": "date"
+    },
+    "webPublicationDate": {
+      "type": "date"
+    },
+    "firstPublicationDate": {
       "type": "date"
     }
   }

@@ -14,16 +14,37 @@ const embeddedText = z.object({
 /** The document `_source`. The CAPI id is the document `_id`, so isn't part of it. */
 export const ArticleV1 = z.object({
 	headline: embeddedText,
-	standfirst: embeddedText,
+	byline: z
+		.string()
+		.register(openSearchProperty, { type: 'text', analyzer: 'english' })
+		.optional(),
+	articleType: z
+		.enum(['article', 'liveblog'])
+		.register(openSearchProperty, { type: 'keyword' }),
+	sectionId: z.string().register(openSearchProperty, { type: 'keyword' }),
+	pillarId: z.string().register(openSearchProperty, { type: 'keyword' }),
+	standfirst: embeddedText.optional(),
 	headlineAndStandfirst: embeddedText,
+	bodyTextPreview: embeddedText.optional(),
+	toneTagIds: z.array(
+		z.string().register(openSearchProperty, { type: 'keyword' }),
+	),
 	keywordTagIds: z.array(
 		z.string().register(openSearchProperty, { type: 'keyword' }),
 	),
 	internalRevision: z
 		.number()
 		.int()
-		.register(openSearchProperty, { type: 'long' }),
+		.nonnegative()
+		.register(openSearchProperty, { type: 'integer' }),
+	wordCount: z
+		.number()
+		.int()
+		.nonnegative()
+		.register(openSearchProperty, { type: 'integer' }),
 	storedAt: z.iso.datetime(),
+	webPublicationDate: z.iso.datetime(),
+	firstPublicationDate: z.iso.datetime(),
 });
 export type ArticleV1 = z.infer<typeof ArticleV1>;
 

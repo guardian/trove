@@ -24,14 +24,36 @@ async function processRecord(record: SQSRecord): Promise<void> {
 		return;
 	}
 
-	const { headline, standfirst, keywordTagIds, internalRevision } =
-		event.payload;
+	const payload = event.payload;
+	const { headline, standfirst, bodyTextPreview } = payload;
+	const headlineAndStandfirst = [headline, standfirst]
+		.filter((value): value is string => value !== undefined)
+		.join('\n');
 
-	const [headlineEmbedded, standfirstEmbedded, combinedEmbedded] = (
+	const embeddedIfPresent = (value: string | undefined) =>
+		value === undefined ? undefined : embedded(value);
+	const embeddedBodyTextPreview = (value: string) =>
+		embedded(value).catch((error: unknown) => {
+			console.error('Failed to embed body text preview; omitting it', {
+				embeddingEventId,
+				source,
+				articleId,
+				error,
+			});
+			return undefined;
+		});
+
+	const [
+		headlineEmbedded,
+		standfirstEmbedded,
+		combinedEmbedded,
+		bodyTextPreviewEmbedded,
+	] = (
 		await Promise.allSettled([
 			embedded(headline),
-			embedded(standfirst),
-			embedded(`${headline}\n${standfirst}`),
+			embeddedIfPresent(standfirst),
+			embedded(headlineAndStandfirst),
+			embeddedBodyTextPreview(bodyTextPreview),
 		])
 	).map((result) => {
 		if (result.status === 'rejected') {
@@ -43,10 +65,19 @@ async function processRecord(record: SQSRecord): Promise<void> {
 	const document: ArticleV1 = ArticleV1.parse({
 		headline: headlineEmbedded,
 		standfirst: standfirstEmbedded,
+		byline: payload.byline,
+		articleType: payload.articleType,
+		sectionId: payload.sectionId,
+		pillarId: payload.pillarId,
 		headlineAndStandfirst: combinedEmbedded,
-		keywordTagIds,
-		internalRevision,
+		bodyTextPreview: bodyTextPreviewEmbedded,
+		toneTagIds: payload.toneTagIds,
+		keywordTagIds: payload.keywordTagIds,
+		internalRevision: payload.internalRevision,
+		wordCount: payload.wordCount,
 		storedAt: new Date().toISOString(),
+		webPublicationDate: payload.webPublicationDate,
+		firstPublicationDate: payload.firstPublicationDate,
 	});
 
 	await writeArticle(articleId, document);

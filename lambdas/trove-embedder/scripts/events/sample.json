@@ -8,10 +8,16 @@
 			"byline": "A Reporter",
 			"articleType": "article",
 			"headline": "Lula wins Brazil election",
+			"sectionId": "world",
+			"pillarId": "news",
 			"standfirst": "Incumbent secures another term after a tight run-off",
+			"bodyTextPreview": "Lula has won Brazil's presidential election.",
+			"toneTagIds": ["tone/news"],
 			"keywordTagIds": ["world/brazil", "world/luiz-inacio-lula-da-silva"],
 			"internalRevision": 1,
-			"webPublicationDate": "2026-10-26T10:00:00Z"
+			"wordCount": 7,
+			"webPublicationDate": "2026-10-26T10:00:00Z",
+			"firstPublicationDate": "2026-10-26T09:00:00Z"
 		}
 	},
 	{

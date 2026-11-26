@@ -7,13 +7,19 @@ const BaseEmbeddingEvent = z.object({
 
 export const UpdateEmbeddingPayload = z.object({
 	articleId: z.string(),
-	byline: z.string(),
-	articleType: z.enum(['article', 'liveblog']),
 	headline: z.string(),
-	standfirst: z.string(),
+	byline: z.string().optional(),
+	articleType: z.enum(['article', 'liveblog']),
+	sectionId: z.string(),
+	pillarId: z.string(),
+	standfirst: z.string().optional(),
+	bodyTextPreview: z.string(),
+	toneTagIds: z.array(z.string()),
 	keywordTagIds: z.array(z.string()),
 	internalRevision: z.number().int().nonnegative(),
+	wordCount: z.number().int().nonnegative(),
 	webPublicationDate: z.iso.datetime(),
+	firstPublicationDate: z.iso.datetime(),
 });
 export type UpdateEmbeddingPayload = z.infer<typeof UpdateEmbeddingPayload>;
 
