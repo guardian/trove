@@ -64,7 +64,6 @@ export class Trove extends GuStack {
 			});
 		}
 
-		// Resolved at runtime by the apps rather than baked into the template
 		const capiKey = StringParameter.fromStringParameterName(
 			this,
 			'TroveCapiKey',

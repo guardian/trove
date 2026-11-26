@@ -1,3 +1,4 @@
+import type { CapiDateTime } from '@guardian/content-api-models/v1/capiDateTime.js';
 import type { Content } from '@guardian/content-api-models/v1/content.js';
 import { ContentType } from '@guardian/content-api-models/v1/contentType.js';
 import { TagType } from '@guardian/content-api-models/v1/tagType.js';
@@ -7,6 +8,26 @@ const articleTypes = {
 	[ContentType.ARTICLE]: 'article',
 	[ContentType.LIVEBLOG]: 'liveblog',
 } as const;
+
+function toIsoDate(value: CapiDateTime | undefined): string | undefined {
+	return value && new Date(value.dateTime.toNumber()).toISOString();
+}
+
+export function bodyTextPreview(text: string): string {
+	const words = [...text.matchAll(/\S+/g)];
+	if (words.length <= 300) {
+		return text;
+	}
+	const lastWord = words[299]!;
+	const wordLimit = lastWord.index + lastWord[0].length;
+	const limited = text.slice(0, wordLimit);
+	const sentenceEnds = [...limited.matchAll(/[.!?](?:["')\]]+)?(?=\s|$)/g)];
+	const lastSentenceEnd = sentenceEnds.at(-1);
+	if (!lastSentenceEnd) {
+		return limited;
+	}
+	return limited.slice(0, lastSentenceEnd.index + lastSentenceEnd[0].length);
+}
 
 /**
  * Maps CAPI content to an embedding payload. Returns undefined for content we don't embed,
@@ -31,8 +52,7 @@ export function contentToPayload(
 		sectionId: content.sectionId,
 		pillarId: content.pillarId,
 		standfirst: fields?.standfirst,
-		// Pending data-science methodology for the 500-token limit.
-		bodyTextPreview: fields?.bodyText?.slice(0, 500),
+		bodyTextPreview: fields?.bodyText && bodyTextPreview(fields.bodyText),
 		toneTagIds: content.tags
 			.filter((tag) => tag.type === TagType.TONE)
 			.map((tag) => tag.id),
@@ -41,12 +61,8 @@ export function contentToPayload(
 			.map((tag) => tag.id),
 		internalRevision: fields?.internalRevision,
 		wordCount: fields?.wordcount,
-		webPublicationDate:
-			webPublicationDate &&
-			new Date(webPublicationDate.dateTime.toNumber()).toISOString(),
-		firstPublicationDate:
-			fields?.firstPublicationDate &&
-			new Date(fields.firstPublicationDate.dateTime.toNumber()).toISOString(),
+		webPublicationDate: toIsoDate(webPublicationDate),
+		firstPublicationDate: toIsoDate(fields?.firstPublicationDate),
 	});
 
 	if (!result.success) {

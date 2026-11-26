@@ -2,6 +2,16 @@ import type { Content } from '@guardian/content-api-models/v1/content.js';
 import { ItemResponseSerde } from '@guardian/content-api-models/v1/itemResponse.js';
 import { decodeThrift } from './thrift.ts';
 
+const fields = [
+	'headline',
+	'standfirst',
+	'byline',
+	'bodyText',
+	'internalRevision',
+	'wordcount',
+	'firstPublicationDate',
+].join(',');
+
 /** Fetches a single item from CAPI, with the fields and tags needed to build an embedding payload. */
 export async function fetchContent(
 	capiUrl: string,
@@ -10,10 +20,7 @@ export async function fetchContent(
 	const url = new URL(capiUrl);
 	url.searchParams.set('api-key', apiKey);
 	url.searchParams.set('format', 'thrift');
-	url.searchParams.set(
-		'show-fields',
-		'headline,standfirst,byline,bodyText,internalRevision,wordcount,firstPublicationDate',
-	);
+	url.searchParams.set('show-fields', fields);
 	url.searchParams.set('show-tags', 'keyword,tone');
 
 	const response = await fetch(url, {

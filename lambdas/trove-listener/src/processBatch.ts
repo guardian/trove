@@ -1,10 +1,11 @@
 import { SendMessageBatchCommand, SQSClient } from '@aws-sdk/client-sqs';
 import type { KinesisStreamEvent } from 'aws-lambda';
+import { awsClientConfig } from 'shared/aws';
 import { decodeAndParseCrierEvent } from './decodeAndParseCrierEvent.ts';
 import type { FetchContent } from './toEmbeddingEvent.ts';
 import { toEmbeddingEvent } from './toEmbeddingEvent.ts';
 
-const sqs = new SQSClient({});
+const sqs = new SQSClient(awsClientConfig);
 
 /**
  * The Kinesis batch size matches the SQS batch limit (10), so a batch is sent in a single request.
@@ -13,25 +14,28 @@ const sqs = new SQSClient({});
 export async function processBatch(
 	event: KinesisStreamEvent,
 	fetchContent: FetchContent,
-	queueUrl: string | undefined,
+	queueUrl: string,
 ): Promise<void> {
-	const embeddingEvents = (
-		await Promise.all(
-			event.Records.map((record) =>
-				toEmbeddingEvent(
-					decodeAndParseCrierEvent(record.kinesis.data),
-					fetchContent,
-				),
+	const results = await Promise.allSettled(
+		event.Records.map(async (record) =>
+			toEmbeddingEvent(
+				decodeAndParseCrierEvent(record.kinesis.data),
+				fetchContent,
 			),
-		)
-	).filter((e) => e !== undefined);
+		),
+	);
+	const failure = results.find((result) => result.status === 'rejected');
+	if (failure) {
+		throw failure.reason;
+	}
+	const embeddingEvents = results.flatMap((result) => {
+		if (result.status === 'rejected' || result.value === undefined) {
+			return [];
+		}
+		return [result.value];
+	});
 
 	if (embeddingEvents.length === 0) {
-		return;
-	}
-	if (!queueUrl) {
-		console.log('No LIVE_EMBEDDER_QUEUE_URL set, so logging messages instead');
-		embeddingEvents.forEach((e) => console.log(JSON.stringify(e)));
 		return;
 	}
 

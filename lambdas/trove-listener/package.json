@@ -16,7 +16,6 @@
 	},
 	"dependencies": {
 		"@aws-sdk/client-sqs": "3.1166.0",
-		"@aws-sdk/client-ssm": "3.1166.0",
 		"@guardian/content-api-models": "53.0.0",
 		"shared": "0.0.0"
 	}

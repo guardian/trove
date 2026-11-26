@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
+import { awsClientConfig } from 'shared/aws';
 import type { UpdateEmbeddingEvent } from 'shared/embeddingEvent';
 
 const queueUrl = process.env.BACKFILL_EMBEDDER_QUEUE_URL;
@@ -9,7 +10,7 @@ if (!queueUrl) {
 	);
 }
 
-const sqs = new SQSClient({});
+const sqs = new SQSClient(awsClientConfig);
 
 async function main() {
 	for (let i = 1; i <= 10; i++) {

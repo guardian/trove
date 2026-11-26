@@ -3,14 +3,13 @@ import {
 	InvokeModelCommand,
 } from '@aws-sdk/client-bedrock-runtime';
 import { embeddingModels } from 'datastore/open-search-embeddings';
+import { awsClientConfig } from 'shared/aws';
 import { z } from 'zod';
 
 // Marengo can only be invoked on demand in eu-west-1 through the EU inference profile
 const inferenceProfileId = `eu.${embeddingModels.marengo_3_0.modelId}`;
 
-const bedrock = new BedrockRuntimeClient({
-	region: process.env.AWS_REGION ?? 'eu-west-1',
-});
+const bedrock = new BedrockRuntimeClient(awsClientConfig);
 
 // Text input returns a single embedding, wrapped in a list
 const MarengoTextResponse = z.object({

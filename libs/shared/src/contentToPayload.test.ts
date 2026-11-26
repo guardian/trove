@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { ContentType } from '@guardian/content-api-models/v1/contentType.js';
-import { contentToPayload } from './contentToPayload.ts';
+import { bodyTextPreview, contentToPayload } from './contentToPayload.ts';
 import { sampleContent } from './testing/fixtures.ts';
 
 void describe('contentToPayload', () => {
@@ -52,13 +52,26 @@ void describe('contentToPayload', () => {
 		assert.equal(payload?.byline, undefined);
 	});
 
-	void it('limits the body text preview to 500 characters', () => {
+	void it('limits the body text preview to a sentence within 300 words', () => {
 		const fields = {
 			...sampleContent.fields,
-			bodyText: 'a'.repeat(501),
+			bodyText: `A sentence ends here. ${'word '.repeat(300)}`,
 		};
 		const payload = contentToPayload({ ...sampleContent, fields });
-		assert.equal(payload?.bodyTextPreview.length, 500);
+		assert.equal(payload?.bodyTextPreview, 'A sentence ends here.');
+	});
+
+	void it('keeps text that is no more than 300 words', () => {
+		const text = Array.from({ length: 300 }, (_, i) => `word${i}`).join(' ');
+		assert.equal(bodyTextPreview(text), text);
+	});
+
+	void it('falls back to 300 words when there is no sentence boundary', () => {
+		const words = Array.from({ length: 301 }, (_, i) => `word${i}`);
+		assert.equal(
+			bodyTextPreview(words.join(' ')),
+			words.slice(0, 300).join(' '),
+		);
 	});
 
 	void it('warns and skips content missing a required property', (t) => {

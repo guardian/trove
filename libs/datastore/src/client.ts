@@ -1,6 +1,6 @@
-import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { Client } from '@opensearch-project/opensearch';
 import { AwsSigv4Signer } from '@opensearch-project/opensearch/aws';
+import { awsClientConfig } from 'shared/aws';
 
 /** Signs requests for OpenSearch Serverless when OPENSEARCH_ENDPOINT is set, otherwise targets docker-compose. */
 export const createClient = (): Client => {
@@ -13,10 +13,7 @@ export const createClient = (): Client => {
 		...AwsSigv4Signer({
 			region: process.env.AWS_REGION ?? 'eu-west-1',
 			service: 'aoss',
-			// GuCDK sets STAGE on CODE/PROD; locally we use the capi profile from Janus
-			getCredentials: process.env.STAGE
-				? defaultProvider()
-				: defaultProvider({ profile: 'capi' }),
+			getCredentials: awsClientConfig.credentials,
 		}),
 		node: endpoint,
 	});
