@@ -11,7 +11,7 @@ export const UpdateEmbeddingPayload = z.object({
 	byline: z.string().optional(),
 	articleType: z.enum(['article', 'liveblog']),
 	sectionId: z.string(),
-	pillarId: z.string(),
+	pillarId: z.string().optional(),
 	standfirst: z.string().optional(),
 	bodyTextPreview: z.string(),
 	toneTagIds: z.array(z.string()),
