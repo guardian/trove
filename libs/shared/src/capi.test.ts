@@ -70,7 +70,7 @@ void describe('searchBackfillContent', () => {
 		assert.equal(url.searchParams.get('api-key'), 'my-key');
 		assert.equal(url.searchParams.get('format'), 'thrift');
 		assert.equal(url.searchParams.get('order-by'), 'newest');
-		assert.equal(url.searchParams.get('type'), 'article,liveblog');
+		assert.equal(url.searchParams.get('type'), 'article|liveblog');
 		assert.equal(url.searchParams.get('page-size'), '200');
 		assert.equal(url.searchParams.get('show-tags'), 'keyword,tone');
 	});
