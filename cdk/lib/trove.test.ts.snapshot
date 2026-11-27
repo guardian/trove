@@ -2085,19 +2085,20 @@ exports[`The TroveOpenSearch stack > matches the snapshot 1`] = `
       "Properties": {
         "AppConfigs": [
           {
-            "Key": "opensearchDashboards.dashboardAdmin.users",
+            "Key": "opensearchDashboards.dashboardAdmin.groups",
             "Value": {
               "Fn::Join": [
                 "",
                 [
-                  "arn:aws:iam::",
+                  "[\\"arn:aws:iam::",
                   {
                     "Ref": "AWS::AccountId"
                   },
                   ":role/federation/janus-access-role-",
                   {
                     "Ref": "AWS::Region"
-                  }
+                  },
+                  "\\"]"
                 ]
               ]
             }

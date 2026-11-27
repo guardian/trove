@@ -117,8 +117,8 @@ export class TroveOpenSearch extends GuStack {
 			dataSources: [{ dataSourceArn: collection.attrArn }],
 			appConfigs: [
 				{
-					key: 'opensearchDashboards.dashboardAdmin.users',
-					value: engineerRoleArn,
+					key: 'opensearchDashboards.dashboardAdmin.groups',
+					value: this.toJsonString([engineerRoleArn]),
 				},
 			],
 		});
