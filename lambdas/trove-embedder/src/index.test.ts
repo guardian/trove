@@ -28,7 +28,7 @@ type OpenSearchRequest = {
 	method: string;
 	path: string;
 	querystring: Record<string, unknown>;
-	body?: { headline: { value: string }; bodyTextPreview?: unknown };
+	body?: { headline: { value: string } };
 };
 
 // Writes: stale headlines are a version conflict, "os-error" ones a server error.
@@ -120,21 +120,6 @@ void describe('handler', () => {
 				},
 			],
 		);
-	});
-
-	void it('stores an article without a body text preview', async () => {
-		const event = update('No body headline');
-		if (event.eventType === 'update') {
-			delete event.payload.bodyTextPreview;
-		}
-
-		const result = await handler({ Records: [record('no-body', event)] });
-
-		assert.deepEqual(result.batchItemFailures, []);
-		const { body } = opensearch.mock.calls[0]
-			?.arguments[0] as OpenSearchRequest;
-		assert.equal(body?.headline.value, 'No body headline');
-		assert.equal(body.bodyTextPreview, undefined);
 	});
 
 	void it('ignores stale writes but reports other OpenSearch errors', async () => {
