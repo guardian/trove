@@ -13,7 +13,9 @@ if (!queueUrl) {
 }
 
 const main = async () => {
+	console.log('Starting backfill, fetching the CAPI key from SSM');
 	const key = await getSsmParameter(capiKeyParameter);
+	console.log('Fetched the CAPI key from SSM');
 	await backfillFirstPage(
 		() => searchBackfillContent(key),
 		(events) => sendEmbeddingEvents(queueUrl, events),

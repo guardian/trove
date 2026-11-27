@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { ContentType } from '@guardian/content-api-models/v1/contentType.js';
 import type { SearchResponse } from '@guardian/content-api-models/v1/searchResponse.js';
 import { contentToPayload } from 'shared/contentToPayload';
 import type { UpdateEmbeddingEvent } from 'shared/embeddingEvent';
@@ -17,6 +18,7 @@ export async function backfillFirstPage(
 	const events = results.flatMap((content): UpdateEmbeddingEvent[] => {
 		const payload = contentToPayload(content);
 		if (!payload) {
+			console.log(`Skipping ${content.id} (type ${ContentType[content.type]})`);
 			return [];
 		}
 		return [

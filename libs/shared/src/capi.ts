@@ -7,8 +7,7 @@ import { decodeThrift } from './thrift.ts';
 const capiBaseUrl = 'https://content.guardianapis.com';
 
 /** The params needed to build an embedding payload from CAPI content. */
-const contentParams = (apiKey: string) => ({
-	'api-key': apiKey,
+const contentParams = {
 	format: 'thrift',
 	'show-fields': [
 		'headline',
@@ -20,7 +19,7 @@ const contentParams = (apiKey: string) => ({
 		'firstPublicationDate',
 	].join(','),
 	'show-tags': 'keyword,tone',
-});
+};
 
 /**
  * The backfill query. It must stay the same for a whole backfill run, as `/next` continues from the last seen item
@@ -39,7 +38,10 @@ export async function fetchContent(
 ): Promise<Content | undefined> {
 	const url = new URL(capiUrl);
 	// Crier's capiUrl asks for everything (blocks, elements...), which we don't need
-	url.search = new URLSearchParams(contentParams(apiKey)).toString();
+	url.search = new URLSearchParams({
+		...contentParams,
+		'api-key': apiKey,
+	}).toString();
 
 	const response = await fetch(url);
 	// The content may have been taken down since the Crier event
@@ -62,18 +64,32 @@ export async function fetchContent(
 export async function searchBackfillContent(
 	apiKey: string,
 ): Promise<SearchResponse> {
+	const query = new URLSearchParams({ ...contentParams, ...backfillParams });
+	// Built without the API key so it's safe to log
+	console.log(`Requesting CAPI /search?${query.toString()}`);
+
 	const url = new URL('/search', capiBaseUrl);
 	url.search = new URLSearchParams({
-		...contentParams(apiKey),
+		...contentParams,
 		...backfillParams,
+		'api-key': apiKey,
 	}).toString();
 
 	const response = await fetch(url);
+	console.log(
+		`CAPI responded with status ${response.status}, content-type ${response.headers.get('content-type')}`,
+	);
 	if (!response.ok) {
 		throw new Error(
-			`CAPI request for ${url.pathname} failed with status ${response.status}`,
+			`CAPI request for /search failed with status ${response.status}: ${await response.text()}`,
 		);
 	}
 	const bytes = Buffer.from(await response.arrayBuffer());
-	return decodeThrift(bytes, SearchResponseSerde);
+	console.log(`CAPI response body is ${bytes.length} bytes`);
+	const searchResponse = decodeThrift(bytes, SearchResponseSerde);
+	const { results, ...metadata } = searchResponse;
+	console.log(
+		`Decoded CAPI response: ${JSON.stringify({ ...metadata, resultCount: results.length })}`,
+	);
+	return searchResponse;
 }
