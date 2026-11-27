@@ -2080,6 +2080,61 @@ exports[`The TroveOpenSearch stack > matches the snapshot 1`] = `
         }
       }
     },
+    "OpenSearchUi": {
+      "Type": "AWS::OpenSearchService::Application",
+      "Properties": {
+        "AppConfigs": [
+          {
+            "Key": "opensearchDashboards.dashboardAdmin.groups",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  "[\\"arn:aws:iam::",
+                  {
+                    "Ref": "AWS::AccountId"
+                  },
+                  ":role/federation/janus-access-role-",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  "\\"]"
+                ]
+              ]
+            }
+          }
+        ],
+        "DataSources": [
+          {
+            "DataSourceArn": {
+              "Fn::GetAtt": [
+                "Collection",
+                "Arn"
+              ]
+            }
+          }
+        ],
+        "Name": "trove-code",
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "67.1.0"
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/trove"
+          },
+          {
+            "Key": "Stack",
+            "Value": "capi"
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE"
+          }
+        ]
+      }
+    },
     "EngineerDataAccessPolicy": {
       "Type": "AWS::OpenSearchServerless::AccessPolicy",
       "Properties": {
