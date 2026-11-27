@@ -2,10 +2,16 @@
 
 Runs the historical backfill as a long-running ECS Fargate task.
 
-For now it just sends 10 dummy `UpdateEmbeddingEvent`s to the backfill queue, so we can see them come out of the
-embedder logs. Paging through CAPI (using `/content/{lastSeenId}/next`, see
-[content-api#2812](https://github.com/guardian/content-api/pull/2812)) comes next. The `CAPI_KEY_PARAMETER`
-environment variable (the SSM parameter name, to be resolved at runtime) is already wired up in CDK for that.
+For now it makes a single CAPI `/search` request (newest first, articles and liveblogs, 200 per page, in thrift) and
+sends the content we embed to the backfill queue as `UpdateEmbeddingEvent`s. Paging through the rest of CAPI (using
+`/content/{lastSeenId}/next` with the same query, see [docs/backfill.md](../../docs/backfill.md) and
+[content-api#2812](https://github.com/guardian/content-api/pull/2812)) comes next. It logs the last seen ID, which will
+become the cursor.
+
+It needs two environment variables, both set in CDK:
+
+- `CAPI_KEY_PARAMETER`: the name of the SSM parameter holding the CAPI key
+- `BACKFILL_EMBEDDER_QUEUE_URL`: the queue to send embedding events to
 
 ## Running locally
 
@@ -13,15 +19,10 @@ environment variable (the SSM parameter name, to be resolved at runtime) is alre
 
 Since the container just runs the TypeScript code with node, you can run it directly on your host machine and it should behave pretty much the same as it would in the container.
 
-Without `BACKFILL_EMBEDDER_QUEUE_URL`, the messages are logged instead of sent, so no AWS credentials are needed:
+Provide both environment variables, plus AWS credentials that can read the SSM parameter and send to the queue:
 
 ```sh
-npm start -w trove-backfill
-```
-
-To send to a real queue, set it and provide AWS credentials that can send to the queue:
-
-```sh
+CAPI_KEY_PARAMETER=<ssm-parameter-name> \
 BACKFILL_EMBEDDER_QUEUE_URL=<url> \
 AWS_REGION=eu-west-1 \
 AWS_PROFILE=capi \
@@ -43,15 +44,13 @@ docker login dhi.io
 # Build the image and tag (name) it trove-backfill. Re-run this after changing the code.
 docker build -f tasks/trove-backfill/Dockerfile -t trove-backfill .
 
-# Run it. --rm deletes the container when it exits, and --read-only matches the read-only filesystem in Fargate.
-# Output goes straight to your terminal. Without a queue URL, messages are logged instead of sent.
-docker run --rm --read-only trove-backfill
-
-# Send to a real queue, using AWS credentials from ~/.aws (e.g. from Janus)
+# Run it, using AWS credentials from ~/.aws (e.g. from Janus). --rm deletes the container when it exits, and
+# --read-only matches the read-only filesystem in Fargate. Output goes straight to your terminal.
 docker run --rm --read-only \
   -v ~/.aws:/home/node/.aws:ro \
   -e AWS_PROFILE=capi \
   -e AWS_REGION=eu-west-1 \
+  -e CAPI_KEY_PARAMETER=<ssm-parameter-name> \
   -e BACKFILL_EMBEDDER_QUEUE_URL=<url> \
   trove-backfill
 ```

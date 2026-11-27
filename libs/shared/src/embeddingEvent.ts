@@ -13,7 +13,7 @@ export const UpdateEmbeddingPayload = z.object({
 	sectionId: z.string(),
 	pillarId: z.string().optional(),
 	standfirst: z.string().optional(),
-	bodyTextPreview: z.string(),
+	bodyTextPreview: z.string().optional(),
 	toneTagIds: z.array(z.string()),
 	keywordTagIds: z.array(z.string()),
 	internalRevision: z.number().int().nonnegative(),
