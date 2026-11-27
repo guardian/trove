@@ -28,7 +28,7 @@ const contentParams = (apiKey: string) => ({
  */
 const backfillParams = {
 	'order-by': 'newest',
-	type: 'article,liveblog',
+	type: 'article|liveblog',
 	'page-size': '200',
 };
 
