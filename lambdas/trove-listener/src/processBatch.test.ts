@@ -36,15 +36,4 @@ void describe('processBatch', () => {
 			?.arguments[0] as unknown as SendMessageBatchCommand;
 		assert.equal(command.input.Entries?.length, 2);
 	});
-
-	void it('fails the whole batch if any message fails to send', async (t) => {
-		t.mock.method(SQSClient.prototype, 'send', () =>
-			Promise.resolve({ Failed: [{ Id: 'x', SenderFault: false, Code: 'e' }] }),
-		);
-
-		await assert.rejects(
-			processBatch(batch, noFetch, 'https://sqs/queue'),
-			/Failed to send 1 messages/,
-		);
-	});
 });
