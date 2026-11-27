@@ -22,9 +22,21 @@ export async function processBatch(
 			),
 		),
 	);
-	const failure = results.find((result) => result.status === 'rejected');
-	if (failure) {
-		throw failure.reason;
+	const rejectedResults = results.flatMap((result, index) =>
+		result.status === 'rejected' ? [{ result, index }] : [],
+	);
+	if (rejectedResults.length > 0) {
+		for (const { result, index } of rejectedResults) {
+			const record = event.Records[index];
+			console.error('Failed to process Kinesis record', {
+				eventId: record?.eventID,
+				sequenceNumber: record?.kinesis.sequenceNumber,
+				partitionKey: record?.kinesis.partitionKey,
+				recordIndex: index,
+				error: result.reason as unknown,
+			});
+		}
+		throw rejectedResults[0]!.result.reason;
 	}
 	const successfulResults = results as Array<
 		PromiseFulfilledResult<Awaited<ReturnType<typeof toEmbeddingEvent>>>
@@ -37,8 +49,18 @@ export async function processBatch(
 	});
 
 	if (embeddingEvents.length === 0) {
+		console.log('Processed Kinesis batch', {
+			received: event.Records.length,
+			forwarded: 0,
+			ignored: event.Records.length,
+		});
 		return;
 	}
 
 	await sendEmbeddingEvents(queueUrl, embeddingEvents);
+	console.log('Processed Kinesis batch', {
+		received: event.Records.length,
+		forwarded: embeddingEvents.length,
+		ignored: event.Records.length - embeddingEvents.length,
+	});
 }
