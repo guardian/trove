@@ -9,6 +9,7 @@ import {
 	CfnCollectionGroup,
 	CfnSecurityPolicy,
 } from 'aws-cdk-lib/aws-opensearchserverless';
+import { CfnApplication } from 'aws-cdk-lib/aws-opensearchservice';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 
 export const collectionName = (stage: string) => `trove-${stage.toLowerCase()}`;
@@ -108,6 +109,20 @@ export class TroveOpenSearch extends GuStack {
 			stringValue: collection.attrArn,
 		});
 
+		const engineerRoleArn = `arn:aws:iam::${this.account}:role/federation/janus-access-role-${this.region}`;
+
+		// OpenSearch UI, the console to explore the collection
+		new CfnApplication(this, 'OpenSearchUi', {
+			name,
+			dataSources: [{ dataSourceArn: collection.attrArn }],
+			appConfigs: [
+				{
+					key: 'opensearchDashboards.dashboardAdmin.users',
+					value: engineerRoleArn,
+				},
+			],
+		});
+
 		new CfnAccessPolicy(this, 'EngineerDataAccessPolicy', {
 			name: `trove-engineers-${stage.toLowerCase()}`,
 			type: 'data',
@@ -129,7 +144,7 @@ export class TroveOpenSearch extends GuStack {
 					],
 					Principal: [
 						// engineer access
-						`arn:aws:iam::${this.account}:role/federation/janus-access-role-${this.region}`,
+						engineerRoleArn,
 					],
 				},
 			]),
