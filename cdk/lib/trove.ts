@@ -13,7 +13,7 @@ import { GuKinesisLambdaExperimental } from '@guardian/cdk/lib/experimental/patt
 import { StreamRetry } from '@guardian/cdk/lib/utils/lambda/event-source.js';
 import type { App } from 'aws-cdk-lib';
 import { Duration } from 'aws-cdk-lib';
-import { ContainerInsights, Secret as EcsSecret } from 'aws-cdk-lib/aws-ecs';
+import { ContainerInsights } from 'aws-cdk-lib/aws-ecs';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { StartingPosition } from 'aws-cdk-lib/aws-lambda';
@@ -64,6 +64,12 @@ export class Trove extends GuStack {
 			});
 		}
 
+		const capiKey = StringParameter.fromStringParameterName(
+			this,
+			'TroveCapiKey',
+			`/${this.stage}/${this.stack}/trove/capi-key`,
+		);
+
 		const listener = new GuKinesisLambdaExperimental(this, 'TroveListener', {
 			app: 'trove-listener',
 			fileName: 'trove-listener.zip',
@@ -82,10 +88,14 @@ export class Trove extends GuStack {
 			},
 			processingProps: {
 				startingPosition: StartingPosition.LATEST,
-				batchSize: 1,
+				// Matches the SQS SendMessageBatch limit, so each Kinesis batch is a single SQS request
+				batchSize: 10,
 				maxBatchingWindow: Duration.seconds(10),
 			},
 		});
+
+		capiKey.grantRead(listener);
+		listener.addEnvironment('CAPI_KEY_PARAMETER', capiKey.parameterName);
 
 		const liveQueue = createQueueWithDLQ(this, 'EmbedderLive');
 		const backfillQueue = createQueueWithDLQ(this, 'EmbedderBackfill');
@@ -151,17 +161,12 @@ export class Trove extends GuStack {
 			'BACKFILL_EMBEDDER_QUEUE_URL',
 			backfillQueue.queueUrl,
 		);
-		backfill.containerDefinition.addSecret(
-			'CAPI_API_KEY',
-			EcsSecret.fromSsmParameter(
-				StringParameter.fromSecureStringParameterAttributes(
-					this,
-					'TroveBackfillCapiApiKey',
-					{
-						parameterName: `/${this.stage}/${this.stack}/${backfillApp}/capi-api-key`,
-					},
-				),
-			),
+		// Lambdas get STAGE from GuCDK, and awsClientConfig relies on it to pick the runtime credentials
+		backfill.containerDefinition.addEnvironment('STAGE', this.stage);
+		capiKey.grantRead(backfill.taskDefinition.taskRole);
+		backfill.containerDefinition.addEnvironment(
+			'CAPI_KEY_PARAMETER',
+			capiKey.parameterName,
 		);
 	}
 }

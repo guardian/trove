@@ -1,18 +1,18 @@
-import type { KinesisStreamHandler } from 'aws-lambda';
-import { decodeAndParseCrierEvent } from './decodeAndParseCrierEvent.ts';
-import { readableCrierEvent } from './readableCrierEvent.ts';
+import type { KinesisStreamEvent } from 'aws-lambda';
+import { fetchContent } from 'shared/capi';
+import { getSsmParameter } from 'shared/ssm';
+import { processBatch } from './processBatch.ts';
 
-export const handler: KinesisStreamHandler = async (event) => {
-	const crierEvents = event.Records.map((r) => {
-		return decodeAndParseCrierEvent(r.kinesis.data);
-	});
-	crierEvents.forEach((event) => {
-		const readableEvent = readableCrierEvent(event);
-		console.log(
-			readableEvent.payloadId,
-			readableEvent.eventType,
-			readableEvent.itemType,
-		);
-	});
-	await Promise.resolve();
+const capiKeyParameter = process.env.CAPI_KEY_PARAMETER;
+if (!capiKeyParameter) {
+	throw new Error('CAPI_KEY_PARAMETER is not set');
+}
+const queueUrl = process.env.LIVE_EMBEDDER_QUEUE_URL;
+if (!queueUrl) {
+	throw new Error('LIVE_EMBEDDER_QUEUE_URL is not set');
+}
+
+export const handler = async (event: KinesisStreamEvent): Promise<void> => {
+	const key = await getSsmParameter(capiKeyParameter);
+	return processBatch(event, (capiUrl) => fetchContent(capiUrl, key), queueUrl);
 };

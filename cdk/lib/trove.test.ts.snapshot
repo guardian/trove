@@ -253,6 +253,35 @@ exports[`The Trove stack > matches the snapshot 1`] = `
             },
             {
               "Action": [
+                "ssm:DescribeParameters",
+                "ssm:GetParameters",
+                "ssm:GetParameter",
+                "ssm:GetParameterHistory"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":ssm:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":parameter/TEST/capi/trove/capi-key"
+                  ]
+                ]
+              }
+            },
+            {
+              "Action": [
                 "sqs:SendMessage",
                 "sqs:GetQueueAttributes",
                 "sqs:GetQueueUrl"
@@ -290,6 +319,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
             "STACK": "capi",
             "STAGE": "TEST",
             "APP": "trove-listener",
+            "CAPI_KEY_PARAMETER": "/TEST/capi/trove/capi-key",
             "LIVE_EMBEDDER_QUEUE_URL": {
               "Ref": "EmbedderLiveQueueB402F2F7"
             }
@@ -340,7 +370,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
     "TroveListenerKinesisEventSourceTrovecontentapifirehosev2TESTD86CD8EC365A4604": {
       "Type": "AWS::Lambda::EventSourceMapping",
       "Properties": {
-        "BatchSize": 1,
+        "BatchSize": 10,
         "BisectBatchOnFunctionError": true,
         "EventSourceArn": {
           "Fn::Join": [
@@ -1151,6 +1181,35 @@ exports[`The Trove stack > matches the snapshot 1`] = `
                   "Arn"
                 ]
               }
+            },
+            {
+              "Action": [
+                "ssm:DescribeParameters",
+                "ssm:GetParameters",
+                "ssm:GetParameter",
+                "ssm:GetParameterHistory"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":ssm:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":parameter/TEST/capi/trove/capi-key"
+                  ]
+                ]
+              }
             }
           ],
           "Version": "2012-10-17"
@@ -1175,6 +1234,14 @@ exports[`The Trove stack > matches the snapshot 1`] = `
                 "Value": {
                   "Ref": "EmbedderBackfillQueue996A2FEF"
                 }
+              },
+              {
+                "Name": "STAGE",
+                "Value": "TEST"
+              },
+              {
+                "Name": "CAPI_KEY_PARAMETER",
+                "Value": "/TEST/capi/trove/capi-key"
               }
             ],
             "Essential": true,
@@ -1207,32 +1274,7 @@ exports[`The Trove stack > matches the snapshot 1`] = `
             },
             "Memory": 512,
             "Name": "TroveBackfill-TaskContainer",
-            "ReadonlyRootFilesystem": true,
-            "Secrets": [
-              {
-                "Name": "CAPI_API_KEY",
-                "ValueFrom": {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:",
-                      {
-                        "Ref": "AWS::Partition"
-                      },
-                      ":ssm:",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      ":",
-                      {
-                        "Ref": "AWS::AccountId"
-                      },
-                      ":parameter/TEST/capi/trove-backfill/capi-api-key"
-                    ]
-                  ]
-                }
-              }
-            ]
+            "ReadonlyRootFilesystem": true
           }
         ],
         "Cpu": "256",
@@ -1406,35 +1448,6 @@ exports[`The Trove stack > matches the snapshot 1`] = `
               ],
               "Effect": "Allow",
               "Resource": "arn:aws:ecr:eu-west-1:694911143906:repository/aws-guardduty-agent-fargate"
-            },
-            {
-              "Action": [
-                "ssm:DescribeParameters",
-                "ssm:GetParameters",
-                "ssm:GetParameter",
-                "ssm:GetParameterHistory"
-              ],
-              "Effect": "Allow",
-              "Resource": {
-                "Fn::Join": [
-                  "",
-                  [
-                    "arn:",
-                    {
-                      "Ref": "AWS::Partition"
-                    },
-                    ":ssm:",
-                    {
-                      "Ref": "AWS::Region"
-                    },
-                    ":",
-                    {
-                      "Ref": "AWS::AccountId"
-                    },
-                    ":parameter/TEST/capi/trove-backfill/capi-api-key"
-                  ]
-                ]
-              }
             }
           ],
           "Version": "2012-10-17"

@@ -4,7 +4,14 @@
 	"private": true,
 	"type": "module",
 	"exports": {
-		"./embeddingEvent": "./src/embeddingEvent.ts"
+		"./aws": "./src/aws.ts",
+		"./capi": "./src/capi.ts",
+		"./contentToPayload": "./src/contentToPayload.ts",
+		"./embeddingEvent": "./src/embeddingEvent.ts",
+		"./ssm": "./src/ssm.ts",
+		"./testing/fixtures": "./src/testing/fixtures.ts",
+		"./testing/thrift": "./src/testing/thrift.ts",
+		"./thrift": "./src/thrift.ts"
 	},
 	"scripts": {
 		"test": "node --test 'src/**/*.test.ts'",
@@ -12,6 +19,10 @@
 		"lint": "eslint ."
 	},
 	"dependencies": {
+		"@aws-sdk/client-ssm": "3.1166.0",
+		"@aws-sdk/credential-provider-node": "3.972.92",
+		"@guardian/content-api-models": "53.0.0",
+		"thrift": "0.23.0",
 		"zod": "4.6.7"
 	}
 }

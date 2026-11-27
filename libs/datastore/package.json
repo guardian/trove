@@ -19,8 +19,8 @@
 		"seed-local": "node scripts/seed-local.ts"
 	},
 	"dependencies": {
-		"@aws-sdk/credential-provider-node": "3.972.92",
 		"@opensearch-project/opensearch": "3.9.0",
+		"shared": "0.0.0",
 		"zod": "4.6.7"
 	}
 }
