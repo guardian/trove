@@ -32,8 +32,8 @@ async function processRecord(record: SQSRecord): Promise<void> {
 
 	const embeddedIfPresent = (value: string | undefined) =>
 		value === undefined ? undefined : embedded(value);
-	const embeddedBodyTextPreview = (value: string) =>
-		embedded(value).catch((error: unknown) => {
+	const embeddedBodyTextPreview = (value: string | undefined) =>
+		embeddedIfPresent(value)?.catch((error: unknown) => {
 			console.error('Failed to embed body text preview; omitting it', {
 				embeddingEventId,
 				source,

@@ -61,6 +61,13 @@ void describe('contentToPayload', () => {
 		assert.equal(payload.byline, undefined);
 	});
 
+	void it('keeps content without body text, omitting the preview', () => {
+		const fields = { ...sampleContent.fields, bodyText: ' ' };
+		const payload = contentToPayload({ ...sampleContent, fields });
+		assert.ok(payload);
+		assert.equal(payload.bodyTextPreview, undefined);
+	});
+
 	void it('warns and skips content missing a required property', (t) => {
 		const warn = t.mock.method(console, 'warn', () => undefined);
 		const fields = { ...sampleContent.fields, headline: undefined };
