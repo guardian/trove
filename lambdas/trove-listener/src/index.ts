@@ -13,6 +13,10 @@ if (!queueUrl) {
 }
 
 export const handler = async (event: KinesisStreamEvent): Promise<void> => {
+	console.log('Received Kinesis batch', {
+		records: event.Records.length,
+		eventSourceArn: event.Records[0]?.eventSourceARN,
+	});
 	const key = await getSsmParameter(capiKeyParameter);
 	return processBatch(event, (capiUrl) => fetchContent(capiUrl, key), queueUrl);
 };
